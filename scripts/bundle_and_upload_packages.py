@@ -319,7 +319,7 @@ class PackageBundler:
         
         if not dir_paths:
             print(f"No .dir directories found in {self.input_dir}")
-            return False
+            return True
         
         print(f"Found {len(dir_paths)} .dir package(s)")
         print(f"Input directory: {self.input_dir}")
