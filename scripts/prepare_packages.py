@@ -253,7 +253,7 @@ class PackagePreparer:
             
             # Create mip.json inside the .dir
             print(f"  Creating mip.json...")
-            self._create_mip_json(output_dir_path=output_dir_path, package=package, prepare_duration=prepare_duration, compile_duration=0, compile_duration=0, mhl_filename=mhl_filename)
+            self._create_mip_json(output_dir_path=output_dir_path, package=package, prepare_duration=prepare_duration, compile_duration=0, mhl_filename=mhl_filename)
 
             print(f"  Successfully prepared {wheel_name}.dir")
             return True
