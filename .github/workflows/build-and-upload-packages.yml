@@ -4,11 +4,6 @@ on:
   push:
     branches:
       - main
-    paths:
-      - 'packages/**'
-      - 'scripts/build_and_upload_packages.py'
-      - 'mip_build_helpers/**'
-      - '.github/workflows/build-and-upload-packages.yml'
   workflow_dispatch:
     inputs:
       force_rebuild:
@@ -38,9 +33,9 @@ jobs:
       
       - name: Build and upload packages
         env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
-          AWS_ENDPOINT_URL: ${{ secrets.R2_ENDPOINT_URL }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_ENDPOINT_URL: ${{ secrets.AWS_ENDPOINT_URL }}
         run: |
           if [ "${{ github.event.inputs.force_rebuild }}" = "true" ]; then
             python scripts/build_and_upload_packages.py --force
