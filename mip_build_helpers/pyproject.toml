@@ -1,0 +1,13 @@
+[build-system]
+requires = ["setuptools>=45", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mip-build-helpers"
+version = "0.1.0"
+description = "Helper functions for building MATLAB package (.mhl) files"
+requires-python = ">=3.7"
+dependencies = []
+
+[project.optional-dependencies]
+dev = []
