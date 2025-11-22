@@ -52,4 +52,7 @@ class ChebfunPackage:
         print("Collecting exposed symbols...")
         self.exposed_symbols = collect_exposed_symbols_top_level(chebfun_dir, "chebfun")
 
-packages = [ChebfunPackage()]
+if os.environ.get('BUILD_TYPE') == 'standard':
+    packages = [ChebfunPackage()]
+else:
+    packages = []

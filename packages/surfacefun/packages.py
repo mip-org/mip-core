@@ -61,4 +61,7 @@ class SurfacefunPackage:
             ["surfacefun", "surfacefun/tools"]
         )
 
-packages = [SurfacefunPackage()]
+if os.environ.get('BUILD_TYPE') == 'standard':
+    packages = [SurfacefunPackage()]
+else:
+    packages = []

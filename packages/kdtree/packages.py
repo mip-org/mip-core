@@ -104,4 +104,7 @@ class KdtreePackage:
         
         return symbols
 
-packages = [KdtreePackage()]
+if os.environ.get('BUILD_TYPE') == 'standard':
+    packages = [KdtreePackage()]
+else:
+    packages = []

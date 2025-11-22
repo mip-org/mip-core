@@ -46,6 +46,8 @@ jobs:
           pip install -e mip_build_helpers
       
       - name: Prepare packages
+        env:
+          BUILD_TYPE: standard
         run: |
           if [ "${{ github.event.inputs.force_rebuild }}" = "true" ]; then
             python scripts/prepare_packages.py --force

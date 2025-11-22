@@ -51,4 +51,7 @@ class ExportFigPackage:
         print("Collecting exposed symbols...")
         self.exposed_symbols = collect_exposed_symbols_top_level(export_fig_dir, "export_fig")
 
-packages = [ExportFigPackage()]
+if os.environ.get('BUILD_TYPE') == 'standard':
+    packages = [ExportFigPackage()]
+else:
+    packages = []
