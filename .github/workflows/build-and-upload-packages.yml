@@ -66,6 +66,14 @@ jobs:
         run: |
           python scripts/bundle_and_upload_packages.py
       
+      - name: Assemble package index
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_ENDPOINT_URL: ${{ secrets.AWS_ENDPOINT_URL }}
+        run: |
+          python scripts/assemble_index.py
+      
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:

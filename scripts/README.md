@@ -4,15 +4,18 @@ This directory contains scripts for building MATLAB packages (.mhl files) and up
 
 ## Scripts Overview
 
-The build and upload process has been split into two scripts for flexibility:
+The build and upload process has been split into multiple scripts for flexibility:
 
 1. **`prepare_packages.py`** - Builds packages into `.dir` directories
-2. **`bundle_and_upload_packages.py`** - Zips `.dir` directories and uploads to R2
+2. **`compile_packages.m`** - Compiles packages that require MATLAB compilation
+3. **`bundle_and_upload_packages.py`** - Zips `.dir` directories and uploads to R2
+4. **`assemble_index.py`** - Assembles package index from R2 bucket
 
 This separation allows for:
 - Building packages once and uploading multiple times
 - Inspecting built packages before upload
 - Running builds and uploads at different times or on different machines
+- Rebuilding the index independently from package uploads
 
 ## Requirements
 
@@ -45,7 +48,17 @@ This will:
 - Build packages into `build/prepared/[wheel_name].dir` directories
 - Each `.dir` contains the built package contents and a `mip.json` metadata file
 
-#### Step 2: Bundle and Upload
+##### Step 2: Compile Packages (MATLAB)
+```bash
+matlab -batch "cd scripts; compile_packages"
+```
+
+This will:
+- Find all `.dir` directories with `compile.m` files
+- Execute compilation for packages that require it
+- Update `mip.json` with compilation duration
+
+#### Step 3: Bundle and Upload
 ```bash
 python scripts/bundle_and_upload_packages.py
 ```
@@ -54,7 +67,17 @@ This will:
 - Find all `.dir` directories in `build/prepared/`
 - Zip each into a `.mhl` file
 - Upload both `.mhl` and `.mip.json` files to R2
-- Create and upload a consolidated `index.json`
+
+#### Step 4: Assemble Package Index
+```bash
+python scripts/assemble_index.py
+```
+
+This will:
+- List all `.mhl.mip.json` files in the R2 bucket
+- Download each `.mip.json` file
+- Assemble them into a consolidated `index.json`
+- Save to `build/gh-pages/index.json` for GitHub Pages deployment
 
 ## Command Line Options
 
@@ -117,15 +140,31 @@ For each package that needs building:
 
 The `.dir` directories are kept for inspection and can be processed later by the upload script.
 
-### Step 2: Bundle and Upload
+### Step 2: Compilation (MATLAB)
+
+For packages that require compilation:
+1. Finds `.dir` directories containing `compile.m` files
+2. Executes the `compile.m` script in each directory
+3. Updates `mip.json` with compilation duration
+
+### Step 3: Bundle and Upload
 
 For each `.dir` directory:
 1. Reads the `mip.json` metadata file
 2. Creates a `.mhl` file by zipping the directory contents
 3. Creates a standalone `[filename].mip.json` file
 4. Uploads both files to Cloudflare R2
-5. Collects metadata from all packages (including existing ones from bucket)
-6. Creates and uploads a consolidated `index.json`
+
+### Step 4: Index Assembly
+
+After all packages are uploaded:
+1. Lists all `.mhl.mip.json` files in the R2 bucket using boto3
+2. Downloads each `.mip.json` file one at a time
+3. Ensures each has an `mhl_url` field (for backwards compatibility)
+4. Assembles all metadata into a consolidated `index.json`
+5. Saves to `build/gh-pages/index.json` for GitHub Pages deployment
+
+This approach ensures the index reflects the true state of the bucket, regardless of which packages were rebuilt in the current run.
 
 ### Error Handling
 
@@ -204,7 +243,7 @@ Processing package: chebfun
 ✓ All packages prepared successfully
 ```
 
-### Step 2: Bundle and Upload
+### Step 3: Bundle and Upload
 
 ```
 Starting package bundle and upload process...
@@ -219,11 +258,30 @@ Processing: chebfun-1.0.0-R2023b-mip1-any.dir
   Uploaded to s3://mip-packages/core/packages/chebfun-1.0.0-R2023b-mip1-any.mhl.mip.json
   Successfully bundled and uploaded chebfun-1.0.0-R2023b-mip1-any.mhl
 
-Creating package index...
-  Uploading index.json with 3 package(s)...
-  Index uploaded to s3://mip-packages/core/index.json
-
 ✓ All packages bundled and uploaded successfully
+```
+
+### Step 4: Assemble Index
+
+```
+Starting index assembly process...
+Listing packages in s3://mip-packages/core/packages/
+  Found 5 .mip.json file(s)
+
+Downloading package metadata...
+  [1/5] chebfun-1.0.0-R2023b-mip1-any.mhl.mip.json
+  [2/5] export_fig-1.0.0-R2023b-mip1-any.mhl.mip.json
+  [3/5] kdtree-1.0.0-R2023b-mip1-any.mhl.mip.json
+  [4/5] surfacefun-1.0.0-R2023b-mip1-any.mhl.mip.json
+  [5/5] another-package-1.0.0-R2023b-mip1-any.mhl.mip.json
+
+Successfully downloaded 5 package metadata file(s)
+
+✓ Created index.json with 5 package(s)
+  Saved to: /path/to/build/gh-pages/index.json
+  This will be deployed to GitHub Pages
+
+✓ Index assembled successfully
 ```
 
 ### Cached Package (No Rebuild)
@@ -252,4 +310,3 @@ build/
         ├── mip.json
         └── [package contents]
 ```
-

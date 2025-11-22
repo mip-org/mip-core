@@ -9,9 +9,9 @@ This script:
    - Zips the directory into a .mhl file
    - Creates standalone .mip.json file
    - Uploads both to Cloudflare R2
-3. Creates and uploads consolidated index.json
 
 This script processes .dir directories created by prepare_packages.py
+Index assembly is handled separately by assemble_index.py
 """
 
 import os
@@ -21,9 +21,6 @@ import zipfile
 import shutil
 import tempfile
 import argparse
-import requests
-from datetime import datetime
-from pathlib import Path
 
 try:
     import boto3
@@ -47,7 +44,6 @@ class PackageBundler:
         self.base_url = "https://mip-packages.neurosift.app/core/packages"
         self.bucket_name = "mip-packages"
         self.bucket_prefix = "core/packages"
-        self.package_metadata = []  # Store metadata for index.json
         
         # Set input directory
         if input_dir:
@@ -161,7 +157,6 @@ class PackageBundler:
         
         if self.dry_run:
             print(f"  [DRY RUN] Would bundle and upload {mhl_filename}")
-            self.package_metadata.append(mip_data)
             return True
         
         # Create temporary directory for bundling
@@ -186,9 +181,6 @@ class PackageBundler:
             self._upload_to_r2(mhl_path, mhl_key)
             self._upload_to_r2(mip_json_upload_path, mip_json_key)
             
-            # Store metadata for index.json
-            self.package_metadata.append(mip_data)
-            
             print(f"  Successfully bundled and uploaded {mhl_filename}")
             return True
             
@@ -201,103 +193,6 @@ class PackageBundler:
         finally:
             # Clean up temp directory
             shutil.rmtree(temp_dir, ignore_errors=True)
-    
-    def _collect_existing_packages(self):
-        """
-        Collect metadata for all existing packages from the bucket.
-        This includes packages that weren't rebuilt in this run.
-        """
-        # Get all package directories from the packages/ folder
-        packages_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'packages')
-        
-        if not os.path.exists(packages_dir):
-            return
-        
-        package_dirs = [
-            os.path.join(packages_dir, d)
-            for d in os.listdir(packages_dir)
-            if os.path.isdir(os.path.join(packages_dir, d))
-        ]
-        
-        # Try to load each package and fetch its metadata from bucket
-        for package_dir in package_dirs:
-            package_py_path = os.path.join(package_dir, 'package.py')
-            if not os.path.exists(package_py_path):
-                continue
-            
-            try:
-                import importlib.util
-                spec = importlib.util.spec_from_file_location("package_module", package_py_path)
-                module = importlib.util.module_from_spec(spec)
-                spec.loader.exec_module(module)
-                
-                if not hasattr(module, 'Package'):
-                    continue
-                
-                package = module.Package()
-                
-                # Generate MHL filename
-                mhl_filename = (
-                    f"{package.name}-{package.version}-{package.matlab_tag}-"
-                    f"{package.abi_tag}-{package.platform_tag}.mhl"
-                )
-                
-                mip_json_url = f"{self.base_url}/{mhl_filename}.mip.json"
-                
-                response = requests.get(mip_json_url, timeout=10)
-                if response.status_code == 200:
-                    metadata = response.json()
-                    # Add mhl_url if not present (for backwards compatibility)
-                    if 'mhl_url' not in metadata:
-                        metadata['mhl_url'] = f"{self.base_url}/{mhl_filename}"
-                    # Check if this metadata is not already in the list
-                    if not any(m.get('name') == metadata.get('name') and 
-                              m.get('version') == metadata.get('version') for m in self.package_metadata):
-                        self.package_metadata.append(metadata)
-            except Exception:
-                pass  # Skip if we can't fetch
-    
-    def _create_index(self):
-        """
-        Create an index.json file containing all package metadata and save it locally.
-        This file will be deployed to GitHub Pages by the CI workflow.
-        """
-        if self.dry_run:
-            print("\n[DRY RUN] Would create index.json for GitHub Pages")
-            return True
-        
-        print("\nCreating package index for GitHub Pages...")
-        
-        # Collect any existing packages that weren't rebuilt
-        self._collect_existing_packages()
-        
-        # Create index data
-        index_data = {
-            'packages': self.package_metadata,
-            'total_packages': len(self.package_metadata),
-            'last_updated': datetime.utcnow().isoformat() + 'Z'
-        }
-        
-        # Create output directory for GitHub Pages
-        project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        gh_pages_dir = os.path.join(project_root, 'build', 'gh-pages')
-        os.makedirs(gh_pages_dir, exist_ok=True)
-        
-        try:
-            index_path = os.path.join(gh_pages_dir, 'index.json')
-            with open(index_path, 'w') as f:
-                json.dump(index_data, f, indent=2)
-            
-            print(f"  Created index.json with {len(self.package_metadata)} package(s)")
-            print(f"  Saved to: {index_path}")
-            print(f"  This will be deployed to GitHub Pages")
-            
-            return True
-        except Exception as e:
-            print(f"  Error creating index: {e}")
-            import traceback
-            traceback.print_exc()
-            return False
     
     def bundle_and_upload_all(self):
         """
@@ -332,13 +227,6 @@ class PackageBundler:
                 print(f"\nError: Bundle/upload failed for {os.path.basename(dir_path)}")
                 all_success = False
                 break  # Abort on first failure
-        
-        # Create index.json for GitHub Pages
-        if all_success:
-            index_success = self._create_index()
-            if not index_success:
-                print("\nWarning: Failed to create index.json")
-                all_success = False
         
         return all_success
 
