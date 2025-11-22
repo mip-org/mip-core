@@ -48,10 +48,11 @@ class PackageBuilder:
         self.dry_run = dry_run
         self.force = force
         self.keep_dirs = keep_dirs
-        self.base_url = "https://mip-packages.neurosift.app/packages/core"
+        self.base_url = "https://mip-packages.neurosift.app/core/packages"
         self.bucket_name = "mip-packages"
-        self.bucket_prefix = "packages/core"
+        self.bucket_prefix = "core/packages"
         self.work_dirs = []
+        self.package_metadata = []  # Store metadata for index.json
         
         # Initialize R2 client
         if not dry_run:
@@ -167,7 +168,7 @@ class PackageBuilder:
             print(f"  Error loading package from {package_py_path}: {e}")
             return None
     
-    def _create_mip_json(self, mhl_build_dir, package, build_duration):
+    def _create_mip_json(self, mhl_build_dir, package, build_duration, mhl_filename):
         """
         Create mip.json metadata file in the mhl_build directory.
         
@@ -175,6 +176,7 @@ class PackageBuilder:
             mhl_build_dir: Directory containing the built package
             package: Package instance
             build_duration: Time taken to build in seconds
+            mhl_filename: The .mhl filename for this package
         """
         mip_data = {
             'name': package.name,
@@ -189,7 +191,8 @@ class PackageBuilder:
             'platform_tag': package.platform_tag,
             'exposed_symbols': package.exposed_symbols,
             'timestamp': datetime.utcnow().isoformat() + 'Z',
-            'build_duration': round(build_duration, 2)
+            'build_duration': round(build_duration, 2),
+            'mhl_url': f"{self.base_url}/{mhl_filename}"
         }
         
         mip_json_path = os.path.join(mhl_build_dir, 'mip.json')
@@ -299,7 +302,7 @@ class PackageBuilder:
             
             # Create mip.json
             print(f"  Creating mip.json...")
-            mip_data = self._create_mip_json(mhl_build_dir, package, build_duration)
+            mip_data = self._create_mip_json(mhl_build_dir, package, build_duration, mhl_filename)
             
             # Create .mhl file
             mhl_path = os.path.join(temp_dir, mhl_filename)
@@ -319,6 +322,9 @@ class PackageBuilder:
             self._upload_to_r2(mhl_path, mhl_key)
             self._upload_to_r2(mip_json_path, mip_json_key)
             
+            # Store metadata for index.json
+            self.package_metadata.append(mip_data)
+            
             print(f"  Successfully built and uploaded {mhl_filename}")
             return True
             
@@ -332,6 +338,86 @@ class PackageBuilder:
             # Clean up temp directory if not keeping
             if not self.keep_dirs:
                 shutil.rmtree(temp_dir, ignore_errors=True)
+    
+    def _collect_existing_packages(self):
+        """
+        Collect metadata for all existing packages from the bucket.
+        This is used when packages are skipped (already up to date).
+        """
+        packages_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'packages')
+        
+        if not os.path.exists(packages_dir):
+            return
+        
+        package_dirs = [
+            os.path.join(packages_dir, d)
+            for d in os.listdir(packages_dir)
+            if os.path.isdir(os.path.join(packages_dir, d))
+        ]
+        
+        for package_dir in package_dirs:
+            package = self._load_package(package_dir)
+            if package is None:
+                continue
+            
+            mhl_filename = self._get_mhl_filename(package)
+            mip_json_url = f"{self.base_url}/{mhl_filename}.mip.json"
+            
+            try:
+                response = requests.get(mip_json_url, timeout=10)
+                if response.status_code == 200:
+                    metadata = response.json()
+                    # Add mhl_url if not present (for backwards compatibility)
+                    if 'mhl_url' not in metadata:
+                        metadata['mhl_url'] = f"{self.base_url}/{mhl_filename}"
+                    # Check if this metadata is not already in the list
+                    if not any(m.get('name') == metadata.get('name') and 
+                              m.get('version') == metadata.get('version') for m in self.package_metadata):
+                        self.package_metadata.append(metadata)
+            except requests.RequestException:
+                pass  # Skip if we can't fetch
+    
+    def _create_and_upload_index(self):
+        """
+        Create an index.json file containing all package metadata and upload it.
+        """
+        if self.dry_run:
+            print("\n[DRY RUN] Would create and upload index.json")
+            return True
+        
+        print("\nCreating package index...")
+        
+        # Collect any existing packages that weren't rebuilt
+        self._collect_existing_packages()
+        
+        # Create index data
+        index_data = {
+            'packages': self.package_metadata,
+            'total_packages': len(self.package_metadata),
+            'last_updated': datetime.utcnow().isoformat() + 'Z'
+        }
+        
+        # Create temporary file for index.json
+        temp_dir = tempfile.mkdtemp(prefix='mip_index_')
+        try:
+            index_path = os.path.join(temp_dir, 'index.json')
+            with open(index_path, 'w') as f:
+                json.dump(index_data, f, indent=2)
+            
+            # Upload to R2
+            index_key = "core/index.json"
+            print(f"  Uploading index.json with {len(self.package_metadata)} package(s)...")
+            self._upload_to_r2(index_path, index_key)
+            print(f"  Index uploaded to s3://{self.bucket_name}/{index_key}")
+            
+            return True
+        except Exception as e:
+            print(f"  Error creating/uploading index: {e}")
+            import traceback
+            traceback.print_exc()
+            return False
+        finally:
+            shutil.rmtree(temp_dir, ignore_errors=True)
     
     def build_all_packages(self):
         """
@@ -367,6 +453,13 @@ class PackageBuilder:
                 print(f"\nError: Build failed for {os.path.basename(package_dir)}")
                 all_success = False
                 break  # Abort on first failure
+        
+        # Create and upload index.json
+        if all_success:
+            index_success = self._create_and_upload_index()
+            if not index_success:
+                print("\nWarning: Failed to create/upload index.json")
+                all_success = False
         
         return all_success
     
