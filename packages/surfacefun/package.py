@@ -9,7 +9,7 @@ class Package:
         self.description = "Surfacefun is a MATLAB package for numerically computing with functions on surfaces with high-order accuracy."
         self.version = "latest"
         self.build_number = 0
-        self.dependencies = []
+        self.dependencies = ["chebfun"]
         self.homepage = "https://github.com/danfortunato/surfacefun"
         self.repository = "https://github.com/danfortunato/surfacefun"
         self.matlab_tag = "any"
