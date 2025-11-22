@@ -16,7 +16,7 @@ try
     for i = 1:length(cpp_files)
         cpp_file = cpp_files(i).name;
         fprintf('  Compiling %s...\n', cpp_file);
-        mex(cpp_file);
+        mex('CXXFLAGS=$CXXFLAGS -std=c++14', cpp_file);
     end
     
     fprintf('MEX compilation completed successfully.\n');

@@ -104,6 +104,4 @@ class KdtreePackage:
         
         return symbols
 
-# disable for now because having trouble compiling the package
-# packages = [KdtreePackage()]
-packages = []
+packages = [KdtreePackage()]
