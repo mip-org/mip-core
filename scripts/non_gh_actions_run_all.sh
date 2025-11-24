@@ -4,10 +4,10 @@ set -ex
 
 export BUILD_TYPE="linux_workstation"
 
-rm -rf build
-
 # change to the directory of this script
 cd "$(dirname "$0")"
+
+rm -rf ../build
 
 echo "Preparing packages using prepare_packages.py..."
 python prepare_packages.py
