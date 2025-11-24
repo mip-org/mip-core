@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
 import os
 import shutil
-import subprocess
-from mip_build_helpers import collect_exposed_symbols_recursive
+from mip_build_helpers import collect_exposed_symbols_recursive, clone_repository_and_remove_git, create_setup_m
 
 class FlamPackage:
     def __init__(self):
@@ -21,22 +20,10 @@ class FlamPackage:
         self.exposed_symbols = []
     
     def prepare(self, mhl_dir: str):
-        # Clone the repository with submodules
+        # Clone the repository
         repository_url = self.repository
         clone_dir = "FLAM"
-        print(f'Cloning {repository_url} with submodules...')
-        subprocess.run(
-            ["git", "clone", "--recurse-submodules", repository_url, clone_dir],
-            check=True
-        )
-
-        # Remove .git directories to reduce size
-        print("Removing .git directories...")
-        for root, dirs, files in os.walk(clone_dir):
-            if ".git" in dirs:
-                git_dir = os.path.join(root, ".git")
-                shutil.rmtree(git_dir)
-                dirs.remove(".git")
+        clone_repository_and_remove_git(repository_url, clone_dir)
 
         # Move FLAM to flam in the mhl directory (lowercase for consistency)
         flam_dir = os.path.join(mhl_dir, "flam")
@@ -44,16 +31,7 @@ class FlamPackage:
         shutil.move(clone_dir, flam_dir)
 
         # Create setup.m file
-        setup_m_path = os.path.join(mhl_dir, "setup.m")
-        print("Creating setup.m...")
-        with open(setup_m_path, 'w') as f:
-            f.write("% Add flam to the MATLAB path and run startup\n")
-            f.write("flam_path = fullfile(fileparts(mfilename('fullpath')), 'flam');\n")
-            f.write("addpath(flam_path);\n")
-            f.write("startup_file = fullfile(flam_path, 'startup.m');\n")
-            f.write("if exist(startup_file, 'file')\n")
-            f.write("    run(startup_file);\n")
-            f.write("end\n")
+        create_setup_m(mhl_dir, "flam", run_startup=True)
 
         # Collect exposed symbols recursively (excluding test and paper directories)
         print("Collecting exposed symbols...")

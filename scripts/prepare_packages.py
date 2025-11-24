@@ -23,7 +23,13 @@ from datetime import datetime
 from pathlib import Path
 
 # Add parent directory to path to import mip_build_helpers
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, project_root)
+
+# Also add mip_build_helpers directory to path so dynamically loaded modules can import it
+mip_build_helpers_path = os.path.join(project_root, 'mip_build_helpers')
+if os.path.exists(mip_build_helpers_path) and mip_build_helpers_path not in sys.path:
+    sys.path.insert(0, mip_build_helpers_path)
 
 class PackagePreparer:
     """Handles preparing MATLAB packages by building them into .dir directories."""
@@ -205,6 +211,7 @@ class PackagePreparer:
         
         # Load package
         packages0 = self._load_packages(package_dir)
+        print(f"  Found {len(packages0)} package(s) in {package_dir}")
         for package in packages0:
             # Generate filename and wheel name
             mhl_filename = self._get_mhl_filename(package)

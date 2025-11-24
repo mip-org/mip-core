@@ -2,7 +2,7 @@
 import os
 import shutil
 import subprocess
-from mip_build_helpers import get_current_platform_tag
+from mip_build_helpers import get_current_platform_tag, clone_repository_and_remove_git, collect_exposed_symbols_with_extensions, create_setup_m
 
 class Fmm2dPackage:
     def __init__(self, *, platform_tag: str):
@@ -27,11 +27,7 @@ class Fmm2dPackage:
         # Clone the repository
         repository_url = self.repository
         clone_dir = "fmm2d_clone"
-        print(f'Cloning {repository_url}...')
-        subprocess.run(
-            ["git", "clone", repository_url, clone_dir],
-            check=True
-        )
+        clone_repository_and_remove_git(repository_url, clone_dir)
 
         # Modify makefile to replace -march=native with -march=x86-64
         print("Modifying makefile to use -march=x86-64...")
@@ -65,14 +61,6 @@ class Fmm2dPackage:
         if not os.path.exists(matlab_dir):
             raise RuntimeError(f"Expected {matlab_dir} to be created by 'make matlab'")
 
-        # Remove .git directories to reduce size
-        print("Removing .git directories...")
-        for root, dirs, files in os.walk(clone_dir):
-            if ".git" in dirs:
-                git_dir = os.path.join(root, ".git")
-                shutil.rmtree(git_dir)
-                dirs.remove(".git")
-
         # Copy matlab directory to fmm2d directory in mhl_dir
         fmm2d_dir = os.path.join(mhl_dir, "fmm2d")
         print(f'Copying matlab/ directory to fmm2d/...')
@@ -83,50 +71,11 @@ class Fmm2dPackage:
         shutil.rmtree(clone_dir)
 
         # Create setup.m
-        setup_m_path = os.path.join(mhl_dir, "setup.m")
-        print("Creating setup.m...")
-        with open(setup_m_path, 'w') as f:
-            f.write("% Add fmm2d to the MATLAB path\n")
-            f.write("fmm2d_path = fullfile(fileparts(mfilename('fullpath')), 'fmm2d');\n")
-            f.write("addpath(fmm2d_path);\n")
+        create_setup_m(mhl_dir, "fmm2d")
 
         # Collect exposed symbols from fmm2d directory (including .m and .c files)
         print("Collecting exposed symbols...")
-        self.exposed_symbols = self._collect_fmm2d_symbols(fmm2d_dir)
-
-    def _collect_fmm2d_symbols(self, fmm2d_dir):
-        """
-        Collect exposed symbols from fmm2d directory.
-        Includes .m files, .c files, and +/@ directories.
-        
-        Args:
-            fmm2d_dir: The fmm2d directory to scan
-        
-        Returns:
-            List of symbol names
-        """
-        symbols = []
-        
-        if not os.path.exists(fmm2d_dir):
-            return symbols
-        
-        items = os.listdir(fmm2d_dir)
-        
-        for item in sorted(items):
-            item_path = os.path.join(fmm2d_dir, item)
-            
-            if os.path.isfile(item_path):
-                # Add .m files
-                if item.endswith('.m'):
-                    symbols.append(item[:-2])  # Remove .m extension
-                # Add .c files
-                elif item.endswith('.c'):
-                    symbols.append(item[:-2])  # Remove .c extension
-            elif os.path.isdir(item_path) and (item.startswith('+') or item.startswith('@')):
-                # Add package or class directory (without + or @)
-                symbols.append(item[1:])
-        
-        return symbols
+        self.exposed_symbols = collect_exposed_symbols_with_extensions(fmm2d_dir, ['.m', '.c'])
 
 # The "make matlab" command is not going to work in the github actions runner
 # So we only include this package when the BUILD_TYPE is linux_workstation

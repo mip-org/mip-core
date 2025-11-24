@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import os
 import shutil
-from mip_build_helpers import collect_exposed_symbols_multiple_paths
+from mip_build_helpers import collect_exposed_symbols_multiple_paths, clone_repository_and_remove_git, create_setup_m
 
 class SurfacefunPackage:
     def __init__(self):
@@ -20,38 +20,16 @@ class SurfacefunPackage:
         self.exposed_symbols = []
     def prepare(self, mhl_dir: str):
         # Clone the repository
-        import subprocess
-
         repository_url = self.repository
         clone_dir = "surfacefun_clone"
-        print(f'Cloning {repository_url}...')
-        subprocess.run(
-            ["git", "clone", repository_url, clone_dir],
-            check=True
-        )
-
-        # Remove .git directories to reduce size
-        print("Removing .git directories...")
-        for root, dirs, files in os.walk(clone_dir):
-            if ".git" in dirs:
-                git_dir = os.path.join(root, ".git")
-                shutil.rmtree(git_dir)
-                dirs.remove(".git")
+        clone_repository_and_remove_git(repository_url, clone_dir)
 
         # Make the mhl structure directory
         surfacefun_dir = os.path.join(mhl_dir, "surfacefun")
         print(f'Moving surfacefun_clone to surfacefun...')
         shutil.move(clone_dir, surfacefun_dir)
 
-        setup_m_path = os.path.join(mhl_dir, "setup.m")
-        print("Creating setup.m...")
-        with open(setup_m_path, 'w') as f:
-            f.write("% Add surfacefun to the MATLAB path and run setup\n")
-            f.write("surfacefun_path = fullfile(fileparts(mfilename('fullpath')), 'surfacefun');\n")
-            f.write("addpath(surfacefun_path);\n")
-            # add surfacefun/tools to the path
-            f.write("tools_path = fullfile(surfacefun_path, 'tools');\n")
-            f.write("addpath(tools_path);\n")
+        create_setup_m(mhl_dir, "surfacefun", subdirs=['tools'])
         # Collect exposed symbols
         print("Collecting exposed symbols...")
         

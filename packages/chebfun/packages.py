@@ -1,9 +1,7 @@
 #!/usr/bin/env python3
-import requests
 import os
-import zipfile
 import shutil
-from mip_build_helpers import collect_exposed_symbols_top_level
+from mip_build_helpers import collect_exposed_symbols_top_level, download_and_extract_zip, create_setup_m
 
 class ChebfunPackage:
     def __init__(self):
@@ -22,31 +20,14 @@ class ChebfunPackage:
         self.exposed_symbols = []
     def prepare(self, mhl_dir: str):
         url = "https://github.com/chebfun/chebfun/archive/master.zip"
-        download_file = "chebfun_download.zip"
-
-        print(f'Downloading {url}...')
-        response = requests.get(url)
-        response.raise_for_status()
-
-        with open(download_file, 'wb') as f:
-            f.write(response.content)
-        print('Download complete.')
-
-        print("Extracting downloaded zip...")
-        with zipfile.ZipFile(download_file, 'r') as zip_ref:
-            zip_ref.extractall(".")
+        download_and_extract_zip(url)
         
         # Make the mhl structure directory
         chebfun_dir = os.path.join(mhl_dir, "chebfun")
         print(f'Moving chebfun-master to chebfun...')
         shutil.move("chebfun-master", chebfun_dir)
 
-        setup_m_path = os.path.join(mhl_dir, "setup.m")
-        print("Creating setup.m...")
-        with open(setup_m_path, 'w') as f:
-            f.write("% Add chebfun to the MATLAB path\n")
-            f.write("chebfun_path = fullfile(fileparts(mfilename('fullpath')), 'chebfun');\n")
-            f.write("addpath(chebfun_path);\n")
+        create_setup_m(mhl_dir, "chebfun")
 
         # Collect exposed symbols
         print("Collecting exposed symbols...")
