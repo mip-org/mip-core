@@ -6,7 +6,7 @@ This script:
 1. Lists all .mhl.mip.json files in the R2 bucket
 2. Downloads each .mip.json file
 3. Assembles them into a consolidated index.json
-4. Generates a human-readable packages.md
+4. Generates a human-readable packages.html
 5. Saves both to build/gh-pages/ for GitHub Pages deployment
 
 This script should be run after bundle_and_upload_packages.py
@@ -140,34 +140,97 @@ class IndexAssembler:
             print(f"  Warning: Failed to parse JSON from {key}: {e}")
             return None
     
-    def _generate_index_md(self, package_metadata, last_updated):
+    def _generate_index_html(self, package_metadata, last_updated):
         """
-        Generate a human-readable markdown index from package metadata.
+        Generate a human-readable HTML index from package metadata.
         
         Args:
             package_metadata: List of package metadata dicts
             last_updated: ISO timestamp of when index was updated
         
         Returns:
-            Markdown string
+            HTML string
         """
-        lines = []
-        lines.append("# MATLAB Package Index")
-        lines.append("")
-        lines.append("Available MATLAB packages for installation via MIP.")
-        lines.append("")
+        html = []
+        html.append('<!DOCTYPE html>')
+        html.append('<html lang="en">')
+        html.append('<head>')
+        html.append('    <meta charset="UTF-8">')
+        html.append('    <meta name="viewport" content="width=device-width, initial-scale=1.0">')
+        html.append('    <title>MATLAB Package Index - MIP</title>')
+        html.append('    <style>')
+        html.append('        body {')
+        html.append('            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;')
+        html.append('            line-height: 1.6;')
+        html.append('            max-width: 1200px;')
+        html.append('            margin: 0 auto;')
+        html.append('            padding: 20px;')
+        html.append('            color: #333;')
+        html.append('        }')
+        html.append('        h1 {')
+        html.append('            border-bottom: 2px solid #e1e4e8;')
+        html.append('            padding-bottom: 10px;')
+        html.append('        }')
+        html.append('        .info {')
+        html.append('            color: #586069;')
+        html.append('            margin: 20px 0;')
+        html.append('        }')
+        html.append('        table {')
+        html.append('            width: 100%;')
+        html.append('            border-collapse: collapse;')
+        html.append('            margin: 20px 0;')
+        html.append('        }')
+        html.append('        th, td {')
+        html.append('            text-align: left;')
+        html.append('            padding: 12px;')
+        html.append('            border: 1px solid #e1e4e8;')
+        html.append('        }')
+        html.append('        th {')
+        html.append('            background-color: #f6f8fa;')
+        html.append('            font-weight: 600;')
+        html.append('        }')
+        html.append('        tr:hover {')
+        html.append('            background-color: #f6f8fa;')
+        html.append('        }')
+        html.append('        a {')
+        html.append('            color: #0366d6;')
+        html.append('            text-decoration: none;')
+        html.append('        }')
+        html.append('        a:hover {')
+        html.append('            text-decoration: underline;')
+        html.append('        }')
+        html.append('        .footer {')
+        html.append('            margin-top: 40px;')
+        html.append('            padding-top: 20px;')
+        html.append('            border-top: 1px solid #e1e4e8;')
+        html.append('            color: #586069;')
+        html.append('        }')
+        html.append('    </style>')
+        html.append('</head>')
+        html.append('<body>')
+        html.append('    <h1>MATLAB Package Index</h1>')
+        html.append('    <p>Available MATLAB packages for installation via MIP.</p>')
         
         if package_metadata:
             # Sort packages alphabetically by name
             sorted_packages = sorted(package_metadata, key=lambda p: p.get('name', '').lower())
             
-            lines.append(f"**Total packages:** {len(sorted_packages)}")
-            lines.append(f"**Last updated:** {last_updated}")
-            lines.append("")
+            html.append(f'    <div class="info">')
+            html.append(f'        <strong>Total packages:</strong> {len(sorted_packages)}<br>')
+            html.append(f'        <strong>Last updated:</strong> {last_updated}')
+            html.append(f'    </div>')
             
-            # Create table header
-            lines.append("| Package | Version | Description | Platform | Download |")
-            lines.append("|---------|---------|-------------|----------|----------|")
+            html.append('    <table>')
+            html.append('        <thead>')
+            html.append('            <tr>')
+            html.append('                <th>Package</th>')
+            html.append('                <th>Version</th>')
+            html.append('                <th>Description</th>')
+            html.append('                <th>Platform</th>')
+            html.append('                <th>Download</th>')
+            html.append('            </tr>')
+            html.append('        </thead>')
+            html.append('        <tbody>')
             
             # Add each package as a table row
             for pkg in sorted_packages:
@@ -178,15 +241,19 @@ class IndexAssembler:
                 mhl_url = pkg.get('mhl_url', '')
                 mip_json_url = pkg.get('mip_json_url', '')
                 
+                # Escape HTML special characters
+                from html import escape
+                description = escape(description)
+                
                 # Truncate long descriptions
                 if len(description) > 80:
                     description = description[:77] + "..."
                 
                 # Create package name link (to homepage if available)
                 if homepage:
-                    name_link = f"[{name}]({homepage})"
+                    name_cell = f'<a href="{escape(homepage)}">{escape(name)}</a>'
                 else:
-                    name_link = name
+                    name_cell = escape(name)
                 
                 # Determine platform info
                 matlab_tag = pkg.get('matlab_tag', 'any')
@@ -207,34 +274,31 @@ class IndexAssembler:
                 # Create download links
                 download_links = []
                 if mhl_url:
-                    download_links.append(f"[.mhl]({mhl_url})")
+                    download_links.append(f'<a href="{escape(mhl_url)}">.mhl</a>')
                 if mip_json_url:
-                    download_links.append(f"[metadata]({mip_json_url})")
+                    download_links.append(f'<a href="{escape(mip_json_url)}">metadata</a>')
                 download_cell = " ".join(download_links) if download_links else "N/A"
                 
-                # Escape pipe characters in descriptions
-                description = description.replace('|', '\\|')
-                
-                lines.append(f"| {name_link} | {version} | {description} | {platform_info} | {download_cell} |")
+                html.append('            <tr>')
+                html.append(f'                <td>{name_cell}</td>')
+                html.append(f'                <td>{escape(version)}</td>')
+                html.append(f'                <td>{description}</td>')
+                html.append(f'                <td>{escape(platform_info)}</td>')
+                html.append(f'                <td>{download_cell}</td>')
+                html.append('            </tr>')
             
-            lines.append("")
-            lines.append("---")
-            lines.append("")
-            lines.append("## Installation")
-            lines.append("")
-            lines.append("To install packages, use the MIP package manager:")
-            lines.append("")
-            lines.append("```matlab")
-            lines.append("% Install a package")
-            lines.append("mip install <package-name>")
-            lines.append("```")
-            lines.append("")
-            lines.append("For more information, visit the [MIP documentation](https://github.com/mip-org/mip-core).")
+            html.append('        </tbody>')
+            html.append('    </table>')
         else:
-            lines.append("No packages available yet.")
+            html.append('    <p>No packages available yet.</p>')
         
-        lines.append("")
-        return "\n".join(lines)
+        html.append('    <div class="footer">')
+        html.append('        <p>For more information, visit the <a href="https://github.com/mip-org/mip-client">MIP documentation</a>.</p>')
+        html.append('    </div>')
+        html.append('</body>')
+        html.append('</html>')
+        
+        return "\n".join(html)
     
     def assemble_index(self):
         """
@@ -296,18 +360,18 @@ class IndexAssembler:
             print(f"\n✓ Created index.json with {len(package_metadata)} package(s)")
             print(f"  Saved to: {index_path}")
             
-            # Generate and save packages.md
-            packages_md_path = os.path.join(gh_pages_dir, 'packages.md')
-            markdown_content = self._generate_index_md(
+            # Generate and save packages.html
+            packages_html_path = os.path.join(gh_pages_dir, 'packages.html')
+            html_content = self._generate_index_html(
                 package_metadata, 
                 index_data['last_updated']
             )
-            with open(packages_md_path, 'w') as f:
-                f.write(markdown_content)
+            with open(packages_html_path, 'w') as f:
+                f.write(html_content)
             
-            print(f"✓ Created packages.md")
-            print(f"  Saved to: {packages_md_path}")
-            print(f"  Will be available as packages.html on GitHub Pages")
+            print(f"✓ Created packages.html")
+            print(f"  Saved to: {packages_html_path}")
+            print(f"  Will be available at: https://mip-org.github.io/mip-core/packages.html")
             
             return True
             
