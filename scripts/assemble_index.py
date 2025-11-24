@@ -6,7 +6,7 @@ This script:
 1. Lists all .mhl.mip.json files in the R2 bucket
 2. Downloads each .mip.json file
 3. Assembles them into a consolidated index.json
-4. Generates a human-readable index.md
+4. Generates a human-readable packages.md
 5. Saves both to build/gh-pages/ for GitHub Pages deployment
 
 This script should be run after bundle_and_upload_packages.py
@@ -296,37 +296,18 @@ class IndexAssembler:
             print(f"\n✓ Created index.json with {len(package_metadata)} package(s)")
             print(f"  Saved to: {index_path}")
             
-            # Generate and save index.md
-            index_md_path = os.path.join(gh_pages_dir, 'index.md')
+            # Generate and save packages.md
+            packages_md_path = os.path.join(gh_pages_dir, 'packages.md')
             markdown_content = self._generate_index_md(
                 package_metadata, 
                 index_data['last_updated']
             )
-            with open(index_md_path, 'w') as f:
+            with open(packages_md_path, 'w') as f:
                 f.write(markdown_content)
             
-            print(f"✓ Created index.md")
-            print(f"  Saved to: {index_md_path}")
-            
-            # Create Jekyll configuration for GitHub Pages
-            config_path = os.path.join(gh_pages_dir, '_config.yml')
-            config_content = """# GitHub Pages configuration for MIP package index
-title: "MATLAB Package Index"
-description: "Available MATLAB packages for installation via MIP"
-
-# Use index.md as the homepage
-include:
-  - index.md
-  - index.json
-
-# Enable GitHub Pages theme (minimal for clean display)
-theme: minima
-"""
-            with open(config_path, 'w') as f:
-                f.write(config_content)
-            
-            print(f"✓ Created _config.yml for Jekyll")
-            print(f"  All files will be deployed to GitHub Pages")
+            print(f"✓ Created packages.md")
+            print(f"  Saved to: {packages_md_path}")
+            print(f"  Will be available as packages.html on GitHub Pages")
             
             return True
             
