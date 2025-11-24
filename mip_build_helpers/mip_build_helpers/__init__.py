@@ -9,9 +9,12 @@ from .build_helpers import (
     create_mip_json,
 )
 
+from .get_current_platform_tag import get_current_platform_tag
+
 __all__ = [
     'collect_exposed_symbols_top_level',
     'collect_exposed_symbols_recursive',
     'collect_exposed_symbols_multiple_paths',
+    'get_current_platform_tag',
     'create_mip_json',
 ]

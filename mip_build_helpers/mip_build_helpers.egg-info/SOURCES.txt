@@ -1,5 +1,7 @@
-build_helpers.py
 pyproject.toml
+mip_build_helpers/__init__.py
+mip_build_helpers/build_helpers.py
+mip_build_helpers/get_current_platform_tag.py
 mip_build_helpers.egg-info/PKG-INFO
 mip_build_helpers.egg-info/SOURCES.txt
 mip_build_helpers.egg-info/dependency_links.txt

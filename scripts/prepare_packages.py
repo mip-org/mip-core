@@ -136,8 +136,8 @@ class PackagePreparer:
 
         if not os.path.exists(packages_py_path):
             print(f"  Warning: No packages.py found in {package_dir}")
-            return None
-        
+            return []
+
         try:
             # Load the module
             spec = importlib.util.spec_from_file_location("packages_module", packages_py_path)
@@ -147,13 +147,13 @@ class PackagePreparer:
             # Instantiate Package class
             if not hasattr(module, 'packages'):
                 print(f"  Warning: No packages found in {packages_py_path}")
-                return None
-            
+                return []
+
             return [p for p in module.packages]
             
         except Exception as e:
             print(f"  Error loading package from {packages_py_path}: {e}")
-            return None
+            return []
     
     def _create_mip_json(self, *, mhl_build_dir, package, prepare_duration, compile_duration, mhl_filename):
         """
