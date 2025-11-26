@@ -3,6 +3,7 @@ import os
 import shutil
 from mip_build_helpers import download_and_extract_zip, create_load_m_and_unload_m, collect_exposed_symbols_top_level
 
+
 class GUILayoutToolboxPackage:
     def __init__(self):
         self.name = "gui-layout-toolbox"
@@ -43,7 +44,55 @@ class GUILayoutToolboxPackage:
         self.exposed_symbols = collect_exposed_symbols_top_level(mhl_dir + "/layout")
 
 
+class HungarianAlgorithmForLinearAssignmentProblemsPackage:
+    def __init__(self):
+        self.name = "hungarian-algorithm-for-linear-assignment-problems"
+        self.description = "Hungarian Algorithm for Linear Assignment Problems"
+        self.version = "1.4.0.0"
+        self.build_number = 1
+        self.dependencies = []
+        self.homepage = "https://www.mathworks.com/matlabcentral/fileexchange/20652-hungarian-algorithm-for-linear-assignment-problems-v2-3"
+        self.repository = ""
+        self.license = "BSD-2-Clause"
+        self.matlab_tag = "any"
+        self.abi_tag = "none"
+        self.platform_tag = "any"
+        self.usage_examples = [
+            """mip load hungarian-algorithm-for-linear-assignment-problems
+costMat = [4 2 8; 2 4 6; 8 6 4];
+[assignment, cost] = munkres(costMat);
+disp(assignment);"""
+        ]
+
+        # Filled in during prepare
+        self.exposed_symbols = []
+    
+    def prepare(self, mhl_dir: str):
+        zip_url = "https://www.mathworks.com/matlabcentral/mlc-downloads/downloads/submissions/20652/versions/5/download/zip"
+        download_and_extract_zip(url=zip_url)
+        # copy licence.txt to mhl_dir
+        license_source = "license.txt"
+        license_dest = os.path.join(mhl_dir, "license.txt")
+        if not os.path.exists(license_source):
+            raise RuntimeError(f"license.txt not found at {license_source}")
+        shutil.copyfile(license_source, license_dest)
+
+        # copy munkres.m to package/ subdirectory of mhl_dir
+        munkres_source = "munkres.m"
+        if not os.path.exists(munkres_source):
+            raise RuntimeError(f"munkres.m not found at {munkres_source}")
+        package_dir = os.path.join(mhl_dir, "package")
+        os.makedirs(package_dir, exist_ok=True)
+        munkres_dest = os.path.join(package_dir, "munkres.m")
+        shutil.copyfile(munkres_source, munkres_dest)
+
+        create_load_m_and_unload_m(mhl_dir, "package")
+
+        print("Collecting exposed symbols...")
+        self.exposed_symbols = collect_exposed_symbols_top_level(package_dir)
+
+
 if os.environ.get('BUILD_TYPE') == 'standard':
-    packages = [GUILayoutToolboxPackage()]
+    packages = [GUILayoutToolboxPackage(), HungarianAlgorithmForLinearAssignmentProblemsPackage()]
 else:
     packages = []

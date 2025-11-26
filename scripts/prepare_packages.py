@@ -112,15 +112,22 @@ class PackagePreparer:
             fields_to_compare = [
                 'name', 'description', 'version', 'build_number',
                 'dependencies', 'homepage', 'repository', 'license',
-                'matlab_tag', 'abi_tag', 'platform_tag'
+                'matlab_tag', 'abi_tag', 'platform_tag', 'usage_examples'
             ]
             
             for field in fields_to_compare:
-                if existing_metadata.get(field) != getattr(package, field):
-                    print(f"  Metadata mismatch in field '{field}'")
-                    print(f"    Existing: {existing_metadata.get(field)}")
-                    print(f"    Current:  {getattr(package, field)}")
+                if field in existing_metadata and not hasattr(package, field):
+                    print(f"  Metadata mismatch: field '{field}' missing in current package")
                     return False
+                if not field in existing_metadata and hasattr(package, field):
+                    print(f"  Metadata mismatch: field '{field}' missing in existing package")
+                    return False
+                if field in existing_metadata and hasattr(package, field):
+                    if existing_metadata.get(field) != getattr(package, field):
+                        print(f"  Metadata mismatch in field '{field}'")
+                        print(f"    Existing: {existing_metadata.get(field)}")
+                        print(f"    Current:  {getattr(package, field)}")
+                        return False
             
             print(f"  Package exists with matching metadata")
             return True
@@ -185,6 +192,7 @@ class PackagePreparer:
             'matlab_tag': package.matlab_tag,
             'abi_tag': package.abi_tag,
             'platform_tag': package.platform_tag,
+            'usage_examples': getattr(package, 'usage_examples', []),
             'exposed_symbols': package.exposed_symbols,
             'timestamp': datetime.utcnow().isoformat() + 'Z',
             'prepare_duration': round(prepare_duration, 2),
