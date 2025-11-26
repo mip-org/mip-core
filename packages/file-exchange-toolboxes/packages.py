@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import os
 import shutil
-from mip_build_helpers import download_and_extract_zip, create_load_m_and_unload_m, collect_exposed_symbols_top_level
+from mip_build_helpers import download_and_extract_zip, create_load_and_unload_scripts, collect_exposed_symbols_top_level
 
 
 class GUILayoutToolboxPackage:
@@ -9,7 +9,7 @@ class GUILayoutToolboxPackage:
         self.name = "gui-layout-toolbox"
         self.description = "Layout manager for MATLAB graphical user interfaces"
         self.version = "2.4.2"
-        self.build_number = 1
+        self.build_number = 10
         self.dependencies = []
         self.homepage = "https://www.mathworks.com/matlabcentral/fileexchange/47982-gui-layout-toolbox"
         self.repository = ""
@@ -38,7 +38,7 @@ class GUILayoutToolboxPackage:
             raise RuntimeError(f"license.txt not found at {license_source}")
         shutil.copyfile(license_source, license_dest)
 
-        create_load_m_and_unload_m(mhl_dir, "layout")
+        create_load_and_unload_scripts(mhl_dir, "layout")
 
         print("Collecting exposed symbols...")
         self.exposed_symbols = collect_exposed_symbols_top_level(mhl_dir + "/layout")
@@ -49,7 +49,7 @@ class HungarianAlgorithmForLinearAssignmentProblemsPackage:
         self.name = "hungarian-algorithm-for-linear-assignment-problems"
         self.description = "Hungarian Algorithm for Linear Assignment Problems (V2.3)"
         self.version = "1.4.0.0"
-        self.build_number = 1
+        self.build_number = 10
         self.dependencies = []
         self.homepage = "https://www.mathworks.com/matlabcentral/fileexchange/20652-hungarian-algorithm-for-linear-assignment-problems-v2-3"
         self.repository = ""
@@ -86,7 +86,7 @@ disp(assignment);"""
         munkres_dest = os.path.join(package_dir, "munkres.m")
         shutil.copyfile(munkres_source, munkres_dest)
 
-        create_load_m_and_unload_m(mhl_dir, "package")
+        create_load_and_unload_scripts(mhl_dir, "package")
 
         print("Collecting exposed symbols...")
         self.exposed_symbols = collect_exposed_symbols_top_level(package_dir)
@@ -98,7 +98,7 @@ class Hatchfill2Package:
         self.name = "hatchfill2"
         self.description = "Fills an area with hatching or speckling"
         self.version = "3.0.0.0"
-        self.build_number = 1
+        self.build_number = 10
         self.dependencies = []
         self.homepage = "https://www.mathworks.com/matlabcentral/fileexchange/53593-hatchfill2"
         self.repository = ""
@@ -129,7 +129,7 @@ class Hatchfill2Package:
                 raise RuntimeError(f"{filename} not found at {source_path}")
             shutil.copyfile(source_path, dest_path)
 
-        create_load_m_and_unload_m(mhl_dir, "hatchfill2")
+        create_load_and_unload_scripts(mhl_dir, "hatchfill2")
 
         print("Collecting exposed symbols...")
         self.exposed_symbols = collect_exposed_symbols_top_level(mhl_dir)

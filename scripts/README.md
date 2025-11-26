@@ -206,7 +206,7 @@ class Package:
         self.name = "package-name"
         self.description = "Package description"
         self.version = "1.0.0"
-        self.build_number = 0
+        self.build_number = 10
         self.dependencies = []
         self.homepage = "https://example.com"
         self.repository = "https://github.com/user/repo"

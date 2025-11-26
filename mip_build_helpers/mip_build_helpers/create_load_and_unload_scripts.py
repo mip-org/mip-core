@@ -1,12 +1,12 @@
 import os
 
 
-def create_load_m_and_unload_m(mhl_dir, package_name, subdirs=None, add_all_subdirs=False):
+def create_load_and_unload_scripts(mhl_dir, package_name, subdirs=None, add_all_subdirs=False):
     """
-    Create load.m and unload.m files that add/remove package directories to/from the MATLAB path.
+    Create load_package.m and unload_package.m files that add/remove package directories to/from the MATLAB path.
     
     Args:
-        mhl_dir: The MHL directory where load.m and unload.m will be created
+        mhl_dir: The MHL directory where load_package.m and unload_package.m will be created
         package_name: The name of the package (used for the main directory)
         subdirs: List of subdirectories to add to path (in addition to main package dir)
                 Example: ['tools'] will add both package_name and package_name/tools
@@ -14,9 +14,9 @@ def create_load_m_and_unload_m(mhl_dir, package_name, subdirs=None, add_all_subd
         add_all_subdirs: If True, add all subdirectories under the package directory
                          (should not be used with subdirs argument)
     """
-    load_m_path = os.path.join(mhl_dir, "load.m")
-    unload_m_path = os.path.join(mhl_dir, "unload.m")
-    print("Creating load.m and unload.m...")
+    load_m_path = os.path.join(mhl_dir, "load_package.m")
+    unload_m_path = os.path.join(mhl_dir, "unload_package.m")
+    print("Creating load_package.m and unload_package.m...")
 
     if add_all_subdirs:
         if subdirs is not None:
@@ -43,7 +43,7 @@ def create_load_m_and_unload_m(mhl_dir, package_name, subdirs=None, add_all_subd
                 f.write(f"{subdir}_path = fullfile({package_name}_path, '{subdir}');\n")
                 f.write(f"addpath({subdir}_path);\n")
 
-    # Create unload.m file
+    # Create unload_package.m file
     with open(unload_m_path, 'w') as f:
         f.write(f"% Remove {package_name} from the MATLAB path\n")
         

@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 import os
 import shutil
-from mip_build_helpers import collect_exposed_symbols_top_level, download_and_extract_zip, create_load_m_and_unload_m
+from mip_build_helpers import collect_exposed_symbols_top_level, download_and_extract_zip, create_load_and_unload_scripts
 
 class ExportFigPackage:
     def __init__(self):
         self.name = "export_fig"
         self.description = "A toolbox for exporting figures from MATLAB to standard image and document formats nicely."
         self.version = "3.54"
-        self.build_number = 3
+        self.build_number = 10
         self.dependencies = []
         self.homepage = "https://github.com/altmany/export_fig"
         self.repository = "https://github.com/altmany/export_fig"
@@ -28,7 +28,7 @@ class ExportFigPackage:
         print(f'Moving export_fig-{self.version} to export_fig...')
         shutil.move(f"export_fig-{self.version}", export_fig_dir)
 
-        create_load_m_and_unload_m(mhl_dir, "export_fig")
+        create_load_and_unload_scripts(mhl_dir, "export_fig")
         # Collect exposed symbols
         print("Collecting exposed symbols...")
         self.exposed_symbols = collect_exposed_symbols_top_level(export_fig_dir, "export_fig")

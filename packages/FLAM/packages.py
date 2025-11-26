@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 import os
 import shutil
-from mip_build_helpers import collect_exposed_symbols_recursive, clone_repository_and_remove_git, create_load_m_and_unload_m
+from mip_build_helpers import collect_exposed_symbols_recursive, clone_repository_and_remove_git, create_load_and_unload_scripts
 
 class FLAMPackage:
     def __init__(self):
         self.name = "FLAM"
         self.description = "Fast Linear Algebra in MATLAB (FLAM) - A library for hierarchical matrices and fast direct solvers."
         self.version = "unspecified"
-        self.build_number = 1
+        self.build_number = 10
         self.dependencies = []
         self.homepage = "https://github.com/klho/FLAM"
         self.repository = "https://github.com/klho/FLAM"
@@ -38,8 +38,8 @@ class FLAMPackage:
             raise RuntimeError(f"LICENSE file not found in the cloned repository at {license_source}")
         shutil.copyfile(license_source, license_dest)
 
-        # Create load.m file
-        create_load_m_and_unload_m(mhl_dir, "FLAM", add_all_subdirs=True)
+        # Create load_package.m file
+        create_load_and_unload_scripts(mhl_dir, "FLAM", add_all_subdirs=True)
 
         # Collect exposed symbols recursively (excluding test and paper directories)
         print("Collecting exposed symbols...")

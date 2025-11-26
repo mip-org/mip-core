@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 import os
 import shutil
-from mip_build_helpers import clone_repository_and_remove_git, collect_exposed_symbols_with_extensions, create_load_m_and_unload_m
+from mip_build_helpers import clone_repository_and_remove_git, collect_exposed_symbols_with_extensions, create_load_and_unload_scripts
 
 class KdtreePackage:
     def __init__(self):
         self.name = "kdtree"
         self.description = "This library provides a minimalist implementation of a kd-tree data structure."
         self.version = "unspecified"
-        self.build_number = 3
+        self.build_number = 10
         self.dependencies = []
         self.homepage = "https://github.com/taiya/kdtree"
         self.repository = "https://github.com/taiya/kdtree"
@@ -36,8 +36,8 @@ class KdtreePackage:
         print(f"Cleaning up {clone_dir}...")
         shutil.rmtree(clone_dir)
 
-        # Create load.m
-        create_load_m_and_unload_m(mhl_dir, "kdtree")
+        # Create load_package.m
+        create_load_and_unload_scripts(mhl_dir, "kdtree")
 
         # Copy compile_kdtree.m to the mhl directory
         package_dir = os.path.dirname(os.path.abspath(__file__))

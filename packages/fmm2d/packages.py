@@ -2,14 +2,14 @@
 import os
 import shutil
 import subprocess
-from mip_build_helpers import get_current_platform_tag, clone_repository_and_remove_git, collect_exposed_symbols_with_extensions, create_load_m_and_unload_m
+from mip_build_helpers import get_current_platform_tag, clone_repository_and_remove_git, collect_exposed_symbols_with_extensions, create_load_and_unload_scripts
 
 class Fmm2dPackage:
     def __init__(self, *, platform_tag: str):
         self.name = "fmm2d"
         self.description = "Flatiron Institute Fast Multipole Methods in 2D"
         self.version = "unspecified"
-        self.build_number = 1
+        self.build_number = 10
         self.dependencies = []
         self.homepage = "https://github.com/flatironinstitute/fmm2d"
         self.repository = "https://github.com/flatironinstitute/fmm2d"
@@ -78,8 +78,8 @@ class Fmm2dPackage:
         print(f"Cleaning up {clone_dir}...")
         shutil.rmtree(clone_dir)
 
-        # Create load.m
-        create_load_m_and_unload_m(mhl_dir, "fmm2d")
+        # Create load_package.m
+        create_load_and_unload_scripts(mhl_dir, "fmm2d")
 
         # Collect exposed symbols from fmm2d directory (including .m and .c files)
         print("Collecting exposed symbols...")
