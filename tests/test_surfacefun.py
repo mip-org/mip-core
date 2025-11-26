@@ -54,7 +54,7 @@ if ~isfolder(fullfile(mip_dir, 'matlab'))
     error('MIP_DIR/matlab does not exist');
 end
 
-mip.import('surfacefun')
+mip load surfacefun
 
 % Construct a toroidal mesh
 p = 16; nu = 16; nv = 48;

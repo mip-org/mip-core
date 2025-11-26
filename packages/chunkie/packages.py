@@ -12,6 +12,7 @@ class ChunkiePackage:
         self.dependencies = ["fmm2d", "flam"]
         self.homepage = "https://github.com/fastalgorithms/chunkie"
         self.repository = "https://github.com/fastalgorithms/chunkie"
+        self.license = "BSD-3-Clause"
         self.matlab_tag = "any"
         self.abi_tag = "none"
         self.platform_tag = "any"
@@ -34,6 +35,13 @@ class ChunkiePackage:
         chunkie_dir = os.path.join(mhl_dir, "chunkie")
         print(f'Moving chunkie subdirectory to mhl directory...')
         shutil.move(chunkie_source, chunkie_dir)
+
+        # Copy LICENSE.md
+        license_source = os.path.join(clone_dir, "LICENSE.md")
+        license_dest = os.path.join(mhl_dir, "LICENSE.md")
+        if not os.path.exists(license_source):
+            raise RuntimeError(f"LICENSE.md not found in the cloned repository at {license_source}")
+        shutil.copyfile(license_source, license_dest)
 
         # Clean up the clone directory
         print(f"Cleaning up {clone_dir}...")

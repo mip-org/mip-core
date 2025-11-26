@@ -12,6 +12,7 @@ class KdtreePackage:
         self.dependencies = []
         self.homepage = "https://github.com/taiya/kdtree"
         self.repository = "https://github.com/taiya/kdtree"
+        self.license = "unspecified"
         self.matlab_tag = "any"
         self.abi_tag = "none"
         self.platform_tag = "any"

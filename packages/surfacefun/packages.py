@@ -12,6 +12,7 @@ class SurfacefunPackage:
         self.dependencies = ["chebfun"]
         self.homepage = "https://github.com/danfortunato/surfacefun"
         self.repository = "https://github.com/danfortunato/surfacefun"
+        self.license = "unspecified"
         self.matlab_tag = "any"
         self.abi_tag = "none"
         self.platform_tag = "any"

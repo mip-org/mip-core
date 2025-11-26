@@ -15,6 +15,7 @@ class ChebfunPackage:
         self.matlab_tag = "any"
         self.abi_tag = "none"
         self.platform_tag = "any"
+        self.license = "BSD-3-Clause"
 
         # The following are filled in during prepare
         self.exposed_symbols = []

@@ -12,6 +12,7 @@ class ExportFigPackage:
         self.dependencies = []
         self.homepage = "https://github.com/altmany/export_fig"
         self.repository = "https://github.com/altmany/export_fig"
+        self.license = "BSD-3-Clause"
         self.matlab_tag = "any"
         self.abi_tag = "none"
         self.platform_tag = "any"

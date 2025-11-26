@@ -111,7 +111,8 @@ class PackagePreparer:
             # Compare key metadata fields
             fields_to_compare = [
                 'name', 'description', 'version', 'build_number',
-                'dependencies', 'homepage', 'repository'
+                'dependencies', 'homepage', 'repository', 'license',
+                'matlab_tag', 'abi_tag', 'platform_tag'
             ]
             
             for field in fields_to_compare:
@@ -180,6 +181,7 @@ class PackagePreparer:
             'dependencies': package.dependencies,
             'homepage': package.homepage,
             'repository': package.repository,
+            'license': package.license,
             'matlab_tag': package.matlab_tag,
             'abi_tag': package.abi_tag,
             'platform_tag': package.platform_tag,

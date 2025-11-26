@@ -13,6 +13,7 @@ class Fmm2dPackage:
         self.dependencies = []
         self.homepage = "https://github.com/flatironinstitute/fmm2d"
         self.repository = "https://github.com/flatironinstitute/fmm2d"
+        self.license = "Apache-2.0"
         self.matlab_tag = "any"
         self.abi_tag = "none"
         self.platform_tag = platform_tag
@@ -28,6 +29,13 @@ class Fmm2dPackage:
         repository_url = self.repository
         clone_dir = "fmm2d_clone"
         clone_repository_and_remove_git(repository_url, clone_dir)
+
+        # Copy LICENSE file
+        license_source = os.path.join(clone_dir, "LICENSE")
+        license_dest = os.path.join(mhl_dir, "LICENSE")
+        if not os.path.exists(license_source):
+            raise RuntimeError(f"LICENSE file not found in the cloned repository at {license_source}")
+        shutil.copyfile(license_source, license_dest)
 
         # Modify makefile to replace -march=native with -march=x86-64
         print("Modifying makefile to use -march=x86-64...")
