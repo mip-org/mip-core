@@ -105,7 +105,7 @@ Each package in `packages2/` has a `prepare.yaml` file:
 name: package-name
 description: "Package description"
 version: "1.0.0"
-build_number: 20
+build_number: 30
 dependencies: []
 homepage: "https://..."
 repository: "https://..."

@@ -1,7 +1,7 @@
 name: kdtree
 description: "This library provides a minimalist implementation of a kd-tree data structure."
 version: unspecified
-build_number: 20
+build_number: 30
 dependencies: []
 homepage: "https://github.com/taiya/kdtree"
 repository: "https://github.com/taiya/kdtree"
@@ -15,7 +15,7 @@ prepare:
     - path: "kdtree/toolbox"
 
 builds:
-  - build_type: linux_workstation
+  - build_type: standard
     matlab_tag: any
     abi_tag: none
     platform_tag: linux_x86_64

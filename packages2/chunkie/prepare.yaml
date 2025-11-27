@@ -1,7 +1,7 @@
 name: chunkie
 description: "A MATLAB library for solving boundary value problems with integral equations"
 version: unspecified
-build_number: 20
+build_number: 30
 dependencies: ["fmm2d", "FLAM"]
 homepage: "https://github.com/fastalgorithms/chunkie"
 repository: "https://github.com/fastalgorithms/chunkie"

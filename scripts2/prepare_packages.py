@@ -254,6 +254,8 @@ class PackagePreparer:
         try:
             # Handle download_zip
             if 'download_zip' in prepare_config:
+                if 'clone_git' in prepare_config:
+                    raise ValueError("Cannot have both download_zip and clone_git in prepare.yaml")
                 config = prepare_config['download_zip']
                 download_and_extract_zip(config['url'], config['destination'])
             
@@ -282,6 +284,17 @@ class PackagePreparer:
                         all_paths.append(path)
             
             print(f"  Computed {len(all_paths)} path(s)")
+
+            # Remove all mex binaries from source tree, for security
+            # for example, kdtree has windows and macos mex files checked in
+            mex_extensions = ['.mexw64', '.mexa64', '.mexmaci64', '.mexmaca64', '.mexw32', '.mexglx', '.mexmac']
+            print("  Removing mex binaries from source tree...")
+            for root, dirs, files in os.walk(mhl_dir):
+                for file in files:
+                    if any(file.endswith(ext) for ext in mex_extensions):
+                        file_path = os.path.join(root, file)
+                        os.remove(file_path)
+                        print(f"    Removed mex binary: {file_path}")
             
             # Create load/unload scripts
             create_load_and_unload_scripts(mhl_dir, all_paths)
