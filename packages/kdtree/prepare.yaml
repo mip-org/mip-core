@@ -20,7 +20,8 @@ builds:
     abi_tag: none
     platform_tag: linux_x86_64
     compile_script: compile.m
-  - build_type: macosx
+  - build_type: macosx--disable
+    comment: "macOS build disabled due to compile error: MyHeaps.h:154:15: error: no member named '__is_heap' in namespace 'std'"
     matlab_tag: any
     abi_tag: none
     platform_tag: macosx
