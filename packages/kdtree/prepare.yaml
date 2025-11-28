@@ -20,3 +20,8 @@ builds:
     abi_tag: none
     platform_tag: linux_x86_64
     compile_script: compile.m
+  - build_type: macosx
+    matlab_tag: any
+    abi_tag: none
+    platform_tag: macosx
+    compile_script: compile.m
