@@ -1,7 +1,7 @@
 name: kdtree
 description: "This library provides a minimalist implementation of a kd-tree data structure."
 version: unspecified
-build_number: 52
+build_number: 53
 dependencies: []
 homepage: "https://github.com/taiya/kdtree"
 repository: "https://github.com/taiya/kdtree"
