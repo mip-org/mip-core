@@ -62,12 +62,12 @@ function compile_packages()
         % Extract package name from directory name (format: name-version-...)
         parts = strsplit(dirName, '-');
         packageName = parts{1};
-        
+        release_version = parts{2};
+
         % Find prepare.yaml for this package
-        yamlPath = fullfile(packagesDir, packageName, 'prepare.yaml');
+        yamlPath = fullfile(packagesDir, packageName, 'releases', release_version, 'prepare.yaml');
         if ~exist(yamlPath, 'file')
-            fprintf('\n%s: No prepare.yaml found - skipping\n', dirName);
-            continue;
+            error('prepare.yaml not found for package %s, release %s at %s', packageName, release_version, yamlPath);
         end
         
         % Read YAML file using yamlmatlab
