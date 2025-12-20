@@ -1,7 +1,7 @@
 name: fmm2d
 description: "Flatiron Institute Fast Multipole Methods in 2D"
 version: unspecified
-release_number: 50
+release_number: 51
 dependencies: []
 homepage: "https://github.com/flatironinstitute/fmm2d"
 repository: "https://github.com/flatironinstitute/fmm2d"
@@ -16,4 +16,3 @@ prepare:
 
 builds:
   - architecture: linux_x86_64
-    run_on: linux_workstation
