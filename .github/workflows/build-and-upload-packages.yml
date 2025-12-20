@@ -45,7 +45,8 @@ jobs:
         uses: matlab-actions/setup-matlab@v2
         with:
           cache: true
-      
+          release: R2022a
+
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
