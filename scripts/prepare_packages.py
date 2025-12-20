@@ -439,7 +439,7 @@ class PackagePreparer:
                     # Copy compile script if specified
                     if 'compile_script' in build:
                         compile_script = build['compile_script']
-                        compile_script_src = os.path.join(package_dir, compile_script)
+                        compile_script_src = os.path.join(release_folder_path, compile_script)
                         if os.path.exists(compile_script_src):
                             compile_script_dst = os.path.join(output_dir_path, compile_script)
                             shutil.copy2(compile_script_src, compile_script_dst)
