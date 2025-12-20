@@ -59,16 +59,21 @@ jobs:
           python scripts/prepare_packages.py
       
       - name: Compile packages
+        env:
+          BUILD_ARCHITECTURE: linux_x86_64
         uses: matlab-actions/run-command@v2
         with:
           command: "cd scripts; compile_packages"
       
       - name: Bundle packages
+        env:
+          BUILD_ARCHITECTURE: linux_x86_64
         run: |
           python scripts/bundle_packages.py
       
       - name: Upload packages
         env:
+          BUILD_ARCHITECTURE: linux_x86_64
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_ENDPOINT_URL: ${{ secrets.AWS_ENDPOINT_URL }}
@@ -106,16 +111,21 @@ jobs:
           python scripts/prepare_packages.py
       
       - name: Compile packages
+        env:
+          BUILD_ARCHITECTURE: macos_x86_64
         uses: matlab-actions/run-command@v2
         with:
           command: "cd scripts; compile_packages"
       
       - name: Bundle packages
+        env:
+          BUILD_ARCHITECTURE: macos_x86_64
         run: |
           python scripts/bundle_packages.py
       
       - name: Upload packages
         env:
+          BUILD_ARCHITECTURE: macos_x86_64
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_ENDPOINT_URL: ${{ secrets.AWS_ENDPOINT_URL }}
