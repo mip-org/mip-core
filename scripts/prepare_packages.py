@@ -433,7 +433,7 @@ class PackagePreparer:
                     print(f"  Creating mip.json...")
                     self._create_mip_json(
                         output_dir_path, yaml_data, build, exposed_symbols,
-                        prepare_duration, mhl_filename, release=release_version
+                        prepare_duration, mhl_filename
                     )
                     
                     # Copy compile script if specified
