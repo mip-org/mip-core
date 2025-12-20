@@ -1,7 +1,7 @@
 name: hatchfill2
 description: "Fills an area with hatching or speckling"
 version: "3.0.0.0"
-build_number: 50
+release_number: 50
 dependencies: []
 homepage: "https://www.mathworks.com/matlabcentral/fileexchange/53593-hatchfill2"
 repository: ""

@@ -1,7 +1,7 @@
 name: hungarian-algorithm-for-linear-assignment-problems
 description: "Hungarian Algorithm for Linear Assignment Problems (V2.3)"
 version: "1.4.0.0"
-build_number: 50
+release_number: 50
 dependencies: []
 homepage: "https://www.mathworks.com/matlabcentral/fileexchange/20652-hungarian-algorithm-for-linear-assignment-problems-v2-3"
 repository: ""

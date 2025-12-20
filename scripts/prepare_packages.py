@@ -15,14 +15,14 @@ import sys
 import json
 import shutil
 import subprocess
-import argparse
 import time
 import requests
 import zipfile
 import yaml
 from datetime import datetime
-from pathlib import Path
 from typing import List, Dict, Any, Optional
+
+import argparse
 
 
 def download_and_extract_zip(url: str, destination: str):
@@ -226,7 +226,7 @@ class PackagePreparer:
             
             # Compare key metadata fields
             fields_to_compare = [
-                'name', 'description', 'version', 'build_number',
+                'name', 'description', 'version', 'release_number',
                 'dependencies', 'homepage', 'repository', 'license'
             ]
             
@@ -324,7 +324,7 @@ class PackagePreparer:
             'name': yaml_data['name'],
             'description': yaml_data['description'],
             'version': yaml_data['version'],
-            'build_number': yaml_data['build_number'],
+            'release_number': yaml_data['release_number'],
             'dependencies': yaml_data.get('dependencies', []),
             'homepage': yaml_data.get('homepage', ''),
             'repository': yaml_data.get('repository', ''),
@@ -344,100 +344,115 @@ class PackagePreparer:
         with open(mip_json_path, 'w') as f:
             json.dump(mip_data, f, indent=2)
     
-    def prepare_package_dir(self, package_dir: str) -> bool:
+    def prepare_package_dir(self, package_dir: str, *, release: Optional[str]) -> bool:
         """Prepare a single package directory."""
         package_name = os.path.basename(package_dir)
         print(f"\nProcessing package: {package_name}")
-        
-        # Load YAML
-        yaml_path = os.path.join(package_dir, 'prepare.yaml')
-        if not os.path.exists(yaml_path):
-            print(f"  Warning: No prepare.yaml found")
-            return True
-        
-        with open(yaml_path, 'r') as f:
-            yaml_data = yaml.safe_load(f)
-        
-        # Get BUILD_TYPE from environment
-        build_type_env = os.environ.get('BUILD_TYPE', 'standard')
-        
-        # Find matching builds
-        builds = yaml_data.get('builds', [])
-        matching_builds = [b for b in builds if b.get('build_type') == build_type_env]
-        
-        if not matching_builds:
-            print(f"  No builds match BUILD_TYPE={build_type_env}, skipping")
-            return True
-        
-        # Process each matching build
-        for build in matching_builds:
-            # Generate filename
-            mhl_filename = self._get_mhl_filename(yaml_data, build)
-            wheel_name = mhl_filename[:-4]  # Remove .mhl
-            print(f"  Wheel name: {wheel_name}")
-            
-            # Check if exists
-            if not self.force and self._check_existing_package(mhl_filename, yaml_data):
-                print(f"  Skipping - package already up to date")
-                continue
-            
-            if self.dry_run:
-                print(f"  [DRY RUN] Would prepare {wheel_name}.dir")
-                continue
-            
-            # Create output directory
-            output_dir_path = os.path.join(self.output_dir, f"{wheel_name}.dir")
-            
-            if os.path.exists(output_dir_path):
-                print(f"  Removing existing directory")
-                shutil.rmtree(output_dir_path)
-            
-            os.makedirs(output_dir_path)
-            print(f"  Output directory: {output_dir_path}")
-            
-            try:
-                # Prepare package
-                print(f"  Preparing package...")
-                prepare_start = time.time()
+
+        releases_folder_path = os.path.join(package_dir, 'releases')
+
+        for release_version in os.listdir(releases_folder_path):
+            release_folder_path = os.path.join(releases_folder_path, release_version)
+            if os.path.isdir(release_folder_path):
+                if release is not None and release_version != release:
+                    print(f"  Skipping release '{release_version}' (looking for '{release}')")
+                    continue
+                print(f"  Processing release: {release_version}")
                 
-                exposed_symbols = self._prepare_package(
-                    package_dir, yaml_data, build, output_dir_path
-                )
+            # Load YAML
+            yaml_path = os.path.join(release_folder_path, 'prepare.yaml')
+            if not os.path.exists(yaml_path):
+                print(f"  Warning: No prepare.yaml found")
+                return True
+            
+            with open(yaml_path, 'r') as f:
+                yaml_data = yaml.safe_load(f)
+            
+            # Get BUILD_TYPE from environment
+            build_type_env = os.environ.get('BUILD_TYPE', 'standard')
+            
+            # Find matching builds
+            builds = yaml_data.get('builds', [])
+            matching_builds = [b for b in builds if b.get('build_type') == build_type_env]
+            
+            if not matching_builds:
+                print(f"  No builds match BUILD_TYPE={build_type_env}, skipping")
+                return True
+            
+            # check that version in yaml matches release_version
+            if yaml_data.get('version') != release_version:
+                print(f"  Error: version in prepare.yaml ({yaml_data.get('version')}) does not match release folder name ({release_version}).")
+                return False
+            
+            # Process each matching build
+            for build in matching_builds:
+                # Generate filename
+                mhl_filename = self._get_mhl_filename(yaml_data, build)
+                wheel_name = mhl_filename[:-4]  # Remove .mhl
+                print(f"  Wheel name: {wheel_name}")
                 
-                prepare_duration = time.time() - prepare_start
-                print(f"  Prepare completed in {prepare_duration:.2f} seconds")
+                # Check if exists
+                if not self.force and self._check_existing_package(mhl_filename, yaml_data):
+                    print(f"  Skipping - package already up to date")
+                    continue
                 
-                # Create mip.json
-                print(f"  Creating mip.json...")
-                self._create_mip_json(
-                    output_dir_path, yaml_data, build, exposed_symbols,
-                    prepare_duration, mhl_filename
-                )
+                if self.dry_run:
+                    print(f"  [DRY RUN] Would prepare {wheel_name}.dir")
+                    continue
                 
-                # Copy compile script if specified
-                if 'compile_script' in build:
-                    compile_script = build['compile_script']
-                    compile_script_src = os.path.join(package_dir, compile_script)
-                    if os.path.exists(compile_script_src):
-                        compile_script_dst = os.path.join(output_dir_path, compile_script)
-                        shutil.copy2(compile_script_src, compile_script_dst)
-                        print(f"  Copied compile script: {compile_script}")
-                    else:
-                        print(f"  Warning: compile_script '{compile_script}' not found in package directory")
-                
-                print(f"  Successfully prepared {wheel_name}.dir")
-                
-            except Exception as e:
-                print(f"  Error preparing package: {e}")
-                import traceback
-                traceback.print_exc()
+                # Create output directory
+                output_dir_path = os.path.join(self.output_dir, f"{wheel_name}.dir")
                 
                 if os.path.exists(output_dir_path):
-                    shutil.rmtree(output_dir_path, ignore_errors=True)
+                    print(f"  Removing existing directory")
+                    shutil.rmtree(output_dir_path)
                 
-                return False
-        
-        return True
+                os.makedirs(output_dir_path)
+                print(f"  Output directory: {output_dir_path}")
+                
+                try:
+                    # Prepare package
+                    print(f"  Preparing package...")
+                    prepare_start = time.time()
+                    
+                    exposed_symbols = self._prepare_package(
+                        package_dir, yaml_data, build, output_dir_path
+                    )
+                    
+                    prepare_duration = time.time() - prepare_start
+                    print(f"  Prepare completed in {prepare_duration:.2f} seconds")
+                    
+                    # Create mip.json
+                    print(f"  Creating mip.json...")
+                    self._create_mip_json(
+                        output_dir_path, yaml_data, build, exposed_symbols,
+                        prepare_duration, mhl_filename, release=release_version
+                    )
+                    
+                    # Copy compile script if specified
+                    if 'compile_script' in build:
+                        compile_script = build['compile_script']
+                        compile_script_src = os.path.join(package_dir, compile_script)
+                        if os.path.exists(compile_script_src):
+                            compile_script_dst = os.path.join(output_dir_path, compile_script)
+                            shutil.copy2(compile_script_src, compile_script_dst)
+                            print(f"  Copied compile script: {compile_script}")
+                        else:
+                            print(f"  Warning: compile_script '{compile_script}' not found in package directory")
+                    
+                    print(f"  Successfully prepared {wheel_name}.dir")
+                    
+                except Exception as e:
+                    print(f"  Error preparing package: {e}")
+                    import traceback
+                    traceback.print_exc()
+                    
+                    if os.path.exists(output_dir_path):
+                        shutil.rmtree(output_dir_path, ignore_errors=True)
+                    
+                    return False
+            
+            return True
     
     def prepare_all_packages(self) -> bool:
         """Prepare all packages in packages/."""
@@ -455,7 +470,7 @@ class PackagePreparer:
             if os.path.isdir(os.path.join(packages_dir, d))
         ]
         
-        if not package_dirs:
+        if len(package_dirs) == 0:
             print("No package directories found")
             return False
         
@@ -500,7 +515,12 @@ def main():
         type=str,
         help='Prepare only the specified package by name'
     )
-    
+    parser.add_argument(
+        '--release',
+        type=str,
+        help='Prepare only the specified release of the package'
+    )
+
     args = parser.parse_args()
     
     preparer = PackagePreparer(
@@ -533,7 +553,7 @@ def main():
         print(f"Output directory: {preparer.output_dir}")
         print(f"BUILD_TYPE: {os.environ.get('BUILD_TYPE', 'standard')}")
         
-        success = preparer.prepare_package_dir(package_dir)
+        success = preparer.prepare_package_dir(package_dir, release=args.release)
     else:
         # Prepare all packages
         success = preparer.prepare_all_packages()
