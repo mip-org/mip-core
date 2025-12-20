@@ -26,11 +26,11 @@ function compile_packages()
     fprintf('Prepared packages directory: %s\n', preparedDir);
 
     % Get ARCHITECTURE from environment
-    architecture = getenv('ARCHITECTURE');
+    architecture = getenv('BUILD_ARCHITECTURE');
     if isempty(architecture)
         architecture = 'any';
     end
-    fprintf('ARCHITECTURE: %s\n', architecture);
+    fprintf('BUILD_ARCHITECTURE: %s\n', architecture);
     
     % Check if prepared directory exists
     if ~exist(preparedDir, 'dir')

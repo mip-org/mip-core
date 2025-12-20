@@ -370,8 +370,8 @@ class PackagePreparer:
             with open(yaml_path, 'r') as f:
                 yaml_data = yaml.safe_load(f)
 
-            # Get ARCHITECTURE from environment
-            architecture_env = os.environ.get('ARCHITECTURE', 'any')
+            # Get BUILD_ARCHITECTURE from environment
+            architecture_env = os.environ.get('BUILD_ARCHITECTURE', 'any')
 
             # Find matching builds
             builds = yaml_data.get('builds', [])
@@ -483,7 +483,7 @@ class PackagePreparer:
         
         print(f"Found {len(package_dirs)} package(s)")
         print(f"Output directory: {self.output_dir}")
-        print(f"ARCHITECTURE: {os.environ.get('ARCHITECTURE', 'any')}")
+        print(f"ARCHITECTURE: {os.environ.get('BUILD_ARCHITECTURE', 'any')}")
 
         # Prepare each package
         all_success = True
@@ -558,7 +558,7 @@ def main():
         
         print(f"Preparing single package: {args.package}")
         print(f"Output directory: {preparer.output_dir}")
-        print(f"ARCHITECTURE: {os.environ.get('ARCHITECTURE', 'any')}")
+        print(f"ARCHITECTURE: {os.environ.get('BUILD_ARCHITECTURE', 'any')}")
 
         success = preparer.prepare_package_dir(package_dir, release=args.release)
     else:
