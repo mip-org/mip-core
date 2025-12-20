@@ -379,12 +379,8 @@ class PackagePreparer:
             matching_builds = [b for b in builds if b.get('architecture') == architecture_env or (b.get('architecture') == 'linux_x86_64' and architecture_env == 'any')]
             
             if not matching_builds:
-                if build.get('architecture') == 'any':
-                    print(f"  Skipping release '{release_version}' for ARCHITECTURE={architecture_env} (build architecture is 'any')")
-                    return True
-                else:
-                    print(f"  No builds match ARCHITECTURE={architecture_env}, skipping")
-                    return True
+                print(f"  No builds match ARCHITECTURE={architecture_env}, skipping")
+                return True
 
             # check that version in yaml matches release_version
             if yaml_data.get('version') != release_version:
