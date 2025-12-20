@@ -16,7 +16,4 @@ prepare:
     - path: "surfacefun/tools"
 
 builds:
-  - build_type: standard
-    matlab_tag: any
-    abi_tag: none
-    platform_tag: any
+  - architecture: any

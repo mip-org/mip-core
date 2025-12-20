@@ -15,8 +15,5 @@ prepare:
     - path: "fmm2d/matlab"
 
 builds:
-  - build_type: linux_workstation
-    matlab_tag: any
-    abi_tag: none
-    platform_tag: linux_x86_64
-    compile_script: compile.m
+  - architecture: linux_x86_64
+    run_on: linux_workstation

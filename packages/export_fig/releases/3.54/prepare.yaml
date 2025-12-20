@@ -15,7 +15,4 @@ prepare:
     - path: "export_fig-3.54"
 
 builds:
-  - build_type: standard
-    matlab_tag: any
-    abi_tag: none
-    platform_tag: any
+  - architecture: any

@@ -22,7 +22,4 @@ prepare:
     - path: "hungarian_algorithm_for_linear_assignment_problems/munkres"
 
 builds:
-  - build_type: standard
-    matlab_tag: any
-    abi_tag: none
-    platform_tag: any
+  - architecture: any

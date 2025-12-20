@@ -35,7 +35,7 @@ The upload script requires the following environment variables for Cloudflare R2
 - `AWS_ENDPOINT_URL` - Your Cloudflare R2 endpoint URL (format: `https://[account-id].r2.cloudflarestorage.com`)
 
 Optional:
-- `BUILD_TYPE` - Type of build to prepare (default: `standard`)
+- `ARCHITECTURE` - Type of build to prepare (default: `any`)
 
 ## Usage
 
@@ -46,8 +46,9 @@ python scripts/prepare_packages.py
 
 This will:
 - Scan `packages/` for `prepare.yaml` files
-- Check BUILD_TYPE environment variable (defaults to `standard`)
-- Skip packages that don't match BUILD_TYPE
+- Check ARCHITECTURE environment variable (defaults to `any`)
+- Skip packages that don't match ARCHITECTURE
+- Note that if ARCHITECTURE is "any", then it will only build packages on architecture "linux_x86_64"
 - Download or clone source code based on YAML specifications
 - Compute all paths (including recursive paths with exclusions)
 - Collect exposed symbols from all paths
@@ -80,7 +81,7 @@ matlab -batch "cd scripts; compile_packages"
 This will:
 - Find all `.dir` directories in `build/prepared/`
 - Read corresponding `prepare.yaml` files from `packages/`
-- Check if BUILD_TYPE matches and if `compile_script` is specified
+- Check if ARCHITECTURE matches and if `compile_script` is specified
 - Execute compilation for matching packages
 - Update `mip.json` with compilation duration
 
@@ -182,10 +183,9 @@ prepare:
       exclude: ["test", "paper"]
 
 builds:
-  - build_type: standard
-    matlab_tag: any
-    abi_tag: none
-    platform_tag: any
+  - architecture: any
+    # Optional: specify the machine to run the build on
+    build_on: any
     # Optional: specify compilation script
     compile_script: compile.m
 ```
@@ -195,7 +195,7 @@ builds:
 ### Package Preparation (prepare_packages.py)
 
 1. **Scan packages/** - Find all directories with `prepare.yaml`
-2. **Filter by BUILD_TYPE** - Only process packages with matching builds
+2. **Filter by ARCHITECTURE** - Only process packages with matching builds
 3. **Download/Clone** - Based on YAML specification
 4. **Compute Paths** - All paths computed upfront, including recursive
 5. **Collect Symbols** - Scan all computed paths for exposed symbols
@@ -206,7 +206,7 @@ builds:
 
 1. **Find .dir directories** - In `build/prepared/`
 2. **Read YAML** - From `packages/{package_name}/prepare.yaml`
-3. **Check BUILD_TYPE** - Only compile if matches
+3. **Check ARCHITECTURE** - Only compile if matches
 4. **Check compile_script** - Only if specified in matching build
 5. **Execute** - Run the compile script
 6. **Update Metadata** - Add compilation duration to `mip.json`
@@ -216,7 +216,7 @@ builds:
 - **Explicit Paths**: All MATLAB paths computed during prepare, not at load time
 - **Recursive Directories**: FLAM-style recursive path generation with exclusions
 - **Symbol Collection**: Configurable file extensions per package
-- **Build Filtering**: Only build packages matching BUILD_TYPE
+- **Build Filtering**: Only build packages matching ARCHITECTURE
 - **Platform Aware**: Can specify platform requirements in YAML
 
 ## Example Output
@@ -226,7 +226,7 @@ builds:
 Starting package preparation process...
 Found 10 package(s)
 Output directory: /path/to/build/prepared
-BUILD_TYPE: standard
+ARCHITECTURE: any
 
 Processing package: chebfun
   Wheel name: chebfun-unspecified-any-none-any
@@ -249,7 +249,7 @@ Processing package: chebfun
 ```
 Starting package compilation process...
 Prepared packages directory: /path/to/build/prepared
-BUILD_TYPE: standard
+ARCHITECTURE: any
 Found 10 .dir package(s)
 
 kdtree-unspecified-any-none-any: Found compile.m - compiling...
@@ -296,7 +296,7 @@ The main differences:
 ## GitHub Actions Integration
 
 The repository uses GitHub Actions to automate the build and upload process. The workflow:
-- Sets BUILD_TYPE environment variable
+- Sets ARCHITECTURE environment variable
 - Runs prepare_packages.py
 - Runs compile_packages.m (if MATLAB available)
 - Runs bundle_packages.py

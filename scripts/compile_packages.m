@@ -4,7 +4,7 @@
 % This script:
 % 1. Discovers all .dir directories in build/prepared/
 % 2. For each .dir, reads prepare.yaml to check if compilation is needed
-% 3. Checks if BUILD_TYPE environment variable matches
+% 3. Checks if ARCHITECTURE environment variable matches
 % 4. Executes the compile script if specified
 % 5. Updates mip.json with compilation duration
 
@@ -24,13 +24,13 @@ function compile_packages()
     
     fprintf('Starting package compilation process...\n');
     fprintf('Prepared packages directory: %s\n', preparedDir);
-    
-    % Get BUILD_TYPE from environment
-    buildType = getenv('BUILD_TYPE');
-    if isempty(buildType)
-        buildType = 'standard';
+
+    % Get ARCHITECTURE from environment
+    architecture = getenv('ARCHITECTURE');
+    if isempty(architecture)
+        architecture = 'any';
     end
-    fprintf('BUILD_TYPE: %s\n', buildType);
+    fprintf('ARCHITECTURE: %s\n', architecture);
     
     % Check if prepared directory exists
     if ~exist(preparedDir, 'dir')
@@ -78,12 +78,13 @@ function compile_packages()
             continue;
         end
 
-        % Check if any build matches current BUILD_TYPE and has compile_script
+        % Check if any build matches current ARCHITECTURE and has compile_script
         compileScript = '';
         if isfield(yamlData, 'builds') && iscell(yamlData.builds)
             for j = 1:length(yamlData.builds)
                 build = yamlData.builds{j};
-                if isfield(build, 'build_type') && strcmp(build.build_type, buildType)
+                % check if architecture matches or is 'any'
+                if isfield(build, 'architecture') && (strcmp(build.architecture, architecture) || strcmp(build.architecture, 'any'))
                     if isfield(build, 'compile_script')
                         compileScript = build.compile_script;
                         break;
@@ -93,7 +94,7 @@ function compile_packages()
         end
         
         if isempty(compileScript)
-            fprintf('\n%s: No compilation needed for BUILD_TYPE=%s\n', dirName, buildType);
+            fprintf('\n%s: No compilation needed for ARCHITECTURE=%s\n', dirName, architecture);
             continue;
         end
         

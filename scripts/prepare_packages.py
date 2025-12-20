@@ -208,7 +208,7 @@ class PackagePreparer:
         """Generate the .mhl filename for a package build."""
         return (
             f"{package_data['name']}-{package_data['version']}-"
-            f"{build['matlab_tag']}-{build['abi_tag']}-{build['platform_tag']}.mhl"
+            f"{build['architecture']}.mhl"
         )
     
     def _check_existing_package(self, mhl_filename: str, package_data: Dict[str, Any]) -> bool:
@@ -329,9 +329,8 @@ class PackagePreparer:
             'homepage': yaml_data.get('homepage', ''),
             'repository': yaml_data.get('repository', ''),
             'license': yaml_data.get('license', ''),
-            'matlab_tag': build['matlab_tag'],
-            'abi_tag': build['abi_tag'],
-            'platform_tag': build['platform_tag'],
+            'architecture': build.get('architecture', 'any'),
+            'build_on': build.get('build_on', 'any'),
             'usage_examples': yaml_data.get('usage_examples', []),
             'exposed_symbols': exposed_symbols,
             'timestamp': datetime.utcnow().isoformat() + 'Z',
@@ -352,6 +351,9 @@ class PackagePreparer:
         releases_folder_path = os.path.join(package_dir, 'releases')
 
         for release_version in os.listdir(releases_folder_path):
+            if release is not None and release_version != release:
+                print(f"  Skipping release '{release_version}' (looking for '{release}')")
+                continue
             release_folder_path = os.path.join(releases_folder_path, release_version)
             if os.path.isdir(release_folder_path):
                 if release is not None and release_version != release:
@@ -367,18 +369,23 @@ class PackagePreparer:
             
             with open(yaml_path, 'r') as f:
                 yaml_data = yaml.safe_load(f)
-            
-            # Get BUILD_TYPE from environment
-            build_type_env = os.environ.get('BUILD_TYPE', 'standard')
-            
+
+            # Get ARCHITECTURE from environment
+            architecture_env = os.environ.get('ARCHITECTURE', 'any')
+
             # Find matching builds
             builds = yaml_data.get('builds', [])
-            matching_builds = [b for b in builds if b.get('build_type') == build_type_env]
+            # if architecture is any, then we only do this in linux_x86_64 builds
+            matching_builds = [b for b in builds if b.get('architecture') == architecture_env or (b.get('architecture') == 'linux_x86_64' and architecture_env == 'any')]
             
             if not matching_builds:
-                print(f"  No builds match BUILD_TYPE={build_type_env}, skipping")
-                return True
-            
+                if build.get('architecture') == 'any':
+                    print(f"  Skipping release '{release_version}' for ARCHITECTURE={architecture_env} (build architecture is 'any')")
+                    return True
+                else:
+                    print(f"  No builds match ARCHITECTURE={architecture_env}, skipping")
+                    return True
+
             # check that version in yaml matches release_version
             if yaml_data.get('version') != release_version:
                 print(f"  Error: version in prepare.yaml ({yaml_data.get('version')}) does not match release folder name ({release_version}).")
@@ -476,12 +483,12 @@ class PackagePreparer:
         
         print(f"Found {len(package_dirs)} package(s)")
         print(f"Output directory: {self.output_dir}")
-        print(f"BUILD_TYPE: {os.environ.get('BUILD_TYPE', 'standard')}")
-        
+        print(f"ARCHITECTURE: {os.environ.get('ARCHITECTURE', 'any')}")
+
         # Prepare each package
         all_success = True
         for package_dir in sorted(package_dirs):
-            success = self.prepare_package_dir(package_dir)
+            success = self.prepare_package_dir(package_dir, release=None)
             if not success:
                 print(f"\nError: Preparation failed for {os.path.basename(package_dir)}")
                 all_success = False
@@ -551,8 +558,8 @@ def main():
         
         print(f"Preparing single package: {args.package}")
         print(f"Output directory: {preparer.output_dir}")
-        print(f"BUILD_TYPE: {os.environ.get('BUILD_TYPE', 'standard')}")
-        
+        print(f"ARCHITECTURE: {os.environ.get('ARCHITECTURE', 'any')}")
+
         success = preparer.prepare_package_dir(package_dir, release=args.release)
     else:
         # Prepare all packages

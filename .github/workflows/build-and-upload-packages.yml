@@ -54,7 +54,7 @@ jobs:
       
       - name: Prepare packages
         env:
-          BUILD_TYPE: standard
+          BUILD_ARCHITECTURE: linux_x86_64
         run: |
           python scripts/prepare_packages.py
       
@@ -101,7 +101,7 @@ jobs:
       
       - name: Prepare packages
         env:
-          BUILD_TYPE: macosx
+          BUILD_ARCHITECTURE: macos_x86_64
         run: |
           python scripts/prepare_packages.py
       

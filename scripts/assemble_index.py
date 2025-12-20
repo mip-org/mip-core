@@ -256,20 +256,10 @@ class IndexAssembler:
                     name_cell = escape(name)
                 
                 # Determine platform info
-                matlab_tag = pkg.get('matlab_tag', 'any')
-                abi_tag = pkg.get('abi_tag', 'none')
-                platform_tag = pkg.get('platform_tag', 'any')
+                architecture = pkg.get('architecture', 'any')
+                build_on = pkg.get('build_on', 'any')
                 
-                # Simplify platform display
-                if matlab_tag == 'any' and abi_tag == 'none' and platform_tag == 'any':
-                    platform_info = "All"
-                else:
-                    platform_parts = []
-                    if matlab_tag != 'any':
-                        platform_parts.append(f"MATLAB {matlab_tag}")
-                    if platform_tag != 'any':
-                        platform_parts.append(platform_tag)
-                    platform_info = ", ".join(platform_parts) if platform_parts else "All"
+                platform_info = f"architecture={architecture}, build_on={build_on}"
                 
                 # Create download links
                 download_links = []
