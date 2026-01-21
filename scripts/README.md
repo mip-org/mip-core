@@ -184,10 +184,10 @@ prepare:
 
 builds:
   - architecture: any
-    # Optional: specify the machine to run the build on
-    build_on: any
     # Optional: specify compilation script
     compile_script: compile.m
+    # Optional: specify test script
+    test_script: test.m
 ```
 
 ## How It Works

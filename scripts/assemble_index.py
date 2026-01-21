@@ -257,9 +257,8 @@ class IndexAssembler:
                 
                 # Determine platform info
                 architecture = pkg.get('architecture', 'any')
-                build_on = pkg.get('build_on', 'any')
                 
-                platform_info = f"architecture={architecture}, build_on={build_on}"
+                platform_info = f"architecture={architecture}"
                 
                 # Create download links
                 download_links = []
