@@ -84,6 +84,10 @@ jobs:
     runs-on: macos-15-intel
 
     steps:
+      - name: Install Homebrew GCC
+        run: |
+          brew install gcc
+
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
@@ -136,6 +140,10 @@ jobs:
     runs-on: macos-latest
     
     steps:
+      - name: Install Homebrew GCC
+        run: |
+          brew install gcc
+
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
