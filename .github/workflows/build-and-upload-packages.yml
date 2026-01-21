@@ -186,7 +186,7 @@ jobs:
 
   assemble-index:
     runs-on: ubuntu-latest
-    needs: [build-linux, build-macos]
+    needs: [build-linux, build-macos, build-macos-intel]
     
     steps:
       - name: Checkout repository
