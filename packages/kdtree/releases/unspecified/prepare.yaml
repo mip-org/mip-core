@@ -22,3 +22,6 @@ builds:
     comment: "macOS build disabled due to compile error: MyHeaps.h:154:15: error: no member named '__is_heap' in namespace 'std'"
     compile_script: compile.m
     test_script: test.m
+  - architecture: macos_arm64
+    compile_script: compile.m
+    test_script: test.m
