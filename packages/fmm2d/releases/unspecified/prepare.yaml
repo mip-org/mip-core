@@ -16,3 +16,8 @@ prepare:
 
 builds:
   - architecture: linux_x86_64
+    compile_script: compile.m
+  - architecture: macos_x86_64
+    compile_script: compile.m
+  - architecture: macos_arm64
+    compile_script: compile.m
