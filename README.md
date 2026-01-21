@@ -12,7 +12,7 @@ git submodule update --init --recursive
 
 ## Developing and Testing New Packages
 
-1. Create a directory in `packages/` with a `prepare.yaml` file (see existing packages for examples)
+1. Create a directory named `packages/package-name/releases/version` with a `prepare.yaml` file (see existing packages for examples)
 
 2. Build and test:
 ```bash
@@ -21,6 +21,6 @@ export PACKAGE_NAME=kdtree  # replace with your package name
 python scripts/prepare_packages.py --package $PACKAGE_NAME --force
 matlab -batch "cd scripts; compile_packages"  # if compilation needed
 python scripts/bundle_packages.py
-mip uninstall $PACKAGE_NAME
+mip uninstall $PACKAGE_NAME  # if already installed
 mip install build/bundled/$PACKAGE_NAME-*.mhl
 ```
