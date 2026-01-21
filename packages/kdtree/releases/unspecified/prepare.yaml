@@ -1,7 +1,7 @@
 name: kdtree
 description: "This library provides a minimalist implementation of a kd-tree data structure."
 version: unspecified
-release_number: 58
+release_number: 59
 dependencies: []
 homepage: "https://github.com/taiya/kdtree"
 repository: "https://github.com/taiya/kdtree"
@@ -17,6 +17,8 @@ prepare:
 builds:
   - architecture: linux_x86_64
     compile_script: compile.m
+    test_script: test.m
   - architecture: macos_x86_64--disable
     comment: "macOS build disabled due to compile error: MyHeaps.h:154:15: error: no member named '__is_heap' in namespace 'std'"
     compile_script: compile.m
+    test_script: test.m

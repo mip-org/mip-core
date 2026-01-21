@@ -443,6 +443,17 @@ class PackagePreparer:
                         else:
                             print(f"  Warning: compile_script '{compile_script}' not found in package directory")
                     
+                    # Copy test script if specified
+                    if 'test_script' in build:
+                        test_script = build['test_script']
+                        test_script_src = os.path.join(release_folder_path, test_script)
+                        if os.path.exists(test_script_src):
+                            test_script_dst = os.path.join(output_dir_path, test_script)
+                            shutil.copy2(test_script_src, test_script_dst)
+                            print(f"  Copied test script: {test_script}")
+                        else:
+                            print(f"  Warning: test_script '{test_script}' not found in package directory")
+                    
                     print(f"  Successfully prepared {wheel_name}.dir")
                     
                 except Exception as e:
