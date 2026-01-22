@@ -84,9 +84,11 @@ jobs:
     runs-on: macos-15-intel
 
     steps:
-      - name: Install Homebrew GCC
+      - name: Make alias for gfortran
         run: |
-          brew install gcc
+          which gfortran-15
+          alias gfortran=gfortran-15
+          which gfortran
 
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -140,12 +142,10 @@ jobs:
     runs-on: macos-latest
     
     steps:
-      - name: Install Homebrew GCC
+      - name: Make alias for gfortran
         run: |
-          brew install gcc
-
-      - name: Test for gfortran
-        run: |
+          which gfortran-15
+          alias gfortran=gfortran-15
           which gfortran
 
       - name: Checkout repository
