@@ -142,6 +142,10 @@ jobs:
     runs-on: macos-latest
     
     steps:
+      - uses: actions/checkout@v2
+      - name: Setup upterm session
+        uses: owenthereal/action-upterm@v1
+    
       - name: Make alias for gfortran
         run: |
           gfortran-15 --version
