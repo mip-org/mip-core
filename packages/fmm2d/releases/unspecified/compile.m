@@ -1,3 +1,6 @@
+% Add Homebrew path so that gfortran can be found below
+setenv('PATH', ['/opt/homebrew/bin:' getenv('PATH')])
+
 % Compile MEX files for fmm2d
 fprintf('Compiling fmm2d MEX files...\n');
 
