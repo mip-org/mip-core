@@ -86,9 +86,9 @@ jobs:
     steps:
       - name: Make alias for gfortran
         run: |
-          which gfortran-15
+          gfortran-15 --version
           alias gfortran=gfortran-15
-          which gfortran
+          gfortran --version
 
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -144,9 +144,9 @@ jobs:
     steps:
       - name: Make alias for gfortran
         run: |
-          which gfortran-15
+          gfortran-15 --version
           alias gfortran=gfortran-15
-          which gfortran
+          gfortran --version
 
       - name: Checkout repository
         uses: actions/checkout@v4
