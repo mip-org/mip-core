@@ -87,7 +87,7 @@ jobs:
       - name: Make alias for gfortran
         run: |
           gfortran-15 --version
-          alias gfortran=gfortran-15
+          ln -s /opt/homebrew/bin/gfortran-15 /opt/homebrew/bin/gfortran
           gfortran --version
 
       - name: Checkout repository
@@ -142,14 +142,10 @@ jobs:
     runs-on: macos-latest
     
     steps:
-      - uses: actions/checkout@v2
-      - name: Setup upterm session
-        uses: owenthereal/action-upterm@v1
-    
       - name: Make alias for gfortran
         run: |
           gfortran-15 --version
-          alias gfortran=gfortran-15
+          ln -s /opt/homebrew/bin/gfortran-15 /opt/homebrew/bin/gfortran
           gfortran --version
 
       - name: Checkout repository
