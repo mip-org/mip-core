@@ -19,6 +19,7 @@ import time
 import requests
 import zipfile
 import yaml
+import hashlib
 from datetime import datetime
 from typing import List, Dict, Any, Optional
 
@@ -136,6 +137,58 @@ def generate_recursive_paths(base_path: str, exclude_dirs: List[str]) -> List[st
     return sorted(paths)
 
 
+def compute_directory_hash(directory: str) -> str:
+    """
+    Compute a recursive SHA1 hash of a directory's contents.
+    
+    This hash is deterministic and based on:
+    - All file paths (relative to the directory)
+    - All file contents
+    
+    The hash is computed by:
+    1. Walking the directory tree in sorted order
+    2. For each file, hashing: relative_path + file_contents
+    3. Combining all file hashes into a final directory hash
+    
+    Args:
+        directory: The directory to hash
+    
+    Returns:
+        SHA1 hash as a hexadecimal string
+    """
+    sha1 = hashlib.sha1()
+    
+    # Walk directory in sorted order for deterministic results
+    for root, dirs, files in os.walk(directory):
+        # Sort directories and files for deterministic ordering
+        dirs.sort()
+        files.sort()
+        
+        for filename in files:
+            file_path = os.path.join(root, filename)
+            relative_path = os.path.relpath(file_path, directory)
+            
+            # Hash the relative path
+            sha1.update(relative_path.encode('utf-8'))
+            sha1.update(b'\0')  # Separator
+            
+            # Hash the file contents
+            try:
+                with open(file_path, 'rb') as f:
+                    while True:
+                        chunk = f.read(8192)
+                        if not chunk:
+                            break
+                        sha1.update(chunk)
+            except (IOError, OSError) as e:
+                # If we can't read a file, include the error in the hash
+                sha1.update(f"ERROR:{e}".encode('utf-8'))
+            
+            sha1.update(b'\0')  # Separator between files
+    
+    return sha1.hexdigest()
+
+
 def create_load_and_unload_scripts(mhl_dir: str, paths: List[str]):
     """
     Create load_package.m and unload_package.m scripts.
@@ -211,8 +264,9 @@ class PackagePreparer:
             f"{build['architecture']}.mhl"
         )
     
-    def _check_existing_package(self, mhl_filename: str, package_data: Dict[str, Any]) -> bool:
-        """Check if package exists in bucket with matching metadata."""
+    def _check_existing_package(self, mhl_filename: str, package_data: Dict[str, Any],
+                                source_hash: str) -> bool:
+        """Check if package exists in bucket with matching metadata and source hash."""
         mip_json_url = f"{self.base_url}/{mhl_filename}.mip.json"
         
         try:
@@ -223,6 +277,12 @@ class PackagePreparer:
             
             response.raise_for_status()
             existing_metadata = response.json()
+            
+            # First check source_hash - this is the most important check
+            existing_source_hash = existing_metadata.get('source_hash')
+            if existing_source_hash != source_hash:
+                print(f"  Source hash mismatch (existing: {existing_source_hash}, new: {source_hash})")
+                return False
             
             # Compare key metadata fields
             fields_to_compare = [
@@ -235,7 +295,7 @@ class PackagePreparer:
                     print(f"  Metadata mismatch in field '{field}'")
                     return False
             
-            print(f"  Package exists with matching metadata")
+            print(f"  Package exists with matching metadata and source hash")
             return True
             
         except requests.RequestException as e:
@@ -318,7 +378,7 @@ class PackagePreparer:
     
     def _create_mip_json(self, mhl_dir: str, yaml_data: Dict[str, Any],
                         build: Dict[str, Any], exposed_symbols: List[str],
-                        prepare_duration: float, mhl_filename: str):
+                        prepare_duration: float, mhl_filename: str, source_hash: str):
         """Create mip.json metadata file."""
         mip_data = {
             'name': yaml_data['name'],
@@ -333,6 +393,7 @@ class PackagePreparer:
             'build_on': build.get('build_on', 'any'),
             'usage_examples': yaml_data.get('usage_examples', []),
             'exposed_symbols': exposed_symbols,
+            'source_hash': source_hash,
             'timestamp': datetime.utcnow().isoformat() + 'Z',
             'prepare_duration': round(prepare_duration, 2),
             'compile_duration': 0,
@@ -387,6 +448,11 @@ class PackagePreparer:
                 print(f"  Error: version in prepare.yaml ({yaml_data.get('version')}) does not match release folder name ({release_version}).")
                 return False
             
+            # Compute source hash for the release folder
+            print(f"  Computing source hash for {release_folder_path}...")
+            source_hash = compute_directory_hash(release_folder_path)
+            print(f"  Source hash: {source_hash}")
+            
             # Process each matching build
             for build in matching_builds:
                 # Generate filename
@@ -395,7 +461,7 @@ class PackagePreparer:
                 print(f"  Wheel name: {wheel_name}")
                 
                 # Check if exists
-                if not self.force and self._check_existing_package(mhl_filename, yaml_data):
+                if not self.force and self._check_existing_package(mhl_filename, yaml_data, source_hash):
                     print(f"  Skipping - package already up to date")
                     continue
                 
@@ -429,7 +495,7 @@ class PackagePreparer:
                     print(f"  Creating mip.json...")
                     self._create_mip_json(
                         output_dir_path, yaml_data, build, exposed_symbols,
-                        prepare_duration, mhl_filename
+                        prepare_duration, mhl_filename, source_hash
                     )
                     
                     # Copy compile script if specified
