@@ -437,7 +437,7 @@ class PackagePreparer:
             # Find matching builds
             builds = yaml_data.get('builds', [])
             # if architecture is any, then we only do this in linux_x86_64 builds
-            matching_builds = [b for b in builds if b.get('architecture') == architecture_env or (b.get('architecture') == 'linux_x86_64' and architecture_env == 'any')]
+            matching_builds = [b for b in builds if b.get('architecture') == architecture_env or (b.get('architecture') == 'any' and architecture_env == 'linux_x86_64')]
             
             if not matching_builds:
                 print(f"  No builds match ARCHITECTURE={architecture_env}, skipping")
