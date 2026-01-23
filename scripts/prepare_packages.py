@@ -428,6 +428,12 @@ class PackagePreparer:
                     continue
                 print(f"  Processing release: {release_version}")
                 
+                # Check that release version doesn't contain hyphens
+                if '-' in release_version:
+                    print(f"  Error: Release version '{release_version}' contains hyphens ('-').")
+                    print(f"  Please use underscores ('_') instead of hyphens in release versions.")
+                    return False
+                
             # Load YAML
             yaml_path = os.path.join(release_folder_path, 'prepare.yaml')
             if not os.path.exists(yaml_path):

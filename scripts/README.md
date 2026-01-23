@@ -18,6 +18,7 @@ The build and upload process consists of multiple scripts:
 3. **`bundle_packages.py`** - Zips `.dir` directories into `.mhl` files
 4. **`upload_packages.py`** - Uploads `.mhl` files to R2
 5. **`assemble_index.py`** - Assembles package index from R2 bucket
+6. **`test_published_packages.py`** - Tests all published packages from the package index
 
 ## Requirements
 
