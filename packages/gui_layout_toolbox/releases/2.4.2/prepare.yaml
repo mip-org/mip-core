@@ -1,4 +1,4 @@
-name: gui-layout-toolbox
+name: gui_layout_toolbox
 description: "Layout manager for MATLAB graphical user interfaces"
 version: "2.4.2"
 release_number: 50

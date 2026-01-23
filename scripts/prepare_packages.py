@@ -408,6 +408,12 @@ class PackagePreparer:
         """Prepare a single package directory."""
         package_name = os.path.basename(package_dir)
         print(f"\nProcessing package: {package_name}")
+        
+        # Check that package name doesn't contain hyphens
+        if '-' in package_name:
+            print(f"  Error: Package name '{package_name}' contains hyphens ('-').")
+            print(f"  Please use underscores ('_') instead of hyphens in package names.")
+            return False
 
         releases_folder_path = os.path.join(package_dir, 'releases')
 
