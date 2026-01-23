@@ -1,4 +1,4 @@
-name: hungarian-algorithm-for-linear-assignment-problems
+name: hungarian_algorithm_for_linear_assignment_problems
 description: "Hungarian Algorithm for Linear Assignment Problems (V2.3)"
 version: "1.4.0.0"
 release_number: 50
@@ -9,7 +9,7 @@ license: "BSD-2-Clause"
 
 usage_examples:
   - |
-    mip load hungarian-algorithm-for-linear-assignment-problems
+    mip load hungarian_algorithm-for-linear-assignment-problems
     costMat = [4 2 8; 2 4 6; 8 6 4];
     [assignment, cost] = munkres(costMat);
     disp(assignment);
