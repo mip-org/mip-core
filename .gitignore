@@ -1,3 +1,17 @@
+# macOS
+.DS_Store
+
+# MATLAB
+*.asv
+
+# Python
 __pycache__/
+*.py[codz]
+build/
+dist/
 *.egg-info/
-build
+*.spec
+*.dist
+
+# Visual Studio Code
+.vscode/
