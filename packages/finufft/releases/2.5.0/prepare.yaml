@@ -1,0 +1,21 @@
+name: finufft
+description: "FINUFFT nonuniform FFT via WebAssembly"
+version: "2.5.0"
+release_number: 1
+dependencies: []
+homepage: "https://finufft.readthedocs.io"
+repository: "https://github.com/magland/finufft_mip"
+license: "Apache-2.0"
+
+symbol_extensions: [".m", ".js"]
+
+prepare:
+  clone_git:
+    url: "https://github.com/magland/finufft_mip"
+    destination: "finufft_mip"
+  addpaths:
+    - path: "finufft_mip"
+
+builds:
+  - architecture: any
+    test_script: test.m
