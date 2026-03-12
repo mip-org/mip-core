@@ -1,7 +1,7 @@
 name: finufft
 description: "FINUFFT nonuniform FFT via WebAssembly"
 version: "2.5.0"
-release_number: 2
+release_number: 3
 dependencies: []
 homepage: "https://finufft.readthedocs.io"
 repository: "https://github.com/magland/finufft_mip"
