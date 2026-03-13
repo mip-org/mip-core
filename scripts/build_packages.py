@@ -89,6 +89,10 @@ def build_all_packages(prepared_dir: str, packages_dir: str, architecture: str) 
                 mip_data = json.load(f)
             build_only_sources = mip_data.get('build_only_sources', [])
             build_env_map = mip_data.get('build_env', {})
+            if build_only_sources:
+                print(f"  build_only_sources: {build_only_sources}")
+            if build_env_map:
+                print(f"  build_env: {build_env_map}")
 
         # Set up environment with build_env (values are paths relative to dir_path)
         build_env = os.environ.copy()
@@ -96,6 +100,7 @@ def build_all_packages(prepared_dir: str, packages_dir: str, architecture: str) 
             abs_path = os.path.abspath(os.path.join(dir_path, rel_path))
             build_env[env_var] = abs_path
             print(f"  Setting {env_var}={abs_path}")
+        sys.stdout.flush()
 
         build_start = time.time()
         try:
