@@ -7,7 +7,7 @@ repository: "https://github.com/magland/finufft_mip"
 license: "Apache-2.0"
 
 defaults:
-  release_number: 5
+  release_number: 6
   symbol_extensions: [".m", ".js"]
   prepare:
     - clone_git:
