@@ -94,19 +94,23 @@ def build_all_packages(prepared_dir: str, packages_dir: str, architecture: str) 
             if build_env_map:
                 print(f"  build_env: {build_env_map}")
 
-        # Set up environment with build_env (values are paths relative to dir_path)
-        saved_env = {}
+        # Build shell command with explicit exports for build_env
+        export_lines = []
         for env_var, rel_path in build_env_map.items():
             abs_path = os.path.abspath(os.path.join(dir_path, rel_path))
-            saved_env[env_var] = os.environ.get(env_var)
-            os.environ[env_var] = abs_path
+            export_lines.append(f'export {env_var}="{abs_path}"')
             print(f"  Setting {env_var}={abs_path}")
+
+        if export_lines:
+            shell_cmd = "; ".join(export_lines) + f'; bash "{build_script_path}"'
+        else:
+            shell_cmd = f'bash "{build_script_path}"'
         sys.stdout.flush()
 
         build_start = time.time()
         try:
             result = subprocess.run(
-                ['bash', build_script_path],
+                ['bash', '-c', shell_cmd],
                 cwd=dir_path,
                 check=True,
                 capture_output=False,
@@ -114,13 +118,6 @@ def build_all_packages(prepared_dir: str, packages_dir: str, architecture: str) 
         except subprocess.CalledProcessError as e:
             print(f"  Build script failed with exit code {e.returncode}")
             return False
-        finally:
-            # Restore environment
-            for env_var, old_val in saved_env.items():
-                if old_val is None:
-                    os.environ.pop(env_var, None)
-                else:
-                    os.environ[env_var] = old_val
 
         build_duration = time.time() - build_start
         print(f"  Build completed in {build_duration:.2f} seconds")
