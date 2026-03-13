@@ -32,10 +32,11 @@ builds:
     build_script: finufft_matlab/numbl/build_native.sh
     build_env:
       FINUFFT_SRC: finufft_src
-  - architectures: [numbl_macos_arm64]
-    build_script: finufft_matlab/numbl/build_native.sh
-    build_env:
-      FINUFFT_SRC: finufft_src
+  # Failing:
+  # - architectures: [numbl_macos_arm64]
+  #   build_script: finufft_matlab/numbl/build_native.sh
+  #   build_env:
+  #     FINUFFT_SRC: finufft_src
   - architectures: [numbl_macos_x86_64]
     build_script: finufft_matlab/numbl/build_native.sh
     build_env:
