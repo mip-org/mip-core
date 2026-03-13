@@ -482,10 +482,8 @@ class PackagePreparer:
         }
         if build_only_sources:
             mip_data['build_only_sources'] = build_only_sources
-            print(f"  mip.json build_only_sources: {build_only_sources}")
         if build_env:
             mip_data['build_env'] = build_env
-            print(f"  mip.json build_env: {build_env}")
         
         mip_json_path = os.path.join(mhl_dir, 'mip.json')
         with open(mip_json_path, 'w') as f:

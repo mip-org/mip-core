@@ -89,29 +89,20 @@ def build_all_packages(prepared_dir: str, packages_dir: str, architecture: str) 
                 mip_data = json.load(f)
             build_only_sources = mip_data.get('build_only_sources', [])
             build_env_map = mip_data.get('build_env', {})
-            if build_only_sources:
-                print(f"  build_only_sources: {build_only_sources}")
-            if build_env_map:
-                print(f"  build_env: {build_env_map}")
 
-        # Build shell command with explicit exports for build_env
-        export_lines = []
+        # Set up environment with build_env (values are paths relative to dir_path)
+        build_env = os.environ.copy()
         for env_var, rel_path in build_env_map.items():
             abs_path = os.path.abspath(os.path.join(dir_path, rel_path))
-            export_lines.append(f'export {env_var}="{abs_path}"')
+            build_env[env_var] = abs_path
             print(f"  Setting {env_var}={abs_path}")
-
-        if export_lines:
-            shell_cmd = "; ".join(export_lines) + f'; bash "{build_script_path}"'
-        else:
-            shell_cmd = f'bash "{build_script_path}"'
-        sys.stdout.flush()
 
         build_start = time.time()
         try:
             result = subprocess.run(
-                ['bash', '-c', shell_cmd],
+                ['bash', build_script_path],
                 cwd=dir_path,
+                env=build_env,
                 check=True,
                 capture_output=False,
             )
