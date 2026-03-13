@@ -13,6 +13,7 @@ This runs BEFORE compile_packages.m (which handles .m compile scripts).
 import os
 import sys
 import json
+import shutil
 import subprocess
 import time
 import yaml
@@ -79,11 +80,29 @@ def build_all_packages(prepared_dir: str, packages_dir: str, architecture: str) 
         packages_with_build += 1
         print(f"\n{dir_name}: Running {build_script}...")
 
+        # Read mip.json for build_env and build_only_sources
+        mip_json_path = os.path.join(dir_path, 'mip.json')
+        build_only_sources = []
+        build_env_map = {}
+        if os.path.exists(mip_json_path):
+            with open(mip_json_path, 'r') as f:
+                mip_data = json.load(f)
+            build_only_sources = mip_data.get('build_only_sources', [])
+            build_env_map = mip_data.get('build_env', {})
+
+        # Set up environment with build_env (values are paths relative to dir_path)
+        build_env = os.environ.copy()
+        for env_var, rel_path in build_env_map.items():
+            abs_path = os.path.abspath(os.path.join(dir_path, rel_path))
+            build_env[env_var] = abs_path
+            print(f"  Setting {env_var}={abs_path}")
+
         build_start = time.time()
         try:
             result = subprocess.run(
                 ['bash', build_script_path],
                 cwd=dir_path,
+                env=build_env,
                 check=True,
                 capture_output=False,
             )
@@ -94,12 +113,20 @@ def build_all_packages(prepared_dir: str, packages_dir: str, architecture: str) 
         build_duration = time.time() - build_start
         print(f"  Build completed in {build_duration:.2f} seconds")
 
-        # Update mip.json with build duration (stored in compile_duration for compatibility)
-        mip_json_path = os.path.join(dir_path, 'mip.json')
+        # Clean up build_only sources
+        for destination in build_only_sources:
+            build_only_path = os.path.join(dir_path, destination)
+            if os.path.exists(build_only_path):
+                print(f"  Cleaning up build_only source: {destination}")
+                shutil.rmtree(build_only_path)
+
+        # Update mip.json with build duration and remove build-time-only fields
         if os.path.exists(mip_json_path):
             with open(mip_json_path, 'r') as f:
                 mip_data = json.load(f)
             mip_data['compile_duration'] = round(build_duration, 2)
+            mip_data.pop('build_only_sources', None)
+            mip_data.pop('build_env', None)
             with open(mip_json_path, 'w') as f:
                 json.dump(mip_data, f, indent=2)
 

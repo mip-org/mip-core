@@ -10,10 +10,14 @@ defaults:
   release_number: 5
   symbol_extensions: [".m", ".js"]
   prepare:
-    clone_git:
-      url: "https://github.com/magland/finufft"
-      subdirectory: "matlab"
-      destination: "finufft_matlab"
+    - clone_git:
+        url: "https://github.com/magland/finufft"
+        subdirectory: "matlab"
+        destination: "finufft_matlab"
+    - clone_git:
+        url: "https://github.com/magland/finufft"
+        destination: "finufft_src"
+      build_only: true
   addpaths:
     # It's very important that the numbl directory is added first
     - path: "finufft_matlab/numbl"
@@ -22,3 +26,5 @@ defaults:
 builds:
   - architectures: [numbl_wasm]
     build_script: finufft_matlab/numbl/build_wasm.sh
+    build_env:
+      FINUFFT_SRC: finufft_src

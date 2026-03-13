@@ -92,6 +92,33 @@ def clone_git_repository(url: str, destination: str, subdirectory: str | None = 
             dirs.remove(".git")
 
 
+def normalize_prepare_sources(prepare_config) -> List[Dict[str, Any]]:
+    """
+    Normalize the prepare config into a list of source entries.
+
+    Supports both the old dict format (single source):
+        prepare:
+          clone_git:
+            url: ...
+            destination: ...
+
+    And the new list format (multiple sources):
+        prepare:
+          - clone_git:
+              url: ...
+              destination: ...
+            build_only: true
+    """
+    if prepare_config is None:
+        return []
+
+    if isinstance(prepare_config, list):
+        return prepare_config
+
+    # Old dict format: wrap in a list
+    return [prepare_config]
+
+
 def resolve_build_config(defaults: Dict[str, Any], build: Dict[str, Any]) -> Dict[str, Any]:
     """
     Merge a build entry with defaults using simple replacement semantics.
@@ -348,24 +375,21 @@ class PackagePreparer:
             resolved_config: The resolved build config (defaults merged with build overrides)
             mhl_dir: The output directory for the prepared package
         """
-        prepare_config = resolved_config.get('prepare', {})
+        prepare_sources = normalize_prepare_sources(resolved_config.get('prepare'))
 
         # Change to the mhl_dir for downloads/clones
         original_dir = os.getcwd()
         os.chdir(mhl_dir)
 
         try:
-            # Handle download_zip
-            if 'download_zip' in prepare_config:
-                if 'clone_git' in prepare_config:
-                    raise ValueError("Cannot have both download_zip and clone_git in prepare.yaml")
-                config = prepare_config['download_zip']
-                download_and_extract_zip(config['url'], config['destination'])
-
-            # Handle clone_git
-            elif 'clone_git' in prepare_config:
-                config = prepare_config['clone_git']
-                clone_git_repository(config['url'], config['destination'], config.get('subdirectory'))
+            # Process each source entry
+            for source in prepare_sources:
+                if 'download_zip' in source:
+                    config = source['download_zip']
+                    download_and_extract_zip(config['url'], config['destination'])
+                elif 'clone_git' in source:
+                    config = source['clone_git']
+                    clone_git_repository(config['url'], config['destination'], config.get('subdirectory'))
 
             # Compute all paths (addpaths is now a sibling of prepare, not nested inside it)
             addpaths_config = resolved_config.get('addpaths', [])
@@ -424,6 +448,19 @@ class PackagePreparer:
                         exposed_symbols: List[str],
                         prepare_duration: float, mhl_filename: str, source_hash: str):
         """Create mip.json metadata file."""
+        # Collect build_only source destinations for cleanup by build_packages.py
+        prepare_sources = normalize_prepare_sources(resolved_config.get('prepare'))
+        build_only_sources = []
+        for source in prepare_sources:
+            if source.get('build_only'):
+                for key in ('clone_git', 'download_zip'):
+                    if key in source:
+                        build_only_sources.append(source[key]['destination'])
+                        break
+
+        # Collect build_env for build_packages.py (env var name -> relative path)
+        build_env = resolved_config.get('build_env', {})
+
         mip_data = {
             'name': yaml_data['name'],
             'description': yaml_data['description'],
@@ -443,6 +480,10 @@ class PackagePreparer:
             'compile_duration': 0,
             'mhl_url': f"{self.base_url}/{mhl_filename}"
         }
+        if build_only_sources:
+            mip_data['build_only_sources'] = build_only_sources
+        if build_env:
+            mip_data['build_env'] = build_env
         
         mip_json_path = os.path.join(mhl_dir, 'mip.json')
         with open(mip_json_path, 'w') as f:
