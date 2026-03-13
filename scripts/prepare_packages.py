@@ -92,6 +92,21 @@ def clone_git_repository(url: str, destination: str, subdirectory: str | None = 
             dirs.remove(".git")
 
 
+def resolve_build_config(defaults: Dict[str, Any], build: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Merge a build entry with defaults using simple replacement semantics.
+
+    Fields in `build` override fields in `defaults`. No deep merging.
+    The `architectures` key is consumed separately and not merged.
+    """
+    resolved = dict(defaults)
+    for key, value in build.items():
+        if key == 'architectures':
+            continue
+        resolved[key] = value
+    return resolved
+
+
 def collect_exposed_symbols(base_dir: str, extensions: List[str]) -> List[str]:
     """
     Collect exposed symbols from a directory.
@@ -274,60 +289,71 @@ class PackagePreparer:
         if not self.dry_run:
             os.makedirs(self.output_dir, exist_ok=True)
     
-    def _get_mhl_filename(self, package_data: Dict[str, Any], build: Dict[str, Any]) -> str:
+    def _get_mhl_filename(self, package_data: Dict[str, Any], architecture: str) -> str:
         """Generate the .mhl filename for a package build."""
         return (
             f"{package_data['name']}-{package_data['version']}-"
-            f"{build['architecture']}.mhl"
+            f"{architecture}.mhl"
         )
     
     def _check_existing_package(self, mhl_filename: str, package_data: Dict[str, Any],
+                                resolved_config: Dict[str, Any],
                                 source_hash: str) -> bool:
         """Check if package exists in bucket with matching metadata and source hash."""
         mip_json_url = f"{self.base_url}/{mhl_filename}.mip.json"
-        
+
         try:
             response = requests.get(mip_json_url, timeout=10)
             if response.status_code == 404:
                 print(f"  Package not found in bucket")
                 return False
-            
+
             response.raise_for_status()
             existing_metadata = response.json()
-            
+
             # First check source_hash - this is the most important check
             existing_source_hash = existing_metadata.get('source_hash')
             if existing_source_hash != source_hash:
                 print(f"  Source hash mismatch (existing: {existing_source_hash}, new: {source_hash})")
                 return False
-            
-            # Compare key metadata fields
-            fields_to_compare = [
-                'name', 'description', 'version', 'release_number',
+
+            # Compare key metadata fields from identity (top-level)
+            identity_fields = [
+                'name', 'description', 'version',
                 'dependencies', 'homepage', 'repository', 'license'
             ]
-            
-            for field in fields_to_compare:
+            for field in identity_fields:
                 if existing_metadata.get(field) != package_data.get(field):
                     print(f"  Metadata mismatch in field '{field}'")
                     return False
-            
+
+            # Compare release_number from resolved config
+            if existing_metadata.get('release_number') != resolved_config.get('release_number'):
+                print(f"  Metadata mismatch in field 'release_number'")
+                return False
+
             print(f"  Package exists with matching metadata and source hash")
             return True
-            
+
         except requests.RequestException as e:
             print(f"  Error checking existing package: {e}")
             return False
     
-    def _prepare_package(self, package_dir: str, yaml_data: Dict[str, Any], 
-                        build: Dict[str, Any], mhl_dir: str):
-        """Prepare a single package."""
-        prepare_config = yaml_data.get('prepare', {})
-        
+    def _prepare_package(self, package_dir: str, resolved_config: Dict[str, Any],
+                        mhl_dir: str):
+        """Prepare a single package.
+
+        Args:
+            package_dir: The package source directory
+            resolved_config: The resolved build config (defaults merged with build overrides)
+            mhl_dir: The output directory for the prepared package
+        """
+        prepare_config = resolved_config.get('prepare', {})
+
         # Change to the mhl_dir for downloads/clones
         original_dir = os.getcwd()
         os.chdir(mhl_dir)
-        
+
         try:
             # Handle download_zip
             if 'download_zip' in prepare_config:
@@ -335,16 +361,16 @@ class PackagePreparer:
                     raise ValueError("Cannot have both download_zip and clone_git in prepare.yaml")
                 config = prepare_config['download_zip']
                 download_and_extract_zip(config['url'], config['destination'])
-            
+
             # Handle clone_git
             elif 'clone_git' in prepare_config:
                 config = prepare_config['clone_git']
                 clone_git_repository(config['url'], config['destination'], config.get('subdirectory'))
-            
-            # Compute all paths
-            addpaths_config = prepare_config.get('addpaths', [])
+
+            # Compute all paths (addpaths is now a sibling of prepare, not nested inside it)
+            addpaths_config = resolved_config.get('addpaths', [])
             all_paths = []
-            
+
             for path_item in addpaths_config:
                 if isinstance(path_item, str):
                     # Simple path string
@@ -377,7 +403,7 @@ class PackagePreparer:
             create_load_and_unload_scripts(mhl_dir, all_paths)
             
             # Collect exposed symbols from all paths
-            symbol_extensions = yaml_data.get('symbol_extensions', ['.m'])
+            symbol_extensions = resolved_config.get('symbol_extensions', ['.m'])
             exposed_symbols = []
             
             for path in all_paths:
@@ -394,20 +420,21 @@ class PackagePreparer:
             os.chdir(original_dir)
     
     def _create_mip_json(self, mhl_dir: str, yaml_data: Dict[str, Any],
-                        build: Dict[str, Any], exposed_symbols: List[str],
+                        resolved_config: Dict[str, Any], architecture: str,
+                        exposed_symbols: List[str],
                         prepare_duration: float, mhl_filename: str, source_hash: str):
         """Create mip.json metadata file."""
         mip_data = {
             'name': yaml_data['name'],
             'description': yaml_data['description'],
             'version': yaml_data['version'],
-            'release_number': yaml_data['release_number'],
+            'release_number': resolved_config['release_number'],
             'dependencies': yaml_data.get('dependencies', []),
             'homepage': yaml_data.get('homepage', ''),
             'repository': yaml_data.get('repository', ''),
             'license': yaml_data.get('license', ''),
-            'architecture': build.get('architecture', 'any'),
-            'build_on': build.get('build_on', 'any'),
+            'architecture': architecture,
+            'build_on': resolved_config.get('build_on', 'any'),
             'usage_examples': yaml_data.get('usage_examples', []),
             'exposed_symbols': exposed_symbols,
             'source_hash': source_hash,
@@ -463,12 +490,20 @@ class PackagePreparer:
             # Get BUILD_ARCHITECTURE from environment
             architecture_env = os.environ.get('BUILD_ARCHITECTURE', 'any')
 
-            # Find matching builds
+            # Get defaults section
+            defaults = yaml_data.get('defaults', {})
+
+            # Find matching (build, architecture) pairs
             builds = yaml_data.get('builds', [])
-            # if architecture is any, then we only do this in linux_x86_64 builds
-            matching_builds = [b for b in builds if b.get('architecture') == architecture_env or (b.get('architecture') == 'any' and architecture_env == 'linux_x86_64')]
-            
-            if not matching_builds:
+            matching_pairs: List[tuple] = []  # list of (build_entry, matched_architecture)
+            for b in builds:
+                archs = b.get('architectures', [])
+                if architecture_env in archs:
+                    matching_pairs.append((b, architecture_env))
+                elif 'any' in archs and architecture_env == 'linux_x86_64':
+                    matching_pairs.append((b, 'any'))
+
+            if not matching_pairs:
                 print(f"  No builds match ARCHITECTURE={architecture_env}, skipping")
                 return True
 
@@ -476,60 +511,64 @@ class PackagePreparer:
             if yaml_data.get('version') != release_version:
                 print(f"  Error: version in prepare.yaml ({yaml_data.get('version')}) does not match release folder name ({release_version}).")
                 return False
-            
+
             # Compute source hash for the release folder
             print(f"  Computing source hash for {release_folder_path}...")
             source_hash = compute_directory_hash(release_folder_path)
             print(f"  Source hash: {source_hash}")
-            
-            # Process each matching build
-            for build in matching_builds:
+
+            # Process each matching (build, architecture) pair
+            for build, matched_architecture in matching_pairs:
+                # Resolve config: defaults merged with build overrides
+                resolved_config = resolve_build_config(defaults, build)
+
                 # Generate filename
-                mhl_filename = self._get_mhl_filename(yaml_data, build)
+                mhl_filename = self._get_mhl_filename(yaml_data, matched_architecture)
                 wheel_name = mhl_filename[:-4]  # Remove .mhl
                 print(f"  Wheel name: {wheel_name}")
-                
+
                 # Check if exists
-                if not self.force and self._check_existing_package(mhl_filename, yaml_data, source_hash):
+                if not self.force and self._check_existing_package(mhl_filename, yaml_data, resolved_config, source_hash):
                     print(f"  Skipping - package already up to date")
                     continue
-                
+
                 if self.dry_run:
                     print(f"  [DRY RUN] Would prepare {wheel_name}.dir")
                     continue
-                
+
                 # Create output directory
                 output_dir_path = os.path.join(self.output_dir, f"{wheel_name}.dir")
-                
+
                 if os.path.exists(output_dir_path):
                     print(f"  Removing existing directory")
                     shutil.rmtree(output_dir_path)
-                
+
                 os.makedirs(output_dir_path)
                 print(f"  Output directory: {output_dir_path}")
-                
+
                 try:
                     # Prepare package
                     print(f"  Preparing package...")
                     prepare_start = time.time()
-                    
+
                     exposed_symbols = self._prepare_package(
-                        package_dir, yaml_data, build, output_dir_path
+                        package_dir, resolved_config, output_dir_path
                     )
-                    
+
                     prepare_duration = time.time() - prepare_start
                     print(f"  Prepare completed in {prepare_duration:.2f} seconds")
-                    
+
                     # Create mip.json
                     print(f"  Creating mip.json...")
                     self._create_mip_json(
-                        output_dir_path, yaml_data, build, exposed_symbols,
+                        output_dir_path, yaml_data, resolved_config,
+                        matched_architecture, exposed_symbols,
                         prepare_duration, mhl_filename, source_hash
                     )
-                    
-                    # Copy compile script if specified
-                    if 'compile_script' in build:
-                        compile_script = build['compile_script']
+
+                    # Copy compile script if specified (.m MATLAB scripts)
+                    if 'compile_script' in resolved_config:
+                        compile_script = resolved_config['compile_script']
                         compile_script_src = os.path.join(release_folder_path, compile_script)
                         if os.path.exists(compile_script_src):
                             compile_script_dst = os.path.join(output_dir_path, compile_script)
@@ -537,10 +576,22 @@ class PackagePreparer:
                             print(f"  Copied compile script: {compile_script}")
                         else:
                             print(f"  Warning: compile_script '{compile_script}' not found in package directory")
-                    
+
+                    # Copy build script if specified (shell scripts)
+                    if 'build_script' in resolved_config:
+                        build_script = resolved_config['build_script']
+                        build_script_src = os.path.join(release_folder_path, build_script)
+                        if os.path.exists(build_script_src):
+                            build_script_dst = os.path.join(output_dir_path, build_script)
+                            shutil.copy2(build_script_src, build_script_dst)
+                            os.chmod(build_script_dst, 0o755)
+                            print(f"  Copied build script: {build_script}")
+                        else:
+                            print(f"  Warning: build_script '{build_script}' not found in package directory")
+
                     # Copy test script if specified
-                    if 'test_script' in build:
-                        test_script = build['test_script']
+                    if 'test_script' in resolved_config:
+                        test_script = resolved_config['test_script']
                         test_script_src = os.path.join(release_folder_path, test_script)
                         if os.path.exists(test_script_src):
                             test_script_dst = os.path.join(output_dir_path, test_script)
@@ -548,19 +599,19 @@ class PackagePreparer:
                             print(f"  Copied test script: {test_script}")
                         else:
                             print(f"  Warning: test_script '{test_script}' not found in package directory")
-                    
+
                     print(f"  Successfully prepared {wheel_name}.dir")
-                    
+
                 except Exception as e:
                     print(f"  Error preparing package: {e}")
                     import traceback
                     traceback.print_exc()
-                    
+
                     if os.path.exists(output_dir_path):
                         shutil.rmtree(output_dir_path, ignore_errors=True)
-                    
+
                     return False
-            
+
             return True
     
     def prepare_all_packages(self) -> bool:

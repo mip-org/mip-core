@@ -1,7 +1,6 @@
 name: hungarian_algorithm_for_linear_assignment_problems
 description: "Hungarian Algorithm for Linear Assignment Problems (V2.3)"
 version: "1.4.0.0"
-release_number: 50
 dependencies: []
 homepage: "https://www.mathworks.com/matlabcentral/fileexchange/20652-hungarian-algorithm-for-linear-assignment-problems-v2-3"
 repository: ""
@@ -14,12 +13,14 @@ usage_examples:
     [assignment, cost] = munkres(costMat);
     disp(assignment);
 
-prepare:
-  download_zip:
-    url: "https://www.mathworks.com/matlabcentral/mlc-downloads/downloads/submissions/20652/versions/5/download/zip"
-    destination: "hungarian_algorithm_for_linear_assignment_problems"
+defaults:
+  release_number: 50
+  prepare:
+    download_zip:
+      url: "https://www.mathworks.com/matlabcentral/mlc-downloads/downloads/submissions/20652/versions/5/download/zip"
+      destination: "hungarian_algorithm_for_linear_assignment_problems"
   addpaths:
     - path: "hungarian_algorithm_for_linear_assignment_problems/munkres"
 
 builds:
-  - architecture: any
+  - architectures: [any]

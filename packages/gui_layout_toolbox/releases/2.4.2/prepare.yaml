@@ -1,18 +1,19 @@
 name: gui_layout_toolbox
 description: "Layout manager for MATLAB graphical user interfaces"
 version: "2.4.2"
-release_number: 50
 dependencies: []
 homepage: "https://www.mathworks.com/matlabcentral/fileexchange/47982-gui-layout-toolbox"
 repository: ""
 license: "BSD-2-Clause"
 
-prepare:
-  download_zip:
-    url: "https://www.mathworks.com/matlabcentral/mlc-downloads/downloads/e5af5a78-4a80-11e4-9553-005056977bd0/27611476-c814-450a-b0cb-76c2101f96ed/packages/zip"
-    destination: "toolbox"
+defaults:
+  release_number: 50
+  prepare:
+    download_zip:
+      url: "https://www.mathworks.com/matlabcentral/mlc-downloads/downloads/e5af5a78-4a80-11e4-9553-005056977bd0/27611476-c814-450a-b0cb-76c2101f96ed/packages/zip"
+      destination: "toolbox"
   addpaths:
     - path: "toolbox/layout"
 
 builds:
-  - architecture: any
+  - architectures: [any]

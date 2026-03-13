@@ -78,15 +78,29 @@ function compile_packages()
             continue;
         end
 
+        % Get defaults section
+        if isfield(yamlData, 'defaults')
+            defaults = yamlData.defaults;
+        else
+            defaults = struct();
+        end
+
         % Check if any build matches current ARCHITECTURE and has compile_script
         compileScript = '';
         if isfield(yamlData, 'builds') && iscell(yamlData.builds)
             for j = 1:length(yamlData.builds)
                 build = yamlData.builds{j};
-                % check if architecture matches or is 'any'
-                if isfield(build, 'architecture') && (strcmp(build.architecture, architecture) || strcmp(build.architecture, 'any'))
-                    if isfield(build, 'compile_script')
-                        compileScript = build.compile_script;
+                % check if architectures list contains current architecture or 'any'
+                if isfield(build, 'architectures') && iscell(build.architectures)
+                    archMatch = any(strcmp(architecture, build.architectures)) || ...
+                        (any(strcmp('any', build.architectures)) && strcmp(architecture, 'linux_x86_64'));
+                    if archMatch
+                        % Resolve compile_script: build overrides defaults
+                        if isfield(build, 'compile_script')
+                            compileScript = build.compile_script;
+                        elseif isfield(defaults, 'compile_script')
+                            compileScript = defaults.compile_script;
+                        end
                         break;
                     end
                 end
