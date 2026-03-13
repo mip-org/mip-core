@@ -51,21 +51,38 @@ def download_and_extract_zip(url: str, destination: str):
     os.remove(download_file)
 
 
-def clone_git_repository(url: str, destination: str):
+def clone_git_repository(url: str, destination: str, subdirectory: str | None = None):
     """
     Clone a git repository and remove .git directories.
-    
+
     Args:
         url: The URL of the git repository to clone
         destination: The directory name to clone into
+        subdirectory: If specified, only copy this subdirectory from the repo
     """
-    print(f'  Cloning {url}...')
-    subprocess.run(
-        ["git", "clone", url, destination],
-        check=True,
-        capture_output=True
-    )
-    
+    if subdirectory:
+        # Clone to a temp directory, then copy only the subdirectory
+        temp_clone_dir = destination + "_temp_clone"
+        print(f'  Cloning {url} (subdirectory: {subdirectory})...')
+        subprocess.run(
+            ["git", "clone", url, temp_clone_dir],
+            check=True,
+            capture_output=True
+        )
+        subdir_path = os.path.join(temp_clone_dir, subdirectory)
+        if not os.path.isdir(subdir_path):
+            shutil.rmtree(temp_clone_dir)
+            raise ValueError(f"Subdirectory '{subdirectory}' not found in cloned repository")
+        shutil.copytree(subdir_path, destination)
+        shutil.rmtree(temp_clone_dir)
+    else:
+        print(f'  Cloning {url}...')
+        subprocess.run(
+            ["git", "clone", url, destination],
+            check=True,
+            capture_output=True
+        )
+
     # Remove .git directories to reduce size
     print("  Removing .git directories...")
     for root, dirs, files in os.walk(destination):
@@ -322,7 +339,7 @@ class PackagePreparer:
             # Handle clone_git
             elif 'clone_git' in prepare_config:
                 config = prepare_config['clone_git']
-                clone_git_repository(config['url'], config['destination'])
+                clone_git_repository(config['url'], config['destination'], config.get('subdirectory'))
             
             # Compute all paths
             addpaths_config = prepare_config.get('addpaths', [])

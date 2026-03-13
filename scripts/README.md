@@ -173,6 +173,7 @@ prepare:
   clone_git:
     url: "https://..."
     destination: "subdirectory"
+    subdirectory: "src"  # Optional: copy only this subdirectory from the repo
   
   # Define paths to add to MATLAB path
   addpaths:
