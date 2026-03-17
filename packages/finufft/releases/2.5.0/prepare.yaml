@@ -24,9 +24,13 @@ defaults:
 
 builds:
   # MEX builds for real MATLAB
-  - architectures: [linux_x86_64, macos_x86_64, macos_arm64]
+  - architectures: [linux_x86_64, macos_x86_64]
     release_number: 9
     compile_script: compile.m
+  # Failing:
+  # - architectures: [macos_arm64]
+  #   release_number: 9
+  #   compile_script: compile.m
   # Numbl builds
   - architectures: [numbl_wasm]
     release_number: 8
