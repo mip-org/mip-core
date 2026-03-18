@@ -7,7 +7,7 @@ repository: "https://github.com/mip-org/mip-package-manager"
 license: "Apache-2.0"
 
 defaults:
-  release_number: 1
+  release_number: 3
   prepare:
     clone_git:
       url: "https://github.com/mip-org/mip-package-manager"
