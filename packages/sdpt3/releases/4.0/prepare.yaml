@@ -3,7 +3,7 @@ description: "SDPT3: semidefinite-quadratic-linear programming solver"
 version: "4.0"
 dependencies: []
 homepage: "https://github.com/sqlp/sdpt3"
-repository: "https://github.com/magland/sdpt3"
+repository: "https://github.com/sqlp/sdpt3"
 license: "GPL-2.0"
 
 defaults:
