@@ -3,7 +3,7 @@ description: "FINUFFT nonuniform FFT"
 version: "2.5.0"
 dependencies: []
 homepage: "https://finufft.readthedocs.io"
-repository: "https://github.com/magland/finufft_mip"
+repository: "https://github.com/flatironinstitute/finufft"
 license: "Apache-2.0"
 
 defaults:
