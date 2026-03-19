@@ -25,6 +25,23 @@ except ImportError:
     print("Error: boto3 is required. Install with: pip install boto3")
     sys.exit(1)
 
+def _version_sort_key(version_str):
+    """Convert a version string like '1.2.5' to a tuple of ints for sorting."""
+    try:
+        return tuple(int(x) for x in version_str.split('.'))
+    except (ValueError, AttributeError):
+        return (0,)
+
+
+def _package_sort_key(pkg):
+    """Sort key for packages: by name (case-insensitive), then version, then architecture."""
+    return (
+        pkg.get('name', '').lower(),
+        _version_sort_key(pkg.get('version', '0')),
+        pkg.get('architecture', ''),
+    )
+
+
 class IndexAssembler:
     """Handles assembling package index from R2 bucket."""
     
@@ -212,8 +229,8 @@ class IndexAssembler:
         html.append('    <p>Available MATLAB packages for installation via MIP.</p>')
         
         if package_metadata:
-            # Sort packages alphabetically by name
-            sorted_packages = sorted(package_metadata, key=lambda p: p.get('name', '').lower())
+            # Sort packages by name, version, architecture
+            sorted_packages = sorted(package_metadata, key=_package_sort_key)
             
             html.append(f'    <div class="info">')
             html.append(f'        <strong>Total packages:</strong> {len(sorted_packages)}<br>')
@@ -328,6 +345,9 @@ class IndexAssembler:
             
             print(f"\nSuccessfully downloaded {len(package_metadata)} package metadata file(s)")
         
+        # Sort packages by name, version, architecture
+        package_metadata.sort(key=_package_sort_key)
+
         # Create index data
         index_data = {
             'packages': package_metadata,
