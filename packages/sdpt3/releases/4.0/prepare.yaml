@@ -21,5 +21,5 @@ defaults:
 
 builds:
   - architectures: [numbl_wasm]
-    release_number: 1
+    release_number: 2
     build_script: sdpt3/numbl/build_wasm.sh
