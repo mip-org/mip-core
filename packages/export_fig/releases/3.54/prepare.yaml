@@ -1,0 +1,19 @@
+name: export_fig
+description: "A toolbox for exporting figures from MATLAB to standard image and document formats nicely."
+version: "3.54"
+dependencies: []
+homepage: "https://github.com/altmany/export_fig"
+repository: "https://github.com/altmany/export_fig"
+license: "BSD-3-Clause"
+
+defaults:
+  release_number: 50
+  prepare:
+    download_zip:
+      url: "https://github.com/altmany/export_fig/archive/refs/tags/v3.54.zip"
+      destination: "export_fig-3.54"
+  addpaths:
+    - path: "export_fig-3.54"
+
+builds:
+  - architectures: [any]

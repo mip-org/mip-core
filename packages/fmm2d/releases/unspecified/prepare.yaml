@@ -1,0 +1,20 @@
+name: fmm2d
+description: "Flatiron Institute Fast Multipole Methods in 2D"
+version: unspecified
+dependencies: []
+homepage: "https://github.com/flatironinstitute/fmm2d"
+repository: "https://github.com/flatironinstitute/fmm2d"
+license: "Apache-2.0"
+
+defaults:
+  release_number: 101
+  prepare:
+    clone_git:
+      url: "https://github.com/flatironinstitute/fmm2d"
+      destination: "fmm2d"
+  addpaths:
+    - path: "fmm2d/matlab"
+
+builds:
+  - architectures: [linux_x86_64, macos_x86_64, macos_arm64]
+    compile_script: compile.m

@@ -1,0 +1,20 @@
+name: surfacefun
+description: "Surfacefun is a MATLAB package for numerically computing with functions on surfaces with high-order accuracy."
+version: unspecified
+dependencies: ["chebfun"]
+homepage: "https://github.com/danfortunato/surfacefun"
+repository: "https://github.com/danfortunato/surfacefun"
+license: unspecified
+
+defaults:
+  release_number: 50
+  prepare:
+    clone_git:
+      url: "https://github.com/danfortunato/surfacefun"
+      destination: "surfacefun"
+  addpaths:
+    - path: "surfacefun"
+    - path: "surfacefun/tools"
+
+builds:
+  - architectures: [any]

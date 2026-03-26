@@ -1,0 +1,21 @@
+name: FLAM
+description: "Fast Linear Algebra in MATLAB (FLAM) - A library for hierarchical matrices and fast direct solvers."
+version: unspecified
+dependencies: []
+homepage: "https://github.com/klho/FLAM"
+repository: "https://github.com/klho/FLAM"
+license: "GPL-3.0"
+
+defaults:
+  release_number: 50
+  prepare:
+    clone_git:
+      url: "https://github.com/klho/FLAM"
+      destination: "FLAM"
+  addpaths:
+    - path: "FLAM"
+      recursive: true
+      exclude: ["test", "paper"]
+
+builds:
+  - architectures: [any]

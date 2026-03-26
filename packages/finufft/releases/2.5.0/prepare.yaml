@@ -1,0 +1,55 @@
+name: finufft
+description: "FINUFFT nonuniform FFT"
+version: "2.5.0"
+dependencies: []
+homepage: "https://finufft.readthedocs.io"
+repository: "https://github.com/flatironinstitute/finufft"
+license: "Apache-2.0"
+
+defaults:
+  symbol_extensions: [".m", ".js"]
+  prepare:
+    - clone_git:
+        url: "https://github.com/magland/finufft"
+        subdirectory: "matlab"
+        destination: "finufft_matlab"
+    - clone_git:
+        url: "https://github.com/magland/finufft"
+        destination: "finufft_src"
+      build_only: true
+  addpaths:
+    # It's very important that the numbl directory is added first
+    - path: "finufft_matlab/numbl"
+    - path: "finufft_matlab"
+
+builds:
+  # MEX builds for real MATLAB
+  - architectures: [linux_x86_64, macos_x86_64]
+    release_number: 9
+    compile_script: compile.m
+  # Failing:
+  # - architectures: [macos_arm64]
+  #   release_number: 9
+  #   compile_script: compile.m
+  # Numbl builds
+  - architectures: [numbl_wasm]
+    release_number: 9
+    build_script: finufft_matlab/numbl/build_wasm.sh
+    build_env:
+      FINUFFT_SRC: finufft_src
+  - architectures: [numbl_linux_x86_64]
+    release_number: 9
+    build_script: finufft_matlab/numbl/build_native.sh
+    build_env:
+      FINUFFT_SRC: finufft_src
+  # Failing:
+  # - architectures: [numbl_macos_arm64]
+  #   release_number: 8
+  #   build_script: finufft_matlab/numbl/build_native.sh
+  #   build_env:
+  #     FINUFFT_SRC: finufft_src
+  - architectures: [numbl_macos_x86_64]
+    release_number: 9
+    build_script: finufft_matlab/numbl/build_native.sh
+    build_env:
+      FINUFFT_SRC: finufft_src

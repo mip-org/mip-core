@@ -1,0 +1,25 @@
+name: sdpt3
+description: "SDPT3: semidefinite-quadratic-linear programming solver"
+version: "4.0"
+dependencies: []
+homepage: "https://github.com/sqlp/sdpt3"
+repository: "https://github.com/sqlp/sdpt3"
+license: "GPL-2.0"
+
+defaults:
+  symbol_extensions: [".m", ".js"]
+  prepare:
+    - clone_git:
+        url: "https://github.com/magland/sdpt3"
+        destination: "sdpt3"
+  addpaths:
+    # numbl directory must be first so WASM MEX wrappers take precedence
+    - path: "sdpt3/numbl"
+    - path: "sdpt3/Solver"
+    - path: "sdpt3/HSDSolver"
+    - path: "sdpt3"
+
+builds:
+  - architectures: [numbl_wasm]
+    release_number: 3
+    build_script: sdpt3/numbl/build_wasm.sh
