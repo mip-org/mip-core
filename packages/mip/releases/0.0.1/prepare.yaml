@@ -1,0 +1,20 @@
+name: mip
+description: "MIP package manager for MATLAB"
+version: "0.0.1"
+dependencies: []
+homepage: "https://github.com/mip-org/mip-package-manager"
+repository: "https://github.com/mip-org/mip-package-manager"
+license: "Apache-2.0"
+
+defaults:
+  release_number: 4
+  prepare:
+    clone_git:
+      url: "https://github.com/mip-org/mip-package-manager"
+      subdirectory: "matlab"
+      destination: "mip"
+  addpaths:
+    - path: "mip"
+
+builds:
+  - architectures: [any]
