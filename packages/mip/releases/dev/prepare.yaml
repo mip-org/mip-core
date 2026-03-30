@@ -1,6 +1,6 @@
 name: mip
 description: "MIP package manager for MATLAB"
-version: "main"
+version: "dev"
 dependencies: []
 homepage: "https://github.com/mip-org/mip-package-manager"
 repository: "https://github.com/mip-org/mip-package-manager"
