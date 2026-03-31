@@ -668,39 +668,30 @@ class PackagePreparer:
                         prepare_duration, mhl_filename, source_hash
                     )
 
-                    # Copy compile script if specified (.m MATLAB scripts)
-                    if 'compile_script' in resolved_config:
-                        compile_script = resolved_config['compile_script']
-                        compile_script_src = os.path.join(release_folder_path, compile_script)
-                        if os.path.exists(compile_script_src):
-                            compile_script_dst = os.path.join(output_dir_path, compile_script)
-                            shutil.copy2(compile_script_src, compile_script_dst)
-                            print(f"  Copied compile script: {compile_script}")
+                    # Ensure scripts are available in the prepared directory.
+                    # For each script type, if it already exists in the prepared
+                    # dir (e.g. from cloned source), use it as-is. Otherwise,
+                    # copy it from the release folder.
+                    for script_key in ('compile_script', 'build_script', 'test_script'):
+                        if script_key not in resolved_config:
+                            continue
+                        script_path = resolved_config[script_key]
+                        script_in_prepared = os.path.join(output_dir_path, script_path)
+                        if os.path.exists(script_in_prepared):
+                            print(f"  {script_key} found in prepared source: {script_path}")
                         else:
-                            print(f"  Warning: compile_script '{compile_script}' not found in package directory")
-
-                    # Copy build script if specified (shell scripts)
-                    if 'build_script' in resolved_config:
-                        build_script = resolved_config['build_script']
-                        build_script_src = os.path.join(release_folder_path, build_script)
-                        if os.path.exists(build_script_src):
-                            build_script_dst = os.path.join(output_dir_path, build_script)
-                            shutil.copy2(build_script_src, build_script_dst)
-                            os.chmod(build_script_dst, 0o755)
-                            print(f"  Copied build script: {build_script}")
-                        else:
-                            print(f"  Warning: build_script '{build_script}' not found in package directory")
-
-                    # Copy test script if specified
-                    if 'test_script' in resolved_config:
-                        test_script = resolved_config['test_script']
-                        test_script_src = os.path.join(release_folder_path, test_script)
-                        if os.path.exists(test_script_src):
-                            test_script_dst = os.path.join(output_dir_path, test_script)
-                            shutil.copy2(test_script_src, test_script_dst)
-                            print(f"  Copied test script: {test_script}")
-                        else:
-                            print(f"  Warning: test_script '{test_script}' not found in package directory")
+                            script_in_release = os.path.join(release_folder_path, script_path)
+                            if os.path.exists(script_in_release):
+                                script_dst = os.path.join(output_dir_path, script_path)
+                                os.makedirs(os.path.dirname(script_dst), exist_ok=True)
+                                shutil.copy2(script_in_release, script_dst)
+                                print(f"  Copied {script_key} from release folder: {script_path}")
+                            else:
+                                print(f"  Warning: {script_key} '{script_path}' not found in prepared source or release folder")
+                        # Ensure shell scripts are executable
+                        final_path = os.path.join(output_dir_path, script_path)
+                        if os.path.exists(final_path) and script_path.endswith('.sh'):
+                            os.chmod(final_path, 0o755)
 
                     print(f"  Successfully prepared {wheel_name}.dir")
 

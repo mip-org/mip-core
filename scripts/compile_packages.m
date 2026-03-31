@@ -144,13 +144,13 @@ function success = compilePackage(dirPath, dirName, compileScript)
         
         % Change to package directory
         cd(dirPath);
-        
+
         fprintf('  Running %s...\n', compileScript);
         compileStart = tic;
-        
-        % Run the compile script (without .m extension)
-        [~, scriptName, ~] = fileparts(compileScript);
-        eval(scriptName);
+
+        % Run the compile script using its full path
+        compileScriptFullPath = fullfile(dirPath, compileScript);
+        run(compileScriptFullPath);
         
         compileDuration = toc(compileStart);
         fprintf('  Compilation completed in %.2f seconds\n', compileDuration);
