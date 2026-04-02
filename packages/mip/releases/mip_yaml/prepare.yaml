@@ -9,17 +9,13 @@ license: "Apache-2.0"
 defaults:
   release_number: 1
   prepare:
-    - clone_git:
-        url: "https://github.com/mip-org/mip-package-manager"
-        subdirectory: "matlab"
-        destination: "mip"
-        branch: "mip-yaml"
-    - clone_git:
-        url: "https://github.com/ewiger/yamlmatlab"
-        destination: "yamlmatlab"
+    clone_git:
+      url: "https://github.com/mip-org/mip-package-manager"
+      destination: "mip"
+      branch: "mip-yaml"
   addpaths:
     - path: "mip"
-    - path: "yamlmatlab"
+    - path: "mip/external/yamlmatlab"
 
 builds:
   - architectures: [any]
