@@ -9,8 +9,9 @@ dependencies: []
 symbol_extensions: [".m", ".js"]
 
 addpaths:
-  - path: "matlab/numbl"
   - path: "matlab"
+  # It's important that matlab/numbl comes after matlab so that it takes priority
+  - path: "matlab/numbl"
 
 builds:
   - architectures: [linux_x86_64, macos_x86_64]
