@@ -6,10 +6,24 @@ homepage: "https://finufft.readthedocs.io"
 repository: "https://github.com/flatironinstitute/finufft"
 dependencies: []
 
+symbol_extensions: [".m", ".js"]
+
 addpaths:
+  - path: "matlab/numbl"
   - path: "matlab"
 
 builds:
   - architectures: [linux_x86_64, macos_x86_64]
     release_number: 9
     compile_script: compile.m
+    addpaths:
+      - path: "matlab"
+  - architectures: [numbl_wasm]
+    release_number: 9
+    compile_script: compile_numbl_wasm.m
+  - architectures: [numbl_linux_x86_64]
+    release_number: 9
+    compile_script: compile_numbl_native.m
+  - architectures: [numbl_macos_x86_64]
+    release_number: 9
+    compile_script: compile_numbl_native.m
