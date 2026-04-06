@@ -12,18 +12,26 @@ if ~exist(buildDir, 'dir')
     mkdir(buildDir);
 end
 
-cmakeCmd = sprintf([ ...
-    'cmake "%s" -B "%s"' ...
-    ' -DCMAKE_BUILD_TYPE=Release' ...
-    ' -DFINUFFT_USE_OPENMP=OFF' ...
-    ' -DFINUFFT_USE_DUCC0=ON' ...
-    ' -DFINUFFT_STATIC_LINKING=ON' ...
-    ' -DFINUFFT_BUILD_TESTS=OFF' ...
-    ' -DFINUFFT_BUILD_EXAMPLES=OFF' ...
-    ' -DFINUFFT_ENABLE_INSTALL=OFF' ...
-    ' -DCMAKE_C_FLAGS="-fPIC"' ...
-    ' -DCMAKE_CXX_FLAGS="-fPIC"'], ...
-    srcRoot, buildDir);
+cmakeArgs = { ...
+    sprintf('cmake "%s" -B "%s"', srcRoot, buildDir), ...
+    ' -DCMAKE_BUILD_TYPE=Release', ...
+    ' -DFINUFFT_USE_OPENMP=OFF', ...
+    ' -DFINUFFT_USE_DUCC0=ON', ...
+    ' -DFINUFFT_STATIC_LINKING=ON', ...
+    ' -DFINUFFT_BUILD_TESTS=OFF', ...
+    ' -DFINUFFT_BUILD_EXAMPLES=OFF', ...
+    ' -DFINUFFT_ENABLE_INSTALL=OFF'};
+
+if ispc
+    % On Windows with MSVC, use static runtime to avoid redistributable deps
+    cmakeArgs{end+1} = ' -DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded';
+    cmakeArgs{end+1} = ' -DCMAKE_POLICY_DEFAULT_CMP0091=NEW';
+else
+    cmakeArgs{end+1} = ' -DCMAKE_C_FLAGS="-fPIC"';
+    cmakeArgs{end+1} = ' -DCMAKE_CXX_FLAGS="-fPIC"';
+end
+
+cmakeCmd = strjoin(cmakeArgs, '');
 
 [status, output] = system(cmakeCmd);
 fprintf('%s', output);
@@ -34,7 +42,7 @@ end
 % Build static library
 fprintf('Building FINUFFT static library...\n');
 nproc = maxNumCompThreads;
-buildCmd = sprintf('cmake --build "%s" --target finufft -j%d', buildDir, nproc);
+buildCmd = sprintf('cmake --build "%s" --config Release --target finufft -j%d', buildDir, nproc);
 [status, output] = system(buildCmd);
 fprintf('%s', output);
 if status ~= 0
@@ -42,23 +50,39 @@ if status ~= 0
 end
 
 % Step 2: Find static libraries
-libFinufft = fullfile(buildDir, 'src', 'libfinufft.a');
-libCommon = fullfile(buildDir, 'src', 'common', 'libfinufft_common.a');
-if ~exist(libFinufft, 'file')
-    error('libfinufft.a not found at %s', libFinufft);
-end
-if ~exist(libCommon, 'file')
-    error('libfinufft_common.a not found at %s', libCommon);
+if ispc
+    % MSVC puts libs under a Release/ subdirectory
+    libFinufft = fullfile(buildDir, 'src', 'Release', 'finufft.lib');
+    if ~exist(libFinufft, 'file')
+        libFinufft = fullfile(buildDir, 'src', 'finufft.lib');
+    end
+    libCommon = fullfile(buildDir, 'src', 'common', 'Release', 'finufft_common.lib');
+    if ~exist(libCommon, 'file')
+        libCommon = fullfile(buildDir, 'src', 'common', 'finufft_common.lib');
+    end
+else
+    libFinufft = fullfile(buildDir, 'src', 'libfinufft.a');
+    libCommon = fullfile(buildDir, 'src', 'common', 'libfinufft_common.a');
 end
 
-% Find libducc0.a
-[~, ducc0Path] = system(sprintf('find "%s" -name "libducc0.a" -print -quit 2>/dev/null', buildDir));
-ducc0Path = strtrim(ducc0Path);
+if ~exist(libFinufft, 'file')
+    error('finufft library not found at %s', libFinufft);
+end
+if ~exist(libCommon, 'file')
+    error('finufft_common library not found at %s', libCommon);
+end
+
+% Find ducc0 library
+if ispc
+    ducc0Path = find_file_recursive(buildDir, 'ducc0.lib');
+else
+    ducc0Path = find_file_recursive(buildDir, 'libducc0.a');
+end
 
 fprintf('Libraries found:\n');
 fprintf('  finufft: %s\n', libFinufft);
 fprintf('  common:  %s\n', libCommon);
-if ~isempty(ducc0Path) && exist(ducc0Path, 'file')
+if ~isempty(ducc0Path)
     fprintf('  ducc0:   %s\n', ducc0Path);
 end
 
@@ -74,12 +98,14 @@ mexArgs = {mexSrc, ...
     '-DR2008OO', ...
     libFinufft, libCommon};
 
-if ~isempty(ducc0Path) && exist(ducc0Path, 'file')
+if ~isempty(ducc0Path)
     mexArgs{end+1} = ducc0Path;
 end
 
 % Platform-specific flags
-if isunix && ~ismac
+if ispc
+    mexArgs{end+1} = 'COMPFLAGS=$COMPFLAGS /O2';
+elseif isunix && ~ismac
     mexArgs{end+1} = 'LDFLAGS=$LDFLAGS -static-libstdc++ -static-libgcc';
 end
 
@@ -90,3 +116,14 @@ mexArgs{end+1} = fullfile(srcRoot, 'matlab', 'finufft');
 mex(mexArgs{:});
 
 fprintf('=== FINUFFT MEX compilation complete ===\n');
+
+
+function filepath = find_file_recursive(searchDir, filename)
+    % Find a file by name recursively under searchDir
+    result = dir(fullfile(searchDir, '**', filename));
+    if ~isempty(result)
+        filepath = fullfile(result(1).folder, result(1).name);
+    else
+        filepath = '';
+    end
+end
