@@ -9,7 +9,7 @@ dependencies: []
 addpaths:
   - path: "toolbox"
 
-release_number: 59
+release_number: 60
 
 builds:
   - architectures: [linux_x86_64, windows_x86_64]
