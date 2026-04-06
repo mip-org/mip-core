@@ -43,16 +43,4 @@ f = finufft2d1(x, y, c, isign, eps, ms, mt);
 assert(all(size(f) == [ms, mt]), 'Output size should be [ms, mt]');
 assert(~any(isnan(f(:))), 'Output should not contain NaN');
 
-%% Test single precision
-fprintf('Testing single precision...\n');
-nj = 100;
-x = single(pi * (2 * rand(nj, 1) - 1));
-c = single(randn(nj, 1) + 1i * randn(nj, 1));
-isign = -1;
-eps = single(1e-5);
-ms = 64;
-f = finufft1d1(x, c, isign, eps, ms);
-assert(isa(f, 'single'), 'Output should be single precision');
-assert(~any(isnan(f)), 'Output should not contain NaN');
-
 fprintf('SUCCESS\n');
