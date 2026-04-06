@@ -12,6 +12,6 @@ addpaths:
 release_number: 59
 
 builds:
-  - architectures: [linux_x86_64]
+  - architectures: [linux_x86_64, windows_x86_64]
     compile_script: compile.m
     test_script: test.m

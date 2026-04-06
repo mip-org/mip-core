@@ -13,9 +13,14 @@ try
     for i = 1:length(cpp_files)
         cpp_file = cpp_files(i).name;
         fprintf('  Compiling %s...\n', cpp_file);
-        mex('CXXFLAGS=$CXXFLAGS -std=c++14', ...
-            'LDFLAGS=$LDFLAGS', ...
-            cpp_file);
+        if ispc
+            mex('COMPFLAGS=$COMPFLAGS /std:c++14', ...
+                cpp_file);
+        else
+            mex('CXXFLAGS=$CXXFLAGS -std=c++14', ...
+                'LDFLAGS=$LDFLAGS', ...
+                cpp_file);
+        end
     end
 
     fprintf('MEX compilation completed successfully.\n');
