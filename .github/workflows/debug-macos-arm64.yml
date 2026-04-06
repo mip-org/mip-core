@@ -1,0 +1,41 @@
+name: Debug macOS ARM64
+
+on:
+  workflow_dispatch:
+
+jobs:
+  debug:
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Checkout mip-package-manager
+        uses: actions/checkout@v4
+        with:
+          repository: mip-org/mip-package-manager
+          path: mip-package-manager
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Python dependencies
+        run: pip install requests pyyaml
+
+      - name: Prepare finufft package
+        env:
+          BUILD_ARCHITECTURE: macos_arm64
+        run: python scripts/prepare_packages.py --package finufft --force
+
+      - name: Set up MATLAB
+        uses: matlab-actions/setup-matlab@v2
+        with:
+          cache: true
+
+      - name: Setup tmate session
+        uses: mxschmitt/action-tmate@v3
+        with:
+          limit-access-to-actor: true
