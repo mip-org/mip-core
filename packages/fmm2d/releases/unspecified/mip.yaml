@@ -14,3 +14,4 @@ release_number: 101
 builds:
   - architectures: [linux_x86_64, macos_x86_64, macos_arm64]
     compile_script: compile.m
+    test_script: test.m

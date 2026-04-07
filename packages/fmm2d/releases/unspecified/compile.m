@@ -6,9 +6,16 @@ setenv('PATH', ['/opt/homebrew/bin:' getenv('PATH')]);
 
 fprintf('Compiling fmm2d MEX files...\n');
 
-% Set up gfortran compiler
+% Set up gfortran compiler. The shared library extension differs by OS:
+% .dylib on macOS, .so on Linux.
+if ismac
+    libgfortran_name = 'libgfortran.dylib';
+else
+    libgfortran_name = 'libgfortran.so';
+end
+
 make_inc = {
-    'FDIR=$$(dirname `gfortran --print-file-name libgfortran.dylib`)'
+    ['FDIR=$$(dirname `gfortran --print-file-name ' libgfortran_name '`)']
     'MFLAGS+=-L${FDIR}'
     'OMPFLAGS=-fopenmp';
     'OMPLIBS=-lgomp';
@@ -18,9 +25,15 @@ make_inc = {
 writelines(make_inc, 'make.inc');
 
 % Make the static and dynamic libraries
-system('make lib');
+status = system('make lib');
+if status ~= 0
+    error('fmm2d:makeLibFailed', 'make lib failed with exit code %d', status);
+end
 
 % Build the MEX file
-system('make matlab');
+status = system('make matlab');
+if status ~= 0
+    error('fmm2d:makeMatlabFailed', 'make matlab failed with exit code %d', status);
+end
 
 fprintf('fmm2d MEX compilation completed.\n');
