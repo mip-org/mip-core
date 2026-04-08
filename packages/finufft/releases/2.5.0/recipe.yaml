@@ -1,2 +1,4 @@
+simd: true
+
 source:
   git: "https://github.com/magland/finufft"
