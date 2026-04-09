@@ -38,9 +38,18 @@ if ispc
     % On Windows with MSVC, must use dynamic runtime (/MD) to match MATLAB's MEX
     cmakeArgs{end+1} = ' -DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreadedDLL';
     cmakeArgs{end+1} = ' -DCMAKE_POLICY_DEFAULT_CMP0091=NEW';
-else
-    cmakeArgs{end+1} = ' -DCMAKE_C_FLAGS="-fPIC"';
-    cmakeArgs{end+1} = ' -DCMAKE_CXX_FLAGS="-fPIC"';
+end
+
+% Pass through SIMD flags from environment (set by bundle_packages.m for
+% SIMD builds).  On non-SIMD builds these env vars are empty/unset and
+% cmake uses its own defaults.
+envCFlags = strtrim(getenv('CFLAGS'));
+envCXXFlags = strtrim(getenv('CXXFLAGS'));
+if ~isempty(envCFlags)
+    cmakeArgs{end+1} = sprintf(' -DCMAKE_C_FLAGS="%s"', envCFlags);
+end
+if ~isempty(envCXXFlags)
+    cmakeArgs{end+1} = sprintf(' -DCMAKE_CXX_FLAGS="%s"', envCXXFlags);
 end
 
 cmakeCmd = strjoin(cmakeArgs, '');
