@@ -25,9 +25,12 @@ builds:
   - architectures: [numbl_wasm]
     release_number: 10
     compile_script: compile_numbl_wasm.m
+    test_script: test_finufft.m
   - architectures: [numbl_linux_x86_64]
     release_number: 10
     compile_script: compile_numbl_native.m
+    test_script: test_finufft.m
   - architectures: [numbl_macos_x86_64]
     release_number: 10
     compile_script: compile_numbl_native.m
+    test_script: test_finufft.m
