@@ -13,4 +13,4 @@ release_number: 51
 
 builds:
   - architectures: [any]
-    test_script: test.m
+    test_script: test_chunkie.m

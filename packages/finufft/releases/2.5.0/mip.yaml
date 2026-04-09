@@ -17,7 +17,7 @@ builds:
   - architectures: [linux_x86_64, macos_x86_64, macos_arm64, windows_x86_64]
     release_number: 9
     compile_script: compile.m
-    test_script: test.m
+    test_script: test_finufft.m
     addpaths:
       - path: "matlab"
   - architectures: [numbl_wasm]

@@ -14,4 +14,4 @@ release_number: 60
 builds:
   - architectures: [linux_x86_64, windows_x86_64]
     compile_script: compile.m
-    test_script: test.m
+    test_script: test_kdtree.m
