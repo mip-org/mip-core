@@ -6,9 +6,11 @@ homepage: "https://github.com/flatironinstitute/fmm2d"
 repository: "https://github.com/flatironinstitute/fmm2d"
 dependencies: []
 
+# matlab/  — upstream rfmm2d.m, cfmm2d.m, lfmm2d.m, hfmm2d.m, stfmm2d.m
+# matlab/numbl — single fmm2d.js builtin + fmm2d.{wasm,so} that the
+# upstream m-files dispatch through.  No m-file overrides here.
 addpaths:
   - path: "matlab"
-  # matlab/numbl comes after matlab so the rfmm2d.m override takes priority
   - path: "matlab/numbl"
 
 builds:
@@ -19,14 +21,14 @@ builds:
     addpaths:
       - path: "matlab"
   - architectures: [numbl_wasm]
-    release_number: 1
+    release_number: 2
     compile_script: compile_numbl_wasm.m
     test_script: test_fmm2d.m
   - architectures: [numbl_linux_x86_64]
-    release_number: 2
+    release_number: 3
     compile_script: compile_numbl_native.m
     test_script: test_fmm2d.m
   - architectures: [numbl_macos_x86_64]
-    release_number: 2
+    release_number: 3
     compile_script: compile_numbl_native.m
     test_script: test_fmm2d.m

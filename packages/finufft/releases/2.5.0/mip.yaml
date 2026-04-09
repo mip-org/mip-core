@@ -8,9 +8,11 @@ dependencies: []
 
 symbol_extensions: [".m", ".js"]
 
+# matlab/  — upstream finufft_plan.m, finufft1d1.m, etc.
+# matlab/numbl — single finufft.js builtin + finufft.{wasm,so} that the
+# upstream m-files dispatch through.  No m-file overrides here.
 addpaths:
   - path: "matlab"
-  # It's important that matlab/numbl comes after matlab so that it takes priority
   - path: "matlab/numbl"
 
 builds:
@@ -21,11 +23,11 @@ builds:
     addpaths:
       - path: "matlab"
   - architectures: [numbl_wasm]
-    release_number: 9
+    release_number: 10
     compile_script: compile_numbl_wasm.m
   - architectures: [numbl_linux_x86_64]
-    release_number: 9
+    release_number: 10
     compile_script: compile_numbl_native.m
   - architectures: [numbl_macos_x86_64]
-    release_number: 9
+    release_number: 10
     compile_script: compile_numbl_native.m
