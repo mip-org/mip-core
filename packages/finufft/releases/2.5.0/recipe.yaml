@@ -1,2 +1,3 @@
 source:
   git: "https://github.com/magland/finufft"
+  branch: "master"
