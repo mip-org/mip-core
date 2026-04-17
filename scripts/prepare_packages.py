@@ -246,13 +246,14 @@ class PackagePreparer:
                     subdirectory=source.get('subdirectory'),
                     branch=source.get('branch'),
                 )
-                for dir_name in source.get('remove_dirs', []):
-                    dir_path = os.path.join(target_dir, dir_name)
-                    if os.path.isdir(dir_path):
-                        shutil.rmtree(dir_path, onerror=_rmtree_on_error)
-                        print(f"    Removed directory: {dir_name}")
             elif 'zip' in source:
                 download_and_extract_zip(source['zip'], '.')
+
+            for dir_name in source.get('remove_dirs', []):
+                dir_path = os.path.join(target_dir, dir_name)
+                if os.path.isdir(dir_path):
+                    shutil.rmtree(dir_path, onerror=_rmtree_on_error)
+                    print(f"    Removed directory: {dir_name}")
         finally:
             os.chdir(original_dir)
 
