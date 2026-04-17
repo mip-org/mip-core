@@ -14,9 +14,20 @@ Index assembly is handled separately by assemble_index.py
 
 import os
 import sys
+import json
+import hashlib
 import subprocess
 import argparse
 from channel_config import get_github_repo, release_tag_from_mhl
+
+
+def _sha256_of_file(path):
+    """Compute the SHA-256 digest of a file, returned as a lowercase hex string."""
+    h = hashlib.sha256()
+    with open(path, 'rb') as f:
+        for chunk in iter(lambda: f.read(1 << 16), b''):
+            h.update(chunk)
+    return h.hexdigest()
 
 
 class PackageUploader:
@@ -94,6 +105,19 @@ class PackageUploader:
         mip_json_path = f"{mhl_path}.mip.json"
         if not os.path.exists(mip_json_path):
             print(f"  Error: {mhl_filename}.mip.json not found")
+            return False
+
+        # Compute SHA-256 of the .mhl and embed it in the .mip.json so the
+        # client can verify integrity after download.
+        try:
+            with open(mip_json_path, 'r') as f:
+                mip_json = json.load(f)
+            mip_json['mhl_sha256'] = _sha256_of_file(mhl_path)
+            with open(mip_json_path, 'w') as f:
+                json.dump(mip_json, f, indent=2)
+            print(f"  SHA-256: {mip_json['mhl_sha256']}")
+        except (OSError, json.JSONDecodeError) as e:
+            print(f"  Error computing/writing sha256: {e}")
             return False
 
         if self.dry_run:
