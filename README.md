@@ -16,7 +16,7 @@ Each package needs a `recipe.yaml` (where to get the source) and a `mip.yaml` (p
 ### Directory structure
 
 ```
-packages/<name>/releases/<version>/
+packages/<name>/<version>/
   recipe.yaml       # Required: where to get the source
   mip.yaml          # Optional: overrides mip.yaml from source repo
   compile.m         # Optional: compilation script (channel-provided)
