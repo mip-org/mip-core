@@ -262,8 +262,8 @@ class PackagePreparer:
         package_name = os.path.basename(package_dir)
         print(f"\nProcessing package: {package_name}")
 
-        if '-' in package_name:
-            print(f"  Error: Package name contains hyphens. Use underscores.")
+        if package_name != package_name.lower():
+            print(f"  Error: Package name must be lowercase.")
             return False
 
         releases_path = os.path.join(package_dir, 'releases')
@@ -351,9 +351,12 @@ class PackagePreparer:
             else:
                 effective_arch = 'any'
 
-            # Build the .mhl filename for cache check
+            # Build the .mhl filename for cache check. Canonical package
+            # names may contain '-', but the filename uses '-' as a field
+            # separator, so encode the name with '_' in the filename.
             version = mip_yaml.get('version', release_version)
-            mhl_filename = (f"{mip_yaml['name']}-{version}-"
+            name_for_filename = mip_yaml['name'].replace('-', '_')
+            mhl_filename = (f"{name_for_filename}-{version}-"
                             f"{effective_arch}.mhl")
 
             # Check cache

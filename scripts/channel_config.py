@@ -42,9 +42,12 @@ def release_tag_from_mhl(mhl_filename):
     """Extract the release tag (name-version) from an .mhl filename.
 
     Filename format: {name}-{version}-{architecture}.mhl
-    Package names use underscores, never hyphens, so the first hyphen
-    separates name from version, and the last hyphen separates version
-    from architecture.
+
+    A canonical package name may contain '-' (e.g. 'foo-bar'), but '-'
+    is the field separator in the filename, so the name is always
+    encoded with '_' in the filename (e.g. 'foo_bar-1.0-any.mhl').
+    The last hyphen therefore separates version from architecture, and
+    the remainder is the release tag '{name-as-underscores}-{version}'.
     """
     basename = mhl_filename
     if basename.endswith('.mip.json'):
