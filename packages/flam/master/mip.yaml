@@ -11,7 +11,5 @@ addpaths:
     recursive: true
     exclude: ["test", "paper"]
 
-release_number: 50
-
 builds:
   - architectures: [any]

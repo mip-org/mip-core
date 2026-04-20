@@ -14,8 +14,6 @@ addpaths:
   - path: "HSDSolver"
   - path: "."
 
-release_number: 3
-
 builds:
   - architectures: [numbl_wasm]
     compile_script: compile_numbl_wasm.m

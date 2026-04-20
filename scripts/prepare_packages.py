@@ -191,17 +191,6 @@ def check_existing_package(mhl_filename, source_hash, mip_yaml):
                 print(f"  Metadata mismatch in '{field}'")
                 return False
 
-        # Compare release_number
-        release_number = mip_yaml.get('release_number', 1)
-        # Check build-level override
-        for build in mip_yaml.get('builds', []):
-            if 'release_number' in build:
-                release_number = build['release_number']
-                break
-        if existing.get('release_number') != release_number:
-            print(f"  Release number mismatch")
-            return False
-
         print(f"  Package exists with matching metadata and source hash")
         return True
 

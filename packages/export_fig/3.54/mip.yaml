@@ -9,7 +9,5 @@ dependencies: []
 addpaths:
   - path: "."
 
-release_number: 50
-
 builds:
   - architectures: [any]

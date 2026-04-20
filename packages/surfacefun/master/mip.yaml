@@ -10,7 +10,5 @@ addpaths:
   - path: "."
   - path: "tools"
 
-release_number: 50
-
 builds:
   - architectures: [any]

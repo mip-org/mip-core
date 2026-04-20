@@ -9,8 +9,6 @@ dependencies: ["fmm2d", "flam"]
 addpaths:
   - path: "chunkie"
 
-release_number: 51
-
 builds:
   - architectures: [any]
     test_script: test_chunkie.m
