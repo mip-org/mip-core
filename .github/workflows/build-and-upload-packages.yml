@@ -5,6 +5,11 @@ on:
     branches:
       - main
   workflow_dispatch:
+    inputs:
+      force:
+        description: 'Force rebuild of all packages (bypass source-hash cache)'
+        type: boolean
+        default: false
 
 permissions:
   contents: write
@@ -51,7 +56,7 @@ jobs:
       - name: Prepare packages
         env:
           BUILD_ARCHITECTURE: linux_x86_64
-        run: python scripts/prepare_packages.py
+        run: python scripts/prepare_packages.py ${{ inputs.force && '--force' || '' }}
 
       - name: Check for packages to bundle
         id: check
@@ -115,7 +120,7 @@ jobs:
       - name: Prepare packages
         env:
           BUILD_ARCHITECTURE: macos_x86_64
-        run: python scripts/prepare_packages.py
+        run: python scripts/prepare_packages.py ${{ inputs.force && '--force' || '' }}
 
       - name: Check for packages to bundle
         id: check
@@ -181,7 +186,7 @@ jobs:
       - name: Prepare packages
         env:
           BUILD_ARCHITECTURE: macos_arm64
-        run: python scripts/prepare_packages.py
+        run: python scripts/prepare_packages.py ${{ inputs.force && '--force' || '' }}
 
       - name: Check for packages to bundle
         id: check
@@ -238,7 +243,7 @@ jobs:
       - name: Prepare packages
         env:
           BUILD_ARCHITECTURE: numbl_wasm
-        run: python scripts/prepare_packages.py
+        run: python scripts/prepare_packages.py ${{ inputs.force && '--force' || '' }}
 
       - name: Check for packages to bundle
         id: check
@@ -314,7 +319,7 @@ jobs:
       - name: Prepare packages
         env:
           BUILD_ARCHITECTURE: numbl_linux_x86_64
-        run: python scripts/prepare_packages.py
+        run: python scripts/prepare_packages.py ${{ inputs.force && '--force' || '' }}
 
       - name: Check for packages to bundle
         id: check
@@ -374,7 +379,7 @@ jobs:
       - name: Prepare packages
         env:
           BUILD_ARCHITECTURE: numbl_macos_x86_64
-        run: python scripts/prepare_packages.py
+        run: python scripts/prepare_packages.py ${{ inputs.force && '--force' || '' }}
 
       - name: Check for packages to bundle
         id: check
@@ -434,7 +439,7 @@ jobs:
       - name: Prepare packages
         env:
           BUILD_ARCHITECTURE: numbl_macos_arm64
-        run: python scripts/prepare_packages.py
+        run: python scripts/prepare_packages.py ${{ inputs.force && '--force' || '' }}
 
       - name: Check for packages to bundle
         id: check
@@ -491,7 +496,7 @@ jobs:
       - name: Prepare packages
         env:
           BUILD_ARCHITECTURE: windows_x86_64
-        run: python scripts/prepare_packages.py
+        run: python scripts/prepare_packages.py ${{ inputs.force && '--force' || '' }}
 
       - name: Check for packages to bundle
         id: check
@@ -548,7 +553,7 @@ jobs:
       - name: Prepare packages
         env:
           BUILD_ARCHITECTURE: any
-        run: python scripts/prepare_packages.py
+        run: python scripts/prepare_packages.py ${{ inputs.force && '--force' || '' }}
 
       - name: Check for packages to bundle
         id: check
