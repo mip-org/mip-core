@@ -270,7 +270,7 @@ class IndexAssembler:
             html.append('    <p>No packages available yet.</p>')
 
         html.append('    <div class="footer">')
-        html.append('        <p>For more information, visit the <a href="https://github.com/mip-org/mip-package-manager">MIP documentation</a>.</p>')
+        html.append('        <p>For more information, visit the <a href="https://github.com/mip-org/mip">MIP documentation</a>.</p>')
         html.append('    </div>')
         html.append('</body>')
         html.append('</html>')

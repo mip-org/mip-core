@@ -11,11 +11,11 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Checkout mip-package-manager
+      - name: Checkout mip
         uses: actions/checkout@v4
         with:
-          repository: mip-org/mip-package-manager
-          path: mip-package-manager
+          repository: mip-org/mip
+          path: mip
 
       - name: Set up Python
         uses: actions/setup-python@v5

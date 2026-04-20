@@ -34,11 +34,11 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Checkout mip-package-manager
+      - name: Checkout mip
         uses: actions/checkout@v4
         with:
-          repository: mip-org/mip-package-manager
-          path: mip-package-manager
+          repository: mip-org/mip
+          path: mip
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -77,7 +77,7 @@ jobs:
         env:
           BUILD_ARCHITECTURE: linux_x86_64
         with:
-          command: "addpath('mip-package-manager'); addpath('scripts'); bundle_packages"
+          command: "addpath('mip'); addpath('scripts'); bundle_packages"
 
       - name: Upload packages
         if: steps.check.outputs.has_packages == 'true'
@@ -98,11 +98,11 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Checkout mip-package-manager
+      - name: Checkout mip
         uses: actions/checkout@v4
         with:
-          repository: mip-org/mip-package-manager
-          path: mip-package-manager
+          repository: mip-org/mip
+          path: mip
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -140,7 +140,7 @@ jobs:
         env:
           BUILD_ARCHITECTURE: macos_x86_64
         with:
-          command: "addpath('mip-package-manager'); addpath('scripts'); bundle_packages"
+          command: "addpath('mip'); addpath('scripts'); bundle_packages"
 
       - name: Upload packages
         if: steps.check.outputs.has_packages == 'true'
@@ -164,11 +164,11 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Checkout mip-package-manager
+      - name: Checkout mip
         uses: actions/checkout@v4
         with:
-          repository: mip-org/mip-package-manager
-          path: mip-package-manager
+          repository: mip-org/mip
+          path: mip
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -206,7 +206,7 @@ jobs:
         env:
           BUILD_ARCHITECTURE: macos_arm64
         with:
-          command: "addpath('mip-package-manager'); addpath('scripts'); bundle_packages"
+          command: "addpath('mip'); addpath('scripts'); bundle_packages"
 
       - name: Upload packages
         if: steps.check.outputs.has_packages == 'true'
@@ -221,11 +221,11 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Checkout mip-package-manager
+      - name: Checkout mip
         uses: actions/checkout@v4
         with:
-          repository: mip-org/mip-package-manager
-          path: mip-package-manager
+          repository: mip-org/mip
+          path: mip
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -271,7 +271,7 @@ jobs:
         env:
           BUILD_ARCHITECTURE: numbl_wasm
         with:
-          command: "addpath('mip-package-manager'); addpath('scripts'); bundle_packages"
+          command: "addpath('mip'); addpath('scripts'); bundle_packages"
 
       - name: Upload packages
         if: steps.check.outputs.has_packages == 'true'
@@ -297,11 +297,11 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Checkout mip-package-manager
+      - name: Checkout mip
         uses: actions/checkout@v4
         with:
-          repository: mip-org/mip-package-manager
-          path: mip-package-manager
+          repository: mip-org/mip
+          path: mip
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -339,7 +339,7 @@ jobs:
         env:
           BUILD_ARCHITECTURE: numbl_linux_x86_64
         with:
-          command: "addpath('mip-package-manager'); addpath('scripts'); bundle_packages"
+          command: "addpath('mip'); addpath('scripts'); bundle_packages"
 
       - name: Upload packages
         if: steps.check.outputs.has_packages == 'true'
@@ -357,11 +357,11 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Checkout mip-package-manager
+      - name: Checkout mip
         uses: actions/checkout@v4
         with:
-          repository: mip-org/mip-package-manager
-          path: mip-package-manager
+          repository: mip-org/mip
+          path: mip
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -399,7 +399,7 @@ jobs:
         env:
           BUILD_ARCHITECTURE: numbl_macos_x86_64
         with:
-          command: "addpath('mip-package-manager'); addpath('scripts'); bundle_packages"
+          command: "addpath('mip'); addpath('scripts'); bundle_packages"
 
       - name: Upload packages
         if: steps.check.outputs.has_packages == 'true'
@@ -417,11 +417,11 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Checkout mip-package-manager
+      - name: Checkout mip
         uses: actions/checkout@v4
         with:
-          repository: mip-org/mip-package-manager
-          path: mip-package-manager
+          repository: mip-org/mip
+          path: mip
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -459,7 +459,7 @@ jobs:
         env:
           BUILD_ARCHITECTURE: numbl_macos_arm64
         with:
-          command: "addpath('mip-package-manager'); addpath('scripts'); bundle_packages"
+          command: "addpath('mip'); addpath('scripts'); bundle_packages"
 
       - name: Upload packages
         if: steps.check.outputs.has_packages == 'true'
@@ -474,11 +474,11 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Checkout mip-package-manager
+      - name: Checkout mip
         uses: actions/checkout@v4
         with:
-          repository: mip-org/mip-package-manager
-          path: mip-package-manager
+          repository: mip-org/mip
+          path: mip
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -516,7 +516,7 @@ jobs:
         env:
           BUILD_ARCHITECTURE: windows_x86_64
         with:
-          command: "addpath('mip-package-manager'); addpath('scripts'); bundle_packages"
+          command: "addpath('mip'); addpath('scripts'); bundle_packages"
 
       - name: Upload packages
         if: steps.check.outputs.has_packages == 'true'
@@ -531,11 +531,11 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Checkout mip-package-manager
+      - name: Checkout mip
         uses: actions/checkout@v4
         with:
-          repository: mip-org/mip-package-manager
-          path: mip-package-manager
+          repository: mip-org/mip
+          path: mip
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -573,7 +573,7 @@ jobs:
         env:
           BUILD_ARCHITECTURE: any
         with:
-          command: "addpath('mip-package-manager'); addpath('scripts'); bundle_packages"
+          command: "addpath('mip'); addpath('scripts'); bundle_packages"
 
       - name: Upload packages
         if: steps.check.outputs.has_packages == 'true'
