@@ -1,3 +1,4 @@
 source:
   git: "https://github.com/mip-org/mip"
   branch: "numbl"
+version: "numbl"

@@ -154,6 +154,18 @@ def overlay_channel_files(release_folder, target_dir):
             shutil.copy2(src, dst)
 
 
+def apply_recipe_overrides(mip_yaml_path, recipe):
+    """Apply recipe-level overrides (e.g. version) to mip.yaml on disk."""
+    version_override = recipe.get('version')
+    if version_override is None:
+        return
+    with open(mip_yaml_path, 'r') as f:
+        mip_yaml = yaml.safe_load(f) or {}
+    mip_yaml['version'] = version_override
+    with open(mip_yaml_path, 'w') as f:
+        yaml.safe_dump(mip_yaml, f, sort_keys=False)
+
+
 def read_mip_yaml_architectures(mip_yaml_path):
     """Read mip.yaml and return list of architectures from all builds."""
     with open(mip_yaml_path, 'r') as f:
@@ -315,6 +327,7 @@ class PackagePreparer:
                     print(f"  Error: No mip.yaml found")
                     return False
 
+                apply_recipe_overrides(mip_yaml_path, recipe)
                 archs, mip_yaml = read_mip_yaml_architectures(mip_yaml_path)
             finally:
                 if os.path.exists(temp_dir):
@@ -365,6 +378,9 @@ class PackagePreparer:
                 self._fetch_source(recipe, output_path)
                 # Overlay channel files
                 overlay_channel_files(release_folder, output_path)
+                # Apply recipe-level overrides (e.g. version) to mip.yaml
+                apply_recipe_overrides(
+                    os.path.join(output_path, 'mip.yaml'), recipe)
 
                 # Write source_hash for mip bundle to include in mip.json
                 hash_file = os.path.join(output_path, '.source_hash')
