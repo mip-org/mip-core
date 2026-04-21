@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
     inputs:
       force:
-        description: 'Force rebuild of all packages (bypass source-hash cache)'
+        description: 'Force rebuild of all packages'
         type: boolean
         default: false
 
