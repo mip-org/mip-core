@@ -7,8 +7,8 @@ This script:
 2. For each release, finds .mhl.mip.json assets
 3. Downloads each .mip.json file
 4. Assembles them into a consolidated index.json
-5. Generates a human-readable packages.html
-6. Saves both to build/gh-pages/ for GitHub Pages deployment
+5. Copies site/* (static index.html and assets) alongside it
+6. Saves everything to build/gh-pages/ for GitHub Pages deployment
 
 This script should be run after upload_packages.py
 """
@@ -16,6 +16,7 @@ This script should be run after upload_packages.py
 import os
 import sys
 import json
+import shutil
 import argparse
 import subprocess
 import tempfile
@@ -136,146 +137,25 @@ class IndexAssembler:
             print(f"  Warning: Failed to download/parse {asset_name}: {e}")
             return None
 
-    def _generate_index_html(self, package_metadata, last_updated):
+    def _copy_static_site(self, gh_pages_dir):
         """
-        Generate a human-readable HTML index from package metadata.
-
-        Args:
-            package_metadata: List of package metadata dicts
-            last_updated: ISO timestamp of when index was updated
-
-        Returns:
-            HTML string
+        Copy the static site assets (index.html, etc.) from site/ into
+        the GitHub Pages output directory.
         """
-        html = []
-        html.append('<!DOCTYPE html>')
-        html.append('<html lang="en">')
-        html.append('<head>')
-        html.append('    <meta charset="UTF-8">')
-        html.append('    <meta name="viewport" content="width=device-width, initial-scale=1.0">')
-        html.append('    <title>MIP Package Index</title>')
-        html.append('    <style>')
-        html.append('        body {')
-        html.append('            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;')
-        html.append('            line-height: 1.6;')
-        html.append('            max-width: 1200px;')
-        html.append('            margin: 0 auto;')
-        html.append('            padding: 20px;')
-        html.append('            color: #333;')
-        html.append('        }')
-        html.append('        h1 {')
-        html.append('            border-bottom: 2px solid #e1e4e8;')
-        html.append('            padding-bottom: 10px;')
-        html.append('        }')
-        html.append('        .info {')
-        html.append('            color: #586069;')
-        html.append('            margin: 20px 0;')
-        html.append('        }')
-        html.append('        table {')
-        html.append('            width: 100%;')
-        html.append('            border-collapse: collapse;')
-        html.append('            margin: 20px 0;')
-        html.append('        }')
-        html.append('        th, td {')
-        html.append('            text-align: left;')
-        html.append('            padding: 12px;')
-        html.append('            border: 1px solid #e1e4e8;')
-        html.append('        }')
-        html.append('        th {')
-        html.append('            background-color: #f6f8fa;')
-        html.append('            font-weight: 600;')
-        html.append('        }')
-        html.append('        tr:hover {')
-        html.append('            background-color: #f6f8fa;')
-        html.append('        }')
-        html.append('        a {')
-        html.append('            color: #0366d6;')
-        html.append('            text-decoration: none;')
-        html.append('        }')
-        html.append('        a:hover {')
-        html.append('            text-decoration: underline;')
-        html.append('        }')
-        html.append('        .footer {')
-        html.append('            margin-top: 40px;')
-        html.append('            padding-top: 20px;')
-        html.append('            border-top: 1px solid #e1e4e8;')
-        html.append('            color: #586069;')
-        html.append('        }')
-        html.append('    </style>')
-        html.append('</head>')
-        html.append('<body>')
-        html.append('    <h1>MIP Package Index</h1>')
-        html.append('    <p>Available MATLAB packages for installation via MIP.</p>')
+        project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        site_dir = os.path.join(project_root, 'site')
+        if not os.path.isdir(site_dir):
+            print(f"  Warning: no site/ directory at {site_dir}, skipping static copy")
+            return
 
-        if package_metadata:
-            sorted_packages = sorted(package_metadata, key=_package_sort_key)
-
-            html.append(f'    <div class="info">')
-            html.append(f'        <strong>Total packages:</strong> {len(sorted_packages)}<br>')
-            html.append(f'        <strong>Last updated:</strong> {last_updated}')
-            html.append(f'    </div>')
-
-            html.append('    <table>')
-            html.append('        <thead>')
-            html.append('            <tr>')
-            html.append('                <th>Package</th>')
-            html.append('                <th>Version</th>')
-            html.append('                <th>Description</th>')
-            html.append('                <th>Platform</th>')
-            html.append('                <th>Download</th>')
-            html.append('            </tr>')
-            html.append('        </thead>')
-            html.append('        <tbody>')
-
-            for pkg in sorted_packages:
-                name = pkg.get('name', 'unknown')
-                version = pkg.get('version', 'unknown')
-                description = pkg.get('description', '')
-                homepage = pkg.get('homepage', '')
-                mhl_url = pkg.get('mhl_url', '')
-                mip_json_url = pkg.get('mip_json_url', '')
-
-                from html import escape
-                description = escape(description)
-
-                if len(description) > 80:
-                    description = description[:77] + "..."
-
-                if homepage:
-                    name_cell = f'<a href="{escape(homepage)}">{escape(name)}</a>'
-                else:
-                    name_cell = escape(name)
-
-                architecture = pkg.get('architecture', 'any')
-                platform_info = f"architecture={architecture}"
-
-                download_links = []
-                if mhl_url:
-                    download_links.append(f'<a href="{escape(mhl_url)}">.mhl</a>')
-                if mip_json_url:
-                    download_links.append(f'<a href="{escape(mip_json_url)}">metadata</a>')
-                download_cell = " ".join(download_links) if download_links else "N/A"
-
-                html.append('            <tr>')
-                html.append(f'                <td>{name_cell}</td>')
-                html.append(f'                <td>{escape(version)}</td>')
-                html.append(f'                <td>{description}</td>')
-                html.append(f'                <td>{escape(platform_info)}</td>')
-                html.append(f'                <td>{download_cell}</td>')
-                html.append('            </tr>')
-
-            html.append('        </tbody>')
-            html.append('    </table>')
-        else:
-            html.append('    <p>No packages available yet.</p>')
-
-        html.append('    <div class="footer">')
-        html.append('        <p>For more information, visit the <a href="https://github.com/mip-org/mip">MIP documentation</a>.</p>')
-        html.append('    </div>')
-        html.append('</body>')
-        html.append('</html>')
-
-        return "\n".join(html)
+        for entry in os.listdir(site_dir):
+            src = os.path.join(site_dir, entry)
+            dst = os.path.join(gh_pages_dir, entry)
+            if os.path.isdir(src):
+                shutil.copytree(src, dst, dirs_exist_ok=True)
+            else:
+                shutil.copy2(src, dst)
+            print(f"  Copied site/{entry}")
 
     def assemble_index(self):
         """
@@ -330,6 +210,7 @@ class IndexAssembler:
 
         # Create index data
         index_data = {
+            'github_repo': self.github_repo,
             'packages': package_metadata,
             'total_packages': len(package_metadata),
             'last_updated': datetime.utcnow().isoformat() + 'Z'
@@ -349,20 +230,13 @@ class IndexAssembler:
             print(f"\nDone: Created index.json with {len(package_metadata)} package(s)")
             print(f"  Saved to: {index_path}")
 
-            # Generate and save packages.html
-            packages_html_path = os.path.join(gh_pages_dir, 'packages.html')
-            html_content = self._generate_index_html(
-                package_metadata,
-                index_data['last_updated']
-            )
-            with open(packages_html_path, 'w') as f:
-                f.write(html_content)
+            # Copy static site assets (index.html, etc.)
+            print("\nCopying static site assets...")
+            self._copy_static_site(gh_pages_dir)
 
-            print(f"Done: Created packages.html")
-            print(f"  Saved to: {packages_html_path}")
             repo_name = get_github_repo().split('/')[-1]
             owner = get_github_repo().split('/')[0]
-            print(f"  Will be available at: https://{owner}.github.io/{repo_name}/packages.html")
+            print(f"\n  Will be available at: https://{owner}.github.io/{repo_name}/")
 
             return True
 

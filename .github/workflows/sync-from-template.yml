@@ -25,6 +25,8 @@ jobs:
           cp _template/README.md README.md
           cp _template/.github/workflows/*.yml .github/workflows/
           cp _template/scripts/* scripts/
+          mkdir -p site
+          cp _template/site/* site/
           rm -rf _template
 
       - name: Check for changes

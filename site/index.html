@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MIP Channel</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #F6F6F4;
+            --surface: #FFFFFF;
+            --text: #1A1A1A;
+            --text-muted: #6B7280;
+            --border: #E5E7EB;
+            --accent: #0F766E;
+            --accent-soft: #CCFBF1;
+            --shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+            --shadow-hover: 0 4px 14px rgba(15, 23, 42, 0.08);
+            --mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+        }
+        * { box-sizing: border-box; }
+        html, body { margin: 0; padding: 0; }
+        body {
+            font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+            color: var(--text);
+            background: var(--bg);
+            min-height: 100vh;
+            line-height: 1.6;
+            font-size: 15px;
+        }
+        a { color: var(--accent); text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        .page { max-width: 1000px; margin: 0 auto; padding: 48px 24px 80px; }
+        .home-link {
+            display: inline-block;
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-bottom: 20px;
+        }
+        .home-link:hover { color: var(--accent); text-decoration: none; }
+        h1 {
+            font-size: 2rem;
+            font-weight: 600;
+            line-height: 1.2;
+            margin: 0 0 6px 0;
+            letter-spacing: -0.015em;
+        }
+        h1 .slash { color: var(--text-muted); font-weight: 400; margin: 0 4px; }
+        h1 .owner { color: var(--text-muted); font-weight: 400; }
+        .subtitle {
+            color: var(--text-muted);
+            margin: 0 0 28px 0;
+            font-size: 14px;
+        }
+        .search {
+            width: 100%;
+            max-width: 380px;
+            padding: 10px 14px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            color: var(--text);
+            font-family: inherit;
+            font-size: 14px;
+            outline: none;
+            margin-bottom: 20px;
+            box-shadow: var(--shadow);
+            transition: border-color 0.15s, box-shadow 0.15s;
+        }
+        .search:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-soft);
+        }
+        .alert {
+            padding: 12px 16px;
+            background: #FEF2F2;
+            border: 1px solid #FECACA;
+            border-radius: 10px;
+            color: #991B1B;
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+        .packages { display: flex; flex-direction: column; gap: 14px; }
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px 22px;
+            box-shadow: var(--shadow);
+            transition: box-shadow 0.15s, border-color 0.15s, transform 0.15s;
+        }
+        .card:hover {
+            border-color: #D1D5DB;
+            box-shadow: var(--shadow-hover);
+        }
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 4px;
+        }
+        .name-row {
+            display: flex;
+            align-items: baseline;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .pkg-name {
+            font-family: var(--mono);
+            color: var(--accent);
+            font-size: 1.0625rem;
+            font-weight: 600;
+        }
+        .version {
+            font-family: var(--mono);
+            color: var(--text-muted);
+            font-size: 12px;
+        }
+        .arch-chips {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            flex-shrink: 0;
+        }
+        .chip {
+            display: inline-block;
+            padding: 2px 10px;
+            font-size: 11.5px;
+            font-family: var(--mono);
+            border: 1px solid var(--border);
+            border-radius: 999px;
+            color: var(--text-muted);
+            background: var(--bg);
+        }
+        .chip-any {
+            background: var(--accent-soft);
+            border-color: var(--accent-soft);
+            color: #0B5C56;
+        }
+        .description {
+            font-size: 14px;
+            color: var(--text);
+            margin: 4px 0 10px 0;
+        }
+        .meta {
+            display: flex;
+            gap: 14px;
+            flex-wrap: wrap;
+            align-items: center;
+            font-size: 12.5px;
+            color: var(--text-muted);
+        }
+        .meta a { display: inline-flex; align-items: center; gap: 4px; }
+        .deps {
+            font-size: 12.5px;
+            color: var(--text-muted);
+            margin-top: 6px;
+        }
+        .install {
+            margin-top: 12px;
+            padding: 10px 14px;
+            background: #F9FAFB;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-family: var(--mono);
+            font-size: 13px;
+            color: var(--text);
+            overflow-x: auto;
+            white-space: nowrap;
+        }
+        .install .prompt { color: var(--text-muted); user-select: none; margin-right: 2px; }
+        .external-icon { width: 11px; height: 11px; vertical-align: -1px; }
+        .empty {
+            color: var(--text-muted);
+            text-align: center;
+            padding: 48px 0;
+            font-size: 14px;
+        }
+        .spinner {
+            display: block;
+            margin: 48px auto;
+            width: 28px;
+            height: 28px;
+            border: 2px solid var(--border);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+    <div class="page">
+        <a class="home-link" href="https://mip.sh">← mip.sh</a>
+        <h1 id="title">MIP Channel</h1>
+        <p class="subtitle" id="subtitle">Loading package index…</p>
+
+        <input type="text" class="search" id="search" placeholder="Filter packages…" hidden>
+        <div class="alert" id="error" hidden></div>
+        <div id="content"></div>
+    </div>
+
+    <script>
+        const EXTERNAL_ICON = '<svg class="external-icon" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7zM19 19H5V5h7V3H5c-1.11 0-2 .89-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-7h-2v7z"/></svg>';
+
+        function escapeHtml(s) {
+            return String(s ?? "")
+                .replaceAll("&", "&amp;")
+                .replaceAll("<", "&lt;")
+                .replaceAll(">", "&gt;")
+                .replaceAll('"', "&quot;")
+                .replaceAll("'", "&#39;");
+        }
+
+        function deduplicate(packages) {
+            const grouped = new Map();
+            for (const pkg of packages) {
+                const list = grouped.get(pkg.name) || [];
+                list.push(pkg);
+                grouped.set(pkg.name, list);
+            }
+            return Array.from(grouped.values()).map((variants) => ({
+                ...variants[0],
+                architecture: [...new Set(variants.map((v) => v.architecture).filter(Boolean))].join(", "),
+            }));
+        }
+
+        function slugFromRepoString(repo) {
+            if (!repo || typeof repo !== "string") return null;
+            const [owner, name] = repo.split("/");
+            if (!owner || !name) return null;
+            return { owner, repo: name };
+        }
+
+        function deriveChannelSlug() {
+            // On GitHub Pages: https://<owner>.github.io/<repo>/... -> owner/repo
+            const host = location.hostname;
+            const segments = location.pathname.split("/").filter(Boolean);
+            const ghPages = host.endsWith(".github.io");
+            if (ghPages && segments.length >= 1) {
+                const owner = host.split(".")[0];
+                return { owner, repo: segments[0] };
+            }
+            return null;
+        }
+
+        function setChannelTitle(slug) {
+            const titleEl = document.getElementById("title");
+            if (!slug) {
+                titleEl.textContent = "MIP Channel";
+                document.title = "MIP Channel";
+                return;
+            }
+            titleEl.innerHTML = `<span class="owner">${escapeHtml(slug.owner)}</span><span class="slash">/</span>${escapeHtml(slug.repo)}`;
+            document.title = `${slug.owner}/${slug.repo} — MIP Channel`;
+        }
+
+        function renderCard(pkg, slug) {
+            const name = escapeHtml(pkg.name || "unknown");
+            const version = pkg.version && pkg.version !== "unspecified" ? pkg.version : null;
+            const description = escapeHtml(pkg.description || "");
+            const license = pkg.license && pkg.license !== "unspecified" ? escapeHtml(pkg.license) : null;
+            const homepage = pkg.homepage ? escapeHtml(pkg.homepage) : null;
+            const deps = Array.isArray(pkg.dependencies) ? pkg.dependencies : [];
+            const arches = (pkg.architecture || "")
+                .split(", ")
+                .map((a) => a.trim())
+                .filter(Boolean);
+
+            const channelArg = slug ? `--channel ${slug.owner}/${slug.repo} ` : "";
+            const installCmd = `mip install ${channelArg}${pkg.name}`;
+
+            const versionEl = version
+                ? `<span class="version">${escapeHtml(version)}</span>`
+                : "";
+            const archChips = arches
+                .map(
+                    (a) =>
+                        `<span class="chip${a === "any" ? " chip-any" : ""}">${escapeHtml(a)}</span>`
+                )
+                .join("");
+
+            const homepageLink = homepage
+                ? `<a href="${homepage}" target="_blank" rel="noopener noreferrer">Homepage${EXTERNAL_ICON}</a>`
+                : "";
+            const licenseEl = license ? `<span>${license}</span>` : "";
+            const depsEl =
+                deps.length > 0
+                    ? `<div class="deps"><span class="label">depends on:</span> ${deps.map(escapeHtml).join(", ")}</div>`
+                    : "";
+
+            return `
+                <div class="card">
+                    <div class="card-header">
+                        <div class="name-row">
+                            <span class="pkg-name">${name}</span>
+                            ${versionEl}
+                        </div>
+                        <div class="arch-chips">${archChips}</div>
+                    </div>
+                    ${description ? `<p class="description">${description}</p>` : ""}
+                    <div class="meta">${licenseEl}${homepageLink}</div>
+                    ${depsEl}
+                    <div class="install"><span class="prompt">$ </span>${escapeHtml(installCmd)}</div>
+                </div>
+            `;
+        }
+
+        function render(packages, slug) {
+            const content = document.getElementById("content");
+            if (packages.length === 0) {
+                content.innerHTML = '<div class="empty">No packages available yet.</div>';
+                return;
+            }
+            content.innerHTML =
+                '<div class="packages">' +
+                packages.map((p) => renderCard(p, slug)).join("") +
+                "</div>";
+        }
+
+        function filterPackages(all, query) {
+            if (!query) return all;
+            const q = query.toLowerCase();
+            return all.filter(
+                (p) =>
+                    (p.name || "").toLowerCase().includes(q) ||
+                    (p.description || "").toLowerCase().includes(q) ||
+                    (Array.isArray(p.dependencies) ? p.dependencies : []).some((d) =>
+                        d.toLowerCase().includes(q)
+                    )
+            );
+        }
+
+        async function main() {
+            const subtitle = document.getElementById("subtitle");
+            const errorBox = document.getElementById("error");
+            const search = document.getElementById("search");
+
+            try {
+                const res = await fetch("./index.json", { cache: "no-cache" });
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                const data = await res.json();
+                const slug =
+                    slugFromRepoString(data.github_repo) || deriveChannelSlug();
+                setChannelTitle(slug);
+
+                const packages = deduplicate(data.packages || []).sort((a, b) =>
+                    (a.name || "").localeCompare(b.name || "")
+                );
+                subtitle.textContent = `${packages.length} package${packages.length === 1 ? "" : "s"} available`;
+
+                if (packages.length > 0) {
+                    search.hidden = false;
+                }
+                render(packages, slug);
+
+                search.addEventListener("input", (e) => {
+                    render(filterPackages(packages, e.target.value), slug);
+                });
+            } catch (err) {
+                setChannelTitle(deriveChannelSlug());
+                subtitle.textContent = "";
+                errorBox.hidden = false;
+                errorBox.textContent = `Failed to load package index: ${err.message}`;
+            }
+        }
+
+        main();
+    </script>
+</body>
+</html>
