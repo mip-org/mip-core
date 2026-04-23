@@ -37,7 +37,7 @@ source:
 ```yaml
 name: my_package
 description: "What this package does"
-version: "1.0.0"
+version: "1.0.0"           # optional; blank or numeric
 license: "MIT"
 dependencies: []
 
@@ -56,7 +56,25 @@ builds:
     compile_script: compile.m
 ```
 
-Package names must use underscores (not hyphens). The version in the YAML must match the release folder name.
+Package names must use underscores (not hyphens).
+
+### Version rules
+
+The package version is the release directory name under
+`packages/<name>/<version>/`. The `version` field in `mip.yaml` is optional;
+when present it must be either blank or numeric (e.g. `1.2.3`). Non-numeric
+values like branch names belong in the directory name, not in `mip.yaml`.
+`recipe.yaml` does not carry a `version` field.
+
+The release directory name must be one of:
+
+- the numeric `version` in `mip.yaml`,
+- the `source.branch` named in `recipe.yaml`, or
+- any string, when `mip.yaml`'s `version` is blank/missing.
+
+So `packages/chebfun/5.7.0/` (numeric version matches `mip.yaml`) and
+`packages/my_package/main/` (branch matches `source.branch: main`, with
+`mip.yaml` version blank) are both valid.
 
 ## How it works
 

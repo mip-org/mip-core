@@ -154,16 +154,57 @@ def overlay_channel_files(release_folder, target_dir):
             shutil.copy2(src, dst)
 
 
-def apply_recipe_overrides(mip_yaml_path, recipe):
-    """Apply recipe-level overrides (e.g. version) to mip.yaml on disk."""
-    version_override = recipe.get('version')
-    if version_override is None:
-        return
+def is_numeric_version(s):
+    """Return True if s is a dot-separated numeric version (e.g. '1.2.3')."""
+    if not s:
+        return False
+    parts = s.split('.')
+    return all(p.isdigit() for p in parts) and len(parts) >= 1
+
+
+def validate_and_apply_version(mip_yaml_path, recipe, release_version):
+    """Validate channel version rules and write the release-dir version into
+    mip.yaml when mip.yaml's version is blank or missing.
+
+    Rules:
+    - recipe.yaml must not contain a top-level 'version' field.
+    - If mip.yaml has a non-empty 'version', it must be numeric.
+    - The release-directory name must be one of:
+        * the numeric version in mip.yaml,
+        * the name of 'source.branch' in recipe.yaml, or
+        * anything (if mip.yaml's version is blank/missing).
+    """
+    if 'version' in recipe:
+        raise ValueError(
+            "recipe.yaml must not contain a 'version' field "
+            "(release dir is the version)")
+
     with open(mip_yaml_path, 'r') as f:
         mip_yaml = yaml.safe_load(f) or {}
-    mip_yaml['version'] = version_override
-    with open(mip_yaml_path, 'w') as f:
-        yaml.safe_dump(mip_yaml, f, sort_keys=False)
+    mv = mip_yaml.get('version')
+    if mv is None:
+        mv = ''
+    mv = str(mv).strip()
+
+    source_branch = (recipe.get('source') or {}).get('branch') or ''
+
+    if mv and not is_numeric_version(mv):
+        raise ValueError(
+            f"mip.yaml 'version' must be blank or numeric, got {mv!r}. "
+            f"Non-numeric values (e.g. branch names) belong in the release "
+            f"directory name, not in mip.yaml.")
+
+    if mv:
+        if release_version != mv and release_version != source_branch:
+            raise ValueError(
+                f"Release directory {release_version!r} must equal mip.yaml "
+                f"version {mv!r} or recipe source.branch {source_branch!r}.")
+    else:
+        # Blank/missing mip.yaml version: any dir name is allowed. Fill in the
+        # dir name so the bundled mip.json carries the correct version.
+        mip_yaml['version'] = release_version
+        with open(mip_yaml_path, 'w') as f:
+            yaml.safe_dump(mip_yaml, f, sort_keys=False)
 
 
 def read_mip_yaml_architectures(mip_yaml_path):
@@ -327,7 +368,8 @@ class PackagePreparer:
                     print(f"  Error: No mip.yaml found")
                     return False
 
-                apply_recipe_overrides(mip_yaml_path, recipe)
+                validate_and_apply_version(
+                    mip_yaml_path, recipe, release_version)
                 archs, mip_yaml = read_mip_yaml_architectures(mip_yaml_path)
             finally:
                 if os.path.exists(temp_dir):
@@ -350,7 +392,7 @@ class PackagePreparer:
             # Build the .mhl filename for cache check. Canonical package
             # names may contain '-', but the filename uses '-' as a field
             # separator, so encode the name with '_' in the filename.
-            version = mip_yaml.get('version', release_version)
+            version = mip_yaml.get('version') or release_version
             name_for_filename = mip_yaml['name'].replace('-', '_')
             mhl_filename = (f"{name_for_filename}-{version}-"
                             f"{effective_arch}.mhl")
@@ -378,9 +420,11 @@ class PackagePreparer:
                 self._fetch_source(recipe, output_path)
                 # Overlay channel files
                 overlay_channel_files(release_folder, output_path)
-                # Apply recipe-level overrides (e.g. version) to mip.yaml
-                apply_recipe_overrides(
-                    os.path.join(output_path, 'mip.yaml'), recipe)
+                # Fill in mip.yaml's version from the release directory name
+                # when it is blank/missing (channel version rules).
+                validate_and_apply_version(
+                    os.path.join(output_path, 'mip.yaml'),
+                    recipe, release_version)
 
                 # Write source_hash for mip bundle to include in mip.json
                 hash_file = os.path.join(output_path, '.source_hash')
