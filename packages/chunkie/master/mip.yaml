@@ -6,7 +6,7 @@ homepage: "https://github.com/fastalgorithms/chunkie"
 repository: "https://github.com/fastalgorithms/chunkie"
 dependencies: ["fmm2d", "flam"]
 
-addpaths:
+paths:
   - path: "chunkie"
 
 builds:

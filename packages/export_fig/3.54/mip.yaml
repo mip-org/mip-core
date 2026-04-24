@@ -6,7 +6,7 @@ homepage: "https://github.com/altmany/export_fig"
 repository: "https://github.com/altmany/export_fig"
 dependencies: []
 
-addpaths:
+paths:
   - path: "."
 
 builds:

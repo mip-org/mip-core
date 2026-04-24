@@ -6,7 +6,7 @@ homepage: "https://github.com/taiya/kdtree"
 repository: "https://github.com/taiya/kdtree"
 dependencies: []
 
-addpaths:
+paths:
   - path: "toolbox"
 
 builds:

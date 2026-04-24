@@ -11,7 +11,7 @@ symbol_extensions: [".m", ".js"]
 # matlab/  — upstream finufft_plan.m, finufft1d1.m, etc.
 # matlab/numbl — single finufft.js builtin + finufft.{wasm,so} that the
 # upstream m-files dispatch through.  No m-file overrides here.
-addpaths:
+paths:
   - path: "matlab"
   - path: "matlab/numbl"
 

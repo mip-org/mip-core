@@ -6,7 +6,7 @@ homepage: "https://github.com/chebfun/chebfun"
 repository: "https://github.com/chebfun/chebfun"
 dependencies: []
 
-addpaths:
+paths:
   - path: "."
 
 builds:

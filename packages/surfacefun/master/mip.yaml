@@ -6,7 +6,7 @@ homepage: "https://github.com/danfortunato/surfacefun"
 repository: "https://github.com/danfortunato/surfacefun"
 dependencies: ["chebfun"]
 
-addpaths:
+paths:
   - path: "."
   - path: "tools"
 

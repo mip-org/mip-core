@@ -6,7 +6,7 @@ homepage: "https://github.com/klho/FLAM"
 repository: "https://github.com/klho/FLAM"
 dependencies: []
 
-addpaths:
+paths:
   - path: "."
     recursive: true
     exclude: ["test", "paper"]
