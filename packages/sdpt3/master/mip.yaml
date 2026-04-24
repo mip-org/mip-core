@@ -8,7 +8,7 @@ dependencies: []
 
 symbol_extensions: [".m", ".js"]
 
-addpaths:
+paths:
   - path: "numbl"
   - path: "Solver"
   - path: "HSDSolver"

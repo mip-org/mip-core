@@ -9,7 +9,7 @@ dependencies: []
 # matlab/  — upstream rfmm2d.m, cfmm2d.m, lfmm2d.m, hfmm2d.m, stfmm2d.m
 # matlab/numbl — single fmm2d.js builtin + fmm2d.{wasm,so} that the
 # upstream m-files dispatch through.  No m-file overrides here.
-addpaths:
+paths:
   - path: "matlab"
   - path: "matlab/numbl"
 
