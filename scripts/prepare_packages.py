@@ -162,9 +162,10 @@ def is_numeric_version(s):
     return all(p.isdigit() for p in parts) and len(parts) >= 1
 
 
-def validate_and_apply_version(mip_yaml_path, recipe, release_version):
-    """Validate channel version rules and write the release-dir version into
-    mip.yaml when mip.yaml's version is blank or missing.
+def validate_channel_version_rules(mip_yaml_path, recipe, release_version):
+    """Validate channel version rules. The release-dir version is passed to
+    the bundler via a side file (.release_version) rather than being written
+    into mip.yaml, so mip.yaml stays as authored.
 
     Rules:
     - recipe.yaml must not contain a top-level 'version' field.
@@ -194,17 +195,10 @@ def validate_and_apply_version(mip_yaml_path, recipe, release_version):
             f"Non-numeric values (e.g. branch names) belong in the release "
             f"directory name, not in mip.yaml.")
 
-    if mv:
-        if release_version != mv and release_version != source_branch:
-            raise ValueError(
-                f"Release directory {release_version!r} must equal mip.yaml "
-                f"version {mv!r} or recipe source.branch {source_branch!r}.")
-    else:
-        # Blank/missing mip.yaml version: any dir name is allowed. Fill in the
-        # dir name so the bundled mip.json carries the correct version.
-        mip_yaml['version'] = release_version
-        with open(mip_yaml_path, 'w') as f:
-            yaml.safe_dump(mip_yaml, f, sort_keys=False)
+    if mv and release_version != mv and release_version != source_branch:
+        raise ValueError(
+            f"Release directory {release_version!r} must equal mip.yaml "
+            f"version {mv!r} or recipe source.branch {source_branch!r}.")
 
 
 def read_mip_yaml_architectures(mip_yaml_path):
@@ -218,7 +212,8 @@ def read_mip_yaml_architectures(mip_yaml_path):
     return archs, mip_yaml
 
 
-def check_existing_package(mhl_filename, source_hash, mip_yaml):
+def check_existing_package(mhl_filename, source_hash, mip_yaml,
+                           release_version):
     """Check if package already exists in GitHub releases with matching source hash."""
     release_tag = release_tag_from_mhl(mhl_filename)
     base_url = get_base_url(release_tag)
@@ -237,8 +232,12 @@ def check_existing_package(mhl_filename, source_hash, mip_yaml):
             print(f"  Source hash mismatch")
             return False
 
+        if existing.get('version') != release_version:
+            print(f"  Metadata mismatch in 'version'")
+            return False
+
         # Compare key metadata
-        for field in ('name', 'description', 'version', 'dependencies',
+        for field in ('name', 'description', 'dependencies',
                       'homepage', 'repository', 'license'):
             if existing.get(field) != mip_yaml.get(field):
                 print(f"  Metadata mismatch in '{field}'")
@@ -368,7 +367,7 @@ class PackagePreparer:
                     print(f"  Error: No mip.yaml found")
                     return False
 
-                validate_and_apply_version(
+                validate_channel_version_rules(
                     mip_yaml_path, recipe, release_version)
                 archs, mip_yaml = read_mip_yaml_architectures(mip_yaml_path)
             finally:
@@ -389,17 +388,17 @@ class PackagePreparer:
             else:
                 effective_arch = 'any'
 
-            # Build the .mhl filename for cache check. Canonical package
-            # names may contain '-', but the filename uses '-' as a field
-            # separator, so encode the name with '_' in the filename.
-            version = mip_yaml.get('version') or release_version
+            # Build the .mhl filename for cache check. The release-dir
+            # version is authoritative. Canonical package names may contain
+            # '-', but the filename uses '-' as a field separator, so encode
+            # the name with '_' in the filename.
             name_for_filename = mip_yaml['name'].replace('-', '_')
-            mhl_filename = (f"{name_for_filename}-{version}-"
+            mhl_filename = (f"{name_for_filename}-{release_version}-"
                             f"{effective_arch}.mhl")
 
             # Check cache
             if not self.force and check_existing_package(
-                    mhl_filename, source_hash, mip_yaml):
+                    mhl_filename, source_hash, mip_yaml, release_version):
                 print(f"  Skipping - package already up to date")
                 continue
 
@@ -408,7 +407,7 @@ class PackagePreparer:
                 continue
 
             # Create output directory: build/prepared/{name}-{version}/
-            output_name = f"{mip_yaml['name']}-{version}"
+            output_name = f"{mip_yaml['name']}-{release_version}"
             output_path = os.path.join(self.output_dir, output_name)
 
             if os.path.exists(output_path):
@@ -420,11 +419,16 @@ class PackagePreparer:
                 self._fetch_source(recipe, output_path)
                 # Overlay channel files
                 overlay_channel_files(release_folder, output_path)
-                # Fill in mip.yaml's version from the release directory name
-                # when it is blank/missing (channel version rules).
-                validate_and_apply_version(
+                # Validate channel version rules against the source mip.yaml.
+                validate_channel_version_rules(
                     os.path.join(output_path, 'mip.yaml'),
                     recipe, release_version)
+
+                # Write the release-dir version for mip bundle to pick up as
+                # the authoritative version in mip.json.
+                with open(os.path.join(output_path, '.release_version'),
+                          'w') as f:
+                    f.write(release_version)
 
                 # Write source_hash for mip bundle to include in mip.json
                 hash_file = os.path.join(output_path, '.source_hash')
