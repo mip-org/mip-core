@@ -1,6 +1,6 @@
 name: fmm2d
 description: "Flatiron Institute Fast Multipole Methods in 2D"
-version: main
+version:
 license: "Apache-2.0"
 homepage: "https://github.com/flatironinstitute/fmm2d"
 repository: "https://github.com/flatironinstitute/fmm2d"
