@@ -1,6 +1,6 @@
 name: chunkie
 description: "A MATLAB library for solving boundary value problems with integral equations"
-version: master
+version:
 license: "BSD-3-Clause"
 homepage: "https://github.com/fastalgorithms/chunkie"
 repository: "https://github.com/fastalgorithms/chunkie"
