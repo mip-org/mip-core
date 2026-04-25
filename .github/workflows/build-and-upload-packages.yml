@@ -90,68 +90,68 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: python scripts/upload_packages.py
 
-  build-macos-intel:
-    runs-on: macos-15-intel
+  # build-macos-intel:
+  #   runs-on: macos-15-intel
 
-    steps:
-      - name: Make alias for gfortran
-        run: |
-          gfortran-15 --version
-          ln -s /usr/local/bin/gfortran-15 /usr/local/bin/gfortran
-          gfortran --version
+  #   steps:
+  #     - name: Make alias for gfortran
+  #       run: |
+  #         gfortran-15 --version
+  #         ln -s /usr/local/bin/gfortran-15 /usr/local/bin/gfortran
+  #         gfortran --version
 
-      - name: Checkout repository
-        uses: actions/checkout@v4
+  #     - name: Checkout repository
+  #       uses: actions/checkout@v4
 
-      - name: Checkout mip
-        uses: actions/checkout@v4
-        with:
-          repository: mip-org/mip
-          path: mip
+  #     - name: Checkout mip
+  #       uses: actions/checkout@v4
+  #       with:
+  #         repository: mip-org/mip
+  #         path: mip
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
+  #     - name: Set up Python
+  #       uses: actions/setup-python@v5
+  #       with:
+  #         python-version: '3.11'
 
-      - name: Install Python dependencies
-        run: pip install requests pyyaml
+  #     - name: Install Python dependencies
+  #       run: pip install requests pyyaml
 
-      - name: Prepare packages
-        env:
-          BUILD_ARCHITECTURE: macos_x86_64
-        run: python scripts/prepare_packages.py ${{ inputs.force && '--force' || '' }}
+  #     - name: Prepare packages
+  #       env:
+  #         BUILD_ARCHITECTURE: macos_x86_64
+  #       run: python scripts/prepare_packages.py ${{ inputs.force && '--force' || '' }}
 
-      - name: Check for packages to bundle
-        id: check
-        run: |
-          if [ -d build/prepared ] && [ -n "$(ls -A build/prepared 2>/dev/null)" ]; then
-            echo "has_packages=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "has_packages=false" >> "$GITHUB_OUTPUT"
-            echo "No packages to bundle, skipping remaining steps"
-          fi
-        shell: bash
+  #     - name: Check for packages to bundle
+  #       id: check
+  #       run: |
+  #         if [ -d build/prepared ] && [ -n "$(ls -A build/prepared 2>/dev/null)" ]; then
+  #           echo "has_packages=true" >> "$GITHUB_OUTPUT"
+  #         else
+  #           echo "has_packages=false" >> "$GITHUB_OUTPUT"
+  #           echo "No packages to bundle, skipping remaining steps"
+  #         fi
+  #       shell: bash
 
-      - name: Set up MATLAB
-        if: steps.check.outputs.has_packages == 'true'
-        uses: matlab-actions/setup-matlab@v2
-        with:
-          cache: true
+  #     - name: Set up MATLAB
+  #       if: steps.check.outputs.has_packages == 'true'
+  #       uses: matlab-actions/setup-matlab@v2
+  #       with:
+  #         cache: true
 
-      - name: Bundle packages with mip
-        if: steps.check.outputs.has_packages == 'true'
-        uses: matlab-actions/run-command@v2
-        env:
-          BUILD_ARCHITECTURE: macos_x86_64
-        with:
-          command: "addpath('mip'); addpath('scripts'); bundle_packages"
+  #     - name: Bundle packages with mip
+  #       if: steps.check.outputs.has_packages == 'true'
+  #       uses: matlab-actions/run-command@v2
+  #       env:
+  #         BUILD_ARCHITECTURE: macos_x86_64
+  #       with:
+  #         command: "addpath('mip'); addpath('scripts'); bundle_packages"
 
-      - name: Upload packages
-        if: steps.check.outputs.has_packages == 'true'
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: python scripts/upload_packages.py
+  #     - name: Upload packages
+  #       if: steps.check.outputs.has_packages == 'true'
+  #       env:
+  #         GH_TOKEN: ${{ github.token }}
+  #       run: python scripts/upload_packages.py
 
   build-macos:
     runs-on: macos-latest
@@ -352,65 +352,65 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: python scripts/upload_packages.py
 
-  build-numbl-macos-intel:
-    runs-on: macos-15-intel
+  # build-numbl-macos-intel:
+  #   runs-on: macos-15-intel
 
-    steps:
-      - name: Install system dependencies
-        run: brew install fftw openblas
+  #   steps:
+  #     - name: Install system dependencies
+  #       run: brew install fftw openblas
 
-      - name: Checkout repository
-        uses: actions/checkout@v4
+  #     - name: Checkout repository
+  #       uses: actions/checkout@v4
 
-      - name: Checkout mip
-        uses: actions/checkout@v4
-        with:
-          repository: mip-org/mip
-          path: mip
+  #     - name: Checkout mip
+  #       uses: actions/checkout@v4
+  #       with:
+  #         repository: mip-org/mip
+  #         path: mip
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
+  #     - name: Set up Python
+  #       uses: actions/setup-python@v5
+  #       with:
+  #         python-version: '3.11'
 
-      - name: Install Python dependencies
-        run: pip install requests pyyaml
+  #     - name: Install Python dependencies
+  #       run: pip install requests pyyaml
 
-      - name: Prepare packages
-        env:
-          BUILD_ARCHITECTURE: numbl_macos_x86_64
-        run: python scripts/prepare_packages.py ${{ inputs.force && '--force' || '' }}
+  #     - name: Prepare packages
+  #       env:
+  #         BUILD_ARCHITECTURE: numbl_macos_x86_64
+  #       run: python scripts/prepare_packages.py ${{ inputs.force && '--force' || '' }}
 
-      - name: Check for packages to bundle
-        id: check
-        run: |
-          if [ -d build/prepared ] && [ -n "$(ls -A build/prepared 2>/dev/null)" ]; then
-            echo "has_packages=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "has_packages=false" >> "$GITHUB_OUTPUT"
-            echo "No packages to bundle, skipping remaining steps"
-          fi
-        shell: bash
+  #     - name: Check for packages to bundle
+  #       id: check
+  #       run: |
+  #         if [ -d build/prepared ] && [ -n "$(ls -A build/prepared 2>/dev/null)" ]; then
+  #           echo "has_packages=true" >> "$GITHUB_OUTPUT"
+  #         else
+  #           echo "has_packages=false" >> "$GITHUB_OUTPUT"
+  #           echo "No packages to bundle, skipping remaining steps"
+  #         fi
+  #       shell: bash
 
-      - name: Set up MATLAB
-        if: steps.check.outputs.has_packages == 'true'
-        uses: matlab-actions/setup-matlab@v2
-        with:
-          cache: true
+  #     - name: Set up MATLAB
+  #       if: steps.check.outputs.has_packages == 'true'
+  #       uses: matlab-actions/setup-matlab@v2
+  #       with:
+  #         cache: true
 
-      - name: Bundle packages with mip
-        if: steps.check.outputs.has_packages == 'true'
-        uses: matlab-actions/run-command@v2
-        env:
-          BUILD_ARCHITECTURE: numbl_macos_x86_64
-        with:
-          command: "addpath('mip'); addpath('scripts'); bundle_packages"
+  #     - name: Bundle packages with mip
+  #       if: steps.check.outputs.has_packages == 'true'
+  #       uses: matlab-actions/run-command@v2
+  #       env:
+  #         BUILD_ARCHITECTURE: numbl_macos_x86_64
+  #       with:
+  #         command: "addpath('mip'); addpath('scripts'); bundle_packages"
 
-      - name: Upload packages
-        if: steps.check.outputs.has_packages == 'true'
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: python scripts/upload_packages.py
+  #     - name: Upload packages
+  #       if: steps.check.outputs.has_packages == 'true'
+  #       env:
+  #         GH_TOKEN: ${{ github.token }}
+  #       run: python scripts/upload_packages.py
 
   build-numbl-macos:
     runs-on: macos-latest
