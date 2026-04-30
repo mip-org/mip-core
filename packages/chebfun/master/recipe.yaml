@@ -1,0 +1,4 @@
+source:
+  git: "https://github.com/chebfun/chebfun"
+  branch: "master"
+  remove_dirs: [tests, chebguiDemos]
