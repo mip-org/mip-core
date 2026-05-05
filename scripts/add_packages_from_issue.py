@@ -139,17 +139,17 @@ def render_validation_comment(parsed, errors):
         repo_id = f"{owner}/{repo}"
         repo_url = f"https://github.com/{owner}/{repo}"
         pkg_label = f"{name}@{version}"
-        lines.append(f"- `{pkg_label}` from the repository [{repo_id}]({repo_url})")
+        lines.append(f"- `{pkg_label}` from the repository [{repo_id}]({repo_url}). Install with:")
         channel = channel_for(owner, repo)
-        if channel is not None:
+        if channel:
             lines += [
-                "",
-                "  Install with:",
                 "",
                 "  ```",
                 f"  mip install --channel {channel} {pkg_label}",
                 "  ```",
             ]
+        else:
+            lines += ["PROBLEM: Unable to parse channel"]
     lines += [
         "",
         "An admin will review this request. To approve, an admin should reply "
