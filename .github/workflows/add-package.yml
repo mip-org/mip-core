@@ -18,25 +18,46 @@ jobs:
         env:
           ISSUE_TITLE: ${{ github.event.issue.title }}
         run: |
-          title_lower=$(printf '%s' "$ISSUE_TITLE" | tr '[:upper:]' '[:lower:]' | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
-          case "$title_lower" in
-            "add package"|"add package "*) ;;
-            *)
-              echo "Issue title does not start with 'add package' — skipping."
-              echo "proceed=false" >> "$GITHUB_OUTPUT"
-              exit 0
-              ;;
-          esac
-          echo "proceed=true" >> "$GITHUB_OUTPUT"
-          echo "title_lower=$title_lower" >> "$GITHUB_OUTPUT"
+          title_trimmed=$(printf '%s' "$ISSUE_TITLE" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
+          title_lower=$(printf '%s' "$title_trimmed" | tr '[:upper:]' '[:lower:]')
+          title_is_url=false
+          if printf '%s' "$title_trimmed" | grep -qE '^https://github\.com/[^/[:space:]]+/[^/[:space:]]+/tree/[^[:space:]]+$'; then
+            title_is_url=true
+          fi
+          if [ "$title_is_url" = "true" ] || printf '%s' "$title_lower" | grep -qE '^add package($|[^a-z])'; then
+            echo "proceed=true" >> "$GITHUB_OUTPUT"
+            echo "title_is_url=$title_is_url" >> "$GITHUB_OUTPUT"
+            echo "title_trimmed=$title_trimmed" >> "$GITHUB_OUTPUT"
+          else
+            echo "Issue title is neither 'add package …' nor a conforming URL — skipping."
+            echo "proceed=false" >> "$GITHUB_OUTPUT"
+          fi
 
       - name: Checkout repository
         if: steps.check.outputs.proceed == 'true'
         uses: actions/checkout@v4
 
+      - name: Prepend URL into issue body
+        if: steps.check.outputs.proceed == 'true' && steps.check.outputs.title_is_url == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          ISSUE_BODY: ${{ github.event.issue.body }}
+          TITLE_URL: ${{ steps.check.outputs.title_trimmed }}
+        run: |
+          mkdir -p .ci-tmp
+          if printf '%s' "$ISSUE_BODY" | grep -qF -- "$TITLE_URL"; then
+            echo "URL already present in body — leaving body alone."
+            exit 0
+          fi
+          { printf '%s\n\n' "$TITLE_URL"; printf '%s' "$ISSUE_BODY"; } > .ci-tmp/new_body.txt
+          gh issue edit "$ISSUE_NUMBER" --repo "$REPO" --body-file .ci-tmp/new_body.txt
+
       - name: Build validation comment
         if: steps.check.outputs.proceed == 'true'
         env:
+          ISSUE_TITLE: ${{ github.event.issue.title }}
           ISSUE_BODY: ${{ github.event.issue.body }}
         run: |
           mkdir -p .ci-tmp
@@ -53,12 +74,13 @@ jobs:
         run: |
           gh issue comment "$ISSUE_NUMBER" --repo "$REPO" --body-file .ci-tmp/comment.md
 
-      - name: Rename bare-titled issue
-        if: steps.check.outputs.proceed == 'true' && steps.check.outputs.title_lower == 'add package'
+      - name: Rewrite title to canonical form
+        if: steps.check.outputs.proceed == 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REPO: ${{ github.repository }}
           ISSUE_NUMBER: ${{ github.event.issue.number }}
+          ISSUE_TITLE: ${{ github.event.issue.title }}
         run: |
           if [ ! -s .ci-tmp/names.txt ]; then
             echo "No parsed package names — leaving title alone."
@@ -69,7 +91,12 @@ jobs:
             echo "First name is empty — leaving title alone."
             exit 0
           fi
-          gh issue edit "$ISSUE_NUMBER" --repo "$REPO" --title "add package $first_name"
+          new_title=$(printf 'Add package: `%s`' "$first_name")
+          if [ "$ISSUE_TITLE" = "$new_title" ]; then
+            echo "Title already canonical — no edit needed."
+            exit 0
+          fi
+          gh issue edit "$ISSUE_NUMBER" --repo "$REPO" --title "$new_title"
 
   add-package:
     if: >-
@@ -87,15 +114,17 @@ jobs:
           ISSUE_TITLE: ${{ github.event.issue.title }}
           COMMENT_BODY: ${{ github.event.comment.body }}
         run: |
-          title_lower=$(printf '%s' "$ISSUE_TITLE" | tr '[:upper:]' '[:lower:]' | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
-          case "$title_lower" in
-            "add package"|"add package "*) ;;
-            *)
-              echo "Issue title does not start with 'add package' — skipping."
-              echo "proceed=false" >> "$GITHUB_OUTPUT"
-              exit 0
-              ;;
-          esac
+          title_trimmed=$(printf '%s' "$ISSUE_TITLE" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
+          title_lower=$(printf '%s' "$title_trimmed" | tr '[:upper:]' '[:lower:]')
+          title_is_url=false
+          if printf '%s' "$title_trimmed" | grep -qE '^https://github\.com/[^/[:space:]]+/[^/[:space:]]+/tree/[^[:space:]]+$'; then
+            title_is_url=true
+          fi
+          if [ "$title_is_url" != "true" ] && ! printf '%s' "$title_lower" | grep -qE '^add package($|[^a-z])'; then
+            echo "Issue title is neither 'add package …' nor a conforming URL — skipping."
+            echo "proceed=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
           if ! printf '%s\n' "$COMMENT_BODY" | tr -d '\r' | grep -iqE '^[[:space:]]*approve[[:space:]]*$'; then
             echo "Comment does not contain 'approve' on its own line — skipping."
             echo "proceed=false" >> "$GITHUB_OUTPUT"
@@ -114,6 +143,7 @@ jobs:
         if: steps.check.outputs.proceed == 'true'
         id: process
         env:
+          ISSUE_TITLE: ${{ github.event.issue.title }}
           ISSUE_BODY: ${{ github.event.issue.body }}
         run: |
           mkdir -p .ci-tmp

@@ -76,29 +76,47 @@ def _parse_url(url):
 def parse_urls(body):
     """Return (valid_entries, errors).
 
-    Each valid entry is a tuple (url, owner, repo, branch, path). Lines that
-    don't contain a conforming URL (one that parses, has a path under
-    packages/, and contains no '..') are silently ignored — the body may
-    include arbitrary other text. Errors is non-empty only if no conforming
-    URL was found at all.
+    Each valid entry is a tuple (url, owner, repo, branch, name, version).
+    Conforming URLs have a path of exactly `packages/<name>/<version>`. Lines
+    that don't contain a conforming URL are silently ignored — the body may
+    include arbitrary other text. Duplicate URLs are deduped. Errors is
+    non-empty only if no conforming URL was found at all.
     """
     parsed = []
+    seen = set()
     for url in URL_RE.findall(body.replace("\r", "")):
         url = url.rstrip("/")
+        if url in seen:
+            continue
+        seen.add(url)
         result = _parse_url(url)
         if result is None:
             continue
         owner, repo, branch, path = result
-        if not path.startswith("packages/"):
+        parts = path.split("/")
+        if len(parts) != 3 or parts[0] != "packages":
             continue
-        if ".." in path.split("/"):
+        if ".." in parts:
             continue
-        parsed.append((url, owner, repo, branch, path))
+        name, version = parts[1], parts[2]
+        if not name or not version:
+            continue
+        parsed.append((url, owner, repo, branch, name, version))
 
     errors = []
     if not parsed:
         errors.append("- No conforming package URLs found in the issue body.")
     return parsed, errors
+
+
+def get_effective_body():
+    """Return ISSUE_BODY, with ISSUE_TITLE prepended if the title alone is a
+    conforming URL. Lets users submit issues whose title *is* the URL."""
+    body = os.environ.get("ISSUE_BODY", "")
+    title = os.environ.get("ISSUE_TITLE", "").strip()
+    if URL_RE.fullmatch(title):
+        body = title + "\n\n" + body
+    return body
 
 
 def render_validation_comment(parsed, errors):
@@ -117,12 +135,21 @@ def render_validation_comment(parsed, errors):
         return "\n".join(lines) + "\n"
 
     lines = ["Thanks for the request. The following packages were detected:", ""]
-    for url, owner, repo, _branch, path in parsed:
-        lines.append(f"- `{path}` from {url}")
+    for url, owner, repo, _branch, name, version in parsed:
+        repo_id = f"{owner}/{repo}"
+        repo_url = f"https://github.com/{owner}/{repo}"
+        pkg_label = f"{name}@{version}"
+        lines.append(f"- `{pkg_label}` from the repository [{repo_id}]({repo_url})")
         channel = channel_for(owner, repo)
-        name = path.split("/")[1]
         if channel is not None:
-            lines.append(f"  Install with: `mip install --channel {channel} {name}`")
+            lines += [
+                "",
+                "  Install with:",
+                "",
+                "  ```",
+                f"  mip install --channel {channel} {pkg_label}",
+                "  ```",
+            ]
     lines += [
         "",
         "An admin will review this request. To approve, an admin should reply "
@@ -136,7 +163,9 @@ def apply_entries(parsed, repo_root):
     report = []
     errors = []
     changed = False
-    for url, owner, repo, branch, path in parsed:
+    for url, owner, repo, branch, name, version in parsed:
+        path = f"packages/{name}/{version}"
+        pkg_label = f"{name}@{version}"
         with tempfile.TemporaryDirectory() as tmpdir:
             clone_url = f"https://github.com/{owner}/{repo}.git"
             res = subprocess.run(
@@ -160,17 +189,17 @@ def apply_entries(parsed, repo_root):
             if dest.exists():
                 shutil.rmtree(dest)
             shutil.copytree(src, dest)
-            report.append(f"- Added `{path}` from {url}")
+            report.append(f"- Added `{pkg_label}` from {url}")
             changed = True
     return report, errors, changed
 
 
 def cmd_validate(args):
-    body = os.environ.get("ISSUE_BODY", "")
+    body = get_effective_body()
     parsed, errors = parse_urls(body)
     Path(args.output_file).write_text(render_validation_comment(parsed, errors))
     if args.names_file:
-        names = [path.split("/")[1] for _u, _o, _r, _b, path in parsed]
+        names = [name for _u, _o, _r, _b, name, _v in parsed]
         Path(args.names_file).write_text(
             "\n".join(names) + ("\n" if names else "")
         )
@@ -178,7 +207,7 @@ def cmd_validate(args):
 
 
 def cmd_apply(args):
-    body = os.environ.get("ISSUE_BODY", "")
+    body = get_effective_body()
     repo_root = Path(args.repo_root).resolve()
     parsed, parse_errors = parse_urls(body)
     report, apply_errors, changed = apply_entries(parsed, repo_root)
