@@ -19,12 +19,16 @@ jobs:
           ISSUE_TITLE: ${{ github.event.issue.title }}
         run: |
           title_lower=$(printf '%s' "$ISSUE_TITLE" | tr '[:upper:]' '[:lower:]' | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
-          if [ "$title_lower" != "add package" ]; then
-            echo "Issue title is not 'add package' — skipping."
-            echo "proceed=false" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
+          case "$title_lower" in
+            "add package"|"add package "*) ;;
+            *)
+              echo "Issue title does not start with 'add package' — skipping."
+              echo "proceed=false" >> "$GITHUB_OUTPUT"
+              exit 0
+              ;;
+          esac
           echo "proceed=true" >> "$GITHUB_OUTPUT"
+          echo "title_lower=$title_lower" >> "$GITHUB_OUTPUT"
 
       - name: Checkout repository
         if: steps.check.outputs.proceed == 'true'
@@ -37,7 +41,8 @@ jobs:
         run: |
           mkdir -p .ci-tmp
           python3 scripts/add_packages_from_issue.py validate \
-            --output-file .ci-tmp/comment.md
+            --output-file .ci-tmp/comment.md \
+            --names-file .ci-tmp/names.txt
 
       - name: Post validation comment
         if: steps.check.outputs.proceed == 'true'
@@ -47,6 +52,24 @@ jobs:
           ISSUE_NUMBER: ${{ github.event.issue.number }}
         run: |
           gh issue comment "$ISSUE_NUMBER" --repo "$REPO" --body-file .ci-tmp/comment.md
+
+      - name: Rename bare-titled issue
+        if: steps.check.outputs.proceed == 'true' && steps.check.outputs.title_lower == 'add package'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+        run: |
+          if [ ! -s .ci-tmp/names.txt ]; then
+            echo "No parsed package names — leaving title alone."
+            exit 0
+          fi
+          first_name=$(head -n1 .ci-tmp/names.txt)
+          if [ -z "$first_name" ]; then
+            echo "First name is empty — leaving title alone."
+            exit 0
+          fi
+          gh issue edit "$ISSUE_NUMBER" --repo "$REPO" --title "add package $first_name"
 
   add-package:
     if: >-
@@ -65,11 +88,14 @@ jobs:
           COMMENT_BODY: ${{ github.event.comment.body }}
         run: |
           title_lower=$(printf '%s' "$ISSUE_TITLE" | tr '[:upper:]' '[:lower:]' | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
-          if [ "$title_lower" != "add package" ]; then
-            echo "Issue title is not 'add package' — skipping."
-            echo "proceed=false" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
+          case "$title_lower" in
+            "add package"|"add package "*) ;;
+            *)
+              echo "Issue title does not start with 'add package' — skipping."
+              echo "proceed=false" >> "$GITHUB_OUTPUT"
+              exit 0
+              ;;
+          esac
           if ! printf '%s\n' "$COMMENT_BODY" | tr -d '\r' | grep -iqE '^[[:space:]]*approve[[:space:]]*$'; then
             echo "Comment does not contain 'approve' on its own line — skipping."
             echo "proceed=false" >> "$GITHUB_OUTPUT"

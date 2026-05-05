@@ -147,6 +147,11 @@ def cmd_validate(args):
     body = os.environ.get("ISSUE_BODY", "")
     parsed, errors = parse_urls(body)
     Path(args.output_file).write_text(render_validation_comment(parsed, errors))
+    if args.names_file:
+        names = [path.split("/")[1] for _u, _o, _r, _b, path in parsed]
+        Path(args.names_file).write_text(
+            "\n".join(names) + ("\n" if names else "")
+        )
     return 0
 
 
@@ -169,6 +174,11 @@ def main():
 
     v = sub.add_parser("validate", help="Write a Markdown comment validating the issue body.")
     v.add_argument("--output-file", required=True)
+    v.add_argument(
+        "--names-file",
+        default=None,
+        help="Optional: write parsed package names (one per line) for downstream use.",
+    )
     v.set_defaults(func=cmd_validate)
 
     a = sub.add_parser("apply", help="Clone and copy each requested package folder.")
