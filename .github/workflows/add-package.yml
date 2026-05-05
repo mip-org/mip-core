@@ -86,12 +86,20 @@ jobs:
             echo "No parsed package names — leaving title alone."
             exit 0
           fi
-          first_name=$(head -n1 .ci-tmp/names.txt)
-          if [ -z "$first_name" ]; then
-            echo "First name is empty — leaving title alone."
+          joined=""
+          sep=""
+          any=false
+          while IFS= read -r line; do
+            [ -z "$line" ] && continue
+            joined+="${sep}\`${line}\`"
+            sep=", "
+            any=true
+          done < .ci-tmp/names.txt
+          if [ "$any" != "true" ]; then
+            echo "No non-empty names — leaving title alone."
             exit 0
           fi
-          new_title=$(printf 'Add package: `%s`' "$first_name")
+          new_title="Add package: $joined"
           if [ "$ISSUE_TITLE" = "$new_title" ]; then
             echo "Title already canonical — no edit needed."
             exit 0
