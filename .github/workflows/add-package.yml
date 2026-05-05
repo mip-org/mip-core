@@ -82,7 +82,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: main
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.MIP_SYNC_TOKEN }}
 
       - name: Process package URLs
         if: steps.check.outputs.proceed == 'true'
