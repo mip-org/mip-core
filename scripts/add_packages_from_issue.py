@@ -199,9 +199,9 @@ def cmd_validate(args):
     parsed, errors = parse_urls(body)
     Path(args.output_file).write_text(render_validation_comment(parsed, errors))
     if args.names_file:
-        names = [name for _u, _o, _r, _b, name, _v in parsed]
+        labels = [f"{name}@{version}" for _u, _o, _r, _b, name, version in parsed]
         Path(args.names_file).write_text(
-            "\n".join(names) + ("\n" if names else "")
+            "\n".join(labels) + ("\n" if labels else "")
         )
     return 0
 
