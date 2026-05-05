@@ -41,6 +41,24 @@ URL_FORMAT_HINT = (
 )
 
 
+def channel_for(owner, repo):
+    """Return the mip channel string for a GitHub repo, or None if the repo
+    name doesn't follow the `mip-<channel>` convention.
+
+    - `mip-org/mip-staging`  -> `mip-org/staging`
+    - `flatironinstitute/mip-flatironinstitute` -> `flatironinstitute` (special
+      case: when the channel suffix matches the owner)
+    """
+    if not repo.lower().startswith("mip-"):
+        return None
+    suffix = repo[4:]
+    if not suffix:
+        return None
+    if suffix.lower() == owner.lower():
+        return owner
+    return f"{owner}/{suffix}"
+
+
 def _parse_url(url):
     if not url.startswith("https://github.com/"):
         return None
@@ -99,8 +117,12 @@ def render_validation_comment(parsed, errors):
         return "\n".join(lines) + "\n"
 
     lines = ["Thanks for the request. The following packages were detected:", ""]
-    for url, _owner, _repo, _branch, path in parsed:
+    for url, owner, repo, _branch, path in parsed:
         lines.append(f"- `{path}` from {url}")
+        channel = channel_for(owner, repo)
+        name = path.split("/")[1]
+        if channel is not None:
+            lines.append(f"  Install with: `mip install --channel {channel} {name}`")
     lines += [
         "",
         "An admin will review this request. To approve, an admin should reply "
