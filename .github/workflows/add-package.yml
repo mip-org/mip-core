@@ -1,0 +1,158 @@
+name: Add package
+
+on:
+  issues:
+    types: [opened]
+  issue_comment:
+    types: [created]
+
+jobs:
+  initial-response:
+    if: github.event_name == 'issues'
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+    steps:
+      - name: Verify issue title
+        id: check
+        env:
+          ISSUE_TITLE: ${{ github.event.issue.title }}
+        run: |
+          title_lower=$(printf '%s' "$ISSUE_TITLE" | tr '[:upper:]' '[:lower:]' | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
+          if [ "$title_lower" != "add package" ]; then
+            echo "Issue title is not 'add package' — skipping."
+            echo "proceed=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          echo "proceed=true" >> "$GITHUB_OUTPUT"
+
+      - name: Checkout repository
+        if: steps.check.outputs.proceed == 'true'
+        uses: actions/checkout@v4
+
+      - name: Build validation comment
+        if: steps.check.outputs.proceed == 'true'
+        env:
+          ISSUE_BODY: ${{ github.event.issue.body }}
+        run: |
+          mkdir -p .ci-tmp
+          python3 scripts/add_packages_from_issue.py validate \
+            --output-file .ci-tmp/comment.md
+
+      - name: Post validation comment
+        if: steps.check.outputs.proceed == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+        run: |
+          gh issue comment "$ISSUE_NUMBER" --repo "$REPO" --body-file .ci-tmp/comment.md
+
+  add-package:
+    if: >-
+      github.event_name == 'issue_comment' &&
+      github.event.issue.pull_request == null &&
+      contains(fromJSON('["magland", "danfortunato"]'), github.event.comment.user.login)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      issues: write
+    steps:
+      - name: Verify trigger conditions
+        id: check
+        env:
+          ISSUE_TITLE: ${{ github.event.issue.title }}
+          COMMENT_BODY: ${{ github.event.comment.body }}
+        run: |
+          title_lower=$(printf '%s' "$ISSUE_TITLE" | tr '[:upper:]' '[:lower:]' | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
+          if [ "$title_lower" != "add package" ]; then
+            echo "Issue title is not 'add package' — skipping."
+            echo "proceed=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          if ! printf '%s\n' "$COMMENT_BODY" | tr -d '\r' | grep -iqE '^[[:space:]]*approve[[:space:]]*$'; then
+            echo "Comment does not contain 'approve' on its own line — skipping."
+            echo "proceed=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          echo "proceed=true" >> "$GITHUB_OUTPUT"
+
+      - name: Checkout repository
+        if: steps.check.outputs.proceed == 'true'
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Process package URLs
+        if: steps.check.outputs.proceed == 'true'
+        id: process
+        env:
+          ISSUE_BODY: ${{ github.event.issue.body }}
+        run: |
+          mkdir -p .ci-tmp
+          python3 scripts/add_packages_from_issue.py apply \
+            --report-file .ci-tmp/report.md \
+            --errors-file .ci-tmp/errors.md \
+            --repo-root .
+          if git status --porcelain | grep -q .; then
+            echo "has_changes=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_changes=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Commit and push
+        if: steps.check.outputs.proceed == 'true' && steps.process.outputs.has_changes == 'true'
+        id: commit
+        env:
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add packages
+          if git diff --cached --quiet; then
+            echo "pushed=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          git commit -m "Add packages from issue #${ISSUE_NUMBER}"
+          git push origin HEAD:main
+          echo "pushed=true" >> "$GITHUB_OUTPUT"
+
+      - name: Report back to issue
+        if: always() && steps.check.outputs.proceed == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          HAS_CHANGES: ${{ steps.process.outputs.has_changes }}
+          PUSHED: ${{ steps.commit.outputs.pushed }}
+          PROCESS_RESULT: ${{ steps.process.outcome }}
+          COMMIT_RESULT: ${{ steps.commit.outcome }}
+        run: |
+          report=""
+          errors=""
+          if [ -f .ci-tmp/report.md ]; then
+            report=$(cat .ci-tmp/report.md)
+          fi
+          if [ -f .ci-tmp/errors.md ]; then
+            errors=$(cat .ci-tmp/errors.md)
+          fi
+
+          body=""
+          if [ -n "$report" ]; then
+            body+=$'**Added packages:**\n'"$report"$'\n'
+          fi
+          if [ -n "$errors" ]; then
+            body+=$'\n**Errors:**\n'"$errors"$'\n'
+          fi
+          if [ "$PUSHED" = "true" ]; then
+            body+=$'\nChanges pushed to `main`.\n'
+          elif [ "$HAS_CHANGES" = "true" ] && [ "$COMMIT_RESULT" != "success" ]; then
+            body+=$'\nFailed to commit/push changes — see the workflow run for details.\n'
+          elif [ "$PROCESS_RESULT" != "success" ]; then
+            body+=$'\nWorkflow failed before changes could be applied — see the workflow run for details.\n'
+          else
+            body+=$'\nNo changes were applied.\n'
+          fi
+
+          gh issue comment "$ISSUE_NUMBER" --repo "$REPO" --body "$body"
