@@ -76,6 +76,36 @@ class IndexAssembler:
         print(f"  Found {len(tags)} release(s)")
         return tags
 
+    def _list_valid_release_tags(self):
+        """
+        Build the set of release tags backed by a packages/<name>/<release>/
+        folder containing recipe.yaml. Tags use the same encoding as filenames:
+        '{name_with_underscores}-{release_version}'.
+        """
+        project_root = os.path.dirname(
+            os.path.dirname(os.path.abspath(__file__)))
+        packages_dir = os.path.join(project_root, 'packages')
+
+        if not os.path.isdir(packages_dir):
+            print(f"  Warning: packages/ directory not found at {packages_dir}")
+            return set()
+
+        valid_tags = set()
+        for name in os.listdir(packages_dir):
+            package_dir = os.path.join(packages_dir, name)
+            if not os.path.isdir(package_dir):
+                continue
+            for release_version in os.listdir(package_dir):
+                release_folder = os.path.join(package_dir, release_version)
+                if not os.path.isdir(release_folder):
+                    continue
+                if not os.path.exists(
+                        os.path.join(release_folder, 'recipe.yaml')):
+                    continue
+                valid_tags.add(
+                    f"{name.replace('-', '_')}-{release_version}")
+        return valid_tags
+
     def _list_release_assets(self, release_tag):
         """
         List all assets on a specific release.
@@ -179,6 +209,16 @@ class IndexAssembler:
 
         if not release_tags:
             print("Warning: No releases found")
+
+        # Restrict to releases that still have a matching folder in packages/.
+        valid_tags = self._list_valid_release_tags()
+        print(f"  Found {len(valid_tags)} package/release folder(s) in packages/")
+        filtered = [t for t in release_tags if t in valid_tags]
+        skipped = len(release_tags) - len(filtered)
+        if skipped:
+            print(f"  Skipping {skipped} release(s) with no matching "
+                  f"folder in packages/")
+        release_tags = filtered
 
         # Collect .mip.json assets from all releases
         package_metadata = []
