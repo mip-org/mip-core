@@ -58,29 +58,28 @@ def _parse_url(url):
 def parse_urls(body):
     """Return (valid_entries, errors).
 
-    Each valid entry is a tuple (url, owner, repo, branch, path). Errors is a
-    list of Markdown bullet strings describing URLs that could not be used.
+    Each valid entry is a tuple (url, owner, repo, branch, path). Lines that
+    don't contain a conforming URL (one that parses, has a path under
+    packages/, and contains no '..') are silently ignored — the body may
+    include arbitrary other text. Errors is non-empty only if no conforming
+    URL was found at all.
     """
     parsed = []
-    errors = []
-    urls = URL_RE.findall(body.replace("\r", ""))
-    if not urls:
-        errors.append("- No package URLs found in the issue body.")
-        return parsed, errors
-    for url in urls:
+    for url in URL_RE.findall(body.replace("\r", "")):
         url = url.rstrip("/")
         result = _parse_url(url)
         if result is None:
-            errors.append(f"- `{url}` — could not parse owner/repo/branch/path.")
             continue
         owner, repo, branch, path = result
         if not path.startswith("packages/"):
-            errors.append(f"- `{url}` — destination `{path}` is not under `packages/`.")
             continue
         if ".." in path.split("/"):
-            errors.append(f"- `{url}` — path contains '..'.")
             continue
         parsed.append((url, owner, repo, branch, path))
+
+    errors = []
+    if not parsed:
+        errors.append("- No conforming package URLs found in the issue body.")
     return parsed, errors
 
 
