@@ -119,7 +119,7 @@ def get_effective_body():
     return body
 
 
-def render_validation_comment(parsed, errors):
+def render_validation_comment(parsed, errors, repo_root):
     if errors or not parsed:
         lines = ["The issue body is not formatted correctly."]
         if errors:
@@ -135,11 +135,16 @@ def render_validation_comment(parsed, errors):
         return "\n".join(lines) + "\n"
 
     lines = ["Thanks for the request. The following packages were detected:", ""]
+    any_existing = False
     for url, owner, repo, _branch, name, version in parsed:
         repo_id = f"{owner}/{repo}"
         repo_url = f"https://github.com/{owner}/{repo}"
         pkg_label = f"{name}@{version}"
-        lines.append(f"- `{pkg_label}` from the repository [{repo_id}]({repo_url}). Install with:")
+        existing = (repo_root / "packages" / name / version).is_dir()
+        marker = " **(already exists — will be replaced)**" if existing else ""
+        if existing:
+            any_existing = True
+        lines.append(f"- `{pkg_label}`{marker} from the repository [{repo_id}]({repo_url}). Install with:")
         channel = channel_for(owner, repo)
         if channel:
             lines += [
@@ -150,6 +155,13 @@ def render_validation_comment(parsed, errors):
             ]
         else:
             lines += ["PROBLEM: Unable to parse channel"]
+    if any_existing:
+        lines += [
+            "",
+            "Note: one or more of these packages already exist at the same name "
+            "and version. Approving will completely replace the existing folder(s) "
+            "with the contents of the source repository — no merging is performed.",
+        ]
     lines += [
         "",
         "An admin will review this request. To approve, an admin should reply "
@@ -186,18 +198,21 @@ def apply_entries(parsed, repo_root):
 
             dest = repo_root / path
             dest.parent.mkdir(parents=True, exist_ok=True)
-            if dest.exists():
+            replaced = dest.exists()
+            if replaced:
                 shutil.rmtree(dest)
             shutil.copytree(src, dest)
-            report.append(f"- Added `{pkg_label}` from {url}")
+            verb = "Replaced" if replaced else "Added"
+            report.append(f"- {verb} `{pkg_label}` from {url}")
             changed = True
     return report, errors, changed
 
 
 def cmd_validate(args):
     body = get_effective_body()
+    repo_root = Path(args.repo_root).resolve()
     parsed, errors = parse_urls(body)
-    Path(args.output_file).write_text(render_validation_comment(parsed, errors))
+    Path(args.output_file).write_text(render_validation_comment(parsed, errors, repo_root))
     if args.names_file:
         labels = [f"{name}@{version}" for _u, _o, _r, _b, name, version in parsed]
         Path(args.names_file).write_text(
@@ -230,6 +245,7 @@ def main():
         default=None,
         help="Optional: write parsed package names (one per line) for downstream use.",
     )
+    v.add_argument("--repo-root", default=".")
     v.set_defaults(func=cmd_validate)
 
     a = sub.add_parser("apply", help="Clone and copy each requested package folder.")
