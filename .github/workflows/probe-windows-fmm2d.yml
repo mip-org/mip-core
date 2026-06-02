@@ -10,46 +10,67 @@ on:
       stage:
         description: 'Probe stage'
         type: choice
-        default: discover
+        default: lib
         options:
           - discover
-          - build
+          - lib
+          - mex
 
 permissions:
   contents: read
+
+env:
+  MINGW: /c/mingw64          # GCC 15.2.0, has static libgfortran.a
+  FMM_REPO: https://github.com/magland/fmm2d_c_translation
 
 jobs:
   probe:
     runs-on: windows-latest
     steps:
       - name: Discover Fortran/C toolchains
+        if: inputs.stage == 'discover'
         shell: bash
         run: |
           set +e
-          echo "===== runner os ====="; cmd //c ver
-          echo; echo "===== PATH entries ====="; echo "$PATH" | tr ':' '\n'
-          echo; echo "===== which -a (each tool) ====="
-          for t in gfortran gcc g++ make mingw32-make ar cmake perl; do
-            echo "## $t"; which -a "$t" 2>/dev/null
+          for t in gfortran gcc g++ make mingw32-make ar; do echo "## $t"; which -a "$t"; done
+          echo "## versions"; gfortran --version | head -1; gcc --version | head -1
+          for g in /c/mingw64/bin/gfortran /c/Strawberry/c/bin/gfortran; do
+            echo "## $g"; "$g" --version | head -1; "$g" -print-file-name=libgfortran.a
           done
-          echo; echo "===== versions on PATH ====="
-          echo "## gfortran"; gfortran --version 2>/dev/null | head -1
-          echo "## gcc";      gcc --version 2>/dev/null | head -1
-          echo "## make";     make --version 2>/dev/null | head -1
-          echo; echo "===== candidate toolchain dirs ====="
-          for d in \
-            /c/msys64/mingw64/bin /c/msys64/ucrt64/bin /c/msys64/clang64/bin \
-            /c/ProgramData/mingw64/mingw64/bin /c/ProgramData/chocolatey/bin \
-            /c/Strawberry/c/bin /c/mingw64/bin /c/tools/mingw64/bin; do
-            echo "## $d"; ls "$d"/gfortran* "$d"/mingw32-make* "$d"/gcc* 2>/dev/null
-          done
-          echo; echo "===== gfortran version at each candidate ====="
-          for g in \
-            /c/msys64/mingw64/bin/gfortran /c/msys64/ucrt64/bin/gfortran \
-            /c/ProgramData/mingw64/mingw64/bin/gfortran /c/Strawberry/c/bin/gfortran \
-            /c/mingw64/bin/gfortran; do
-            if [ -x "$g" ]; then echo "## $g"; "$g" --version | head -1; "$g" -print-file-name=libgfortran.a; fi
-          done
-          echo; echo "===== msys64 layout ====="; ls /c/msys64 2>/dev/null
-          echo; echo "===== Strawberry layout ====="; ls /c/Strawberry/c/bin 2>/dev/null | grep -iE 'fortran|gcc|make|^ar' | head
-          echo; echo "DONE"
+
+      # ---- Stage: build the Fortran/C static library (no MATLAB needed) ----
+      - name: Build static lib (mingw gfortran 15)
+        if: inputs.stage == 'lib' || inputs.stage == 'mex'
+        shell: bash
+        run: |
+          set -e
+          export PATH="$MINGW/bin:$PATH"
+          echo "gfortran: $(which gfortran)"; gfortran --version | head -1
+          git clone --depth 1 "$FMM_REPO" src
+          cd src
+          cat > make.inc <<'EOF'
+          CC=gcc
+          CXX=g++
+          FC=gfortran
+          FFLAGS=-O3 -funroll-loops -std=legacy -fallow-argument-mismatch -w
+          CFLAGS=-O3 -funroll-loops -w
+          OMPFLAGS=-fopenmp
+          OMPLIBS=-lgomp
+          EOF
+          echo "===== make.inc ====="; cat make.inc
+          echo "===== building lib-static/libfmm2d.a ====="
+          mingw32-make libfmm2d.a 2>&1 | tail -80
+          echo "===== result ====="
+          ls -la lib-static/ 2>/dev/null
+          ar t lib-static/libfmm2d.a 2>/dev/null | head -5
+          echo "object count: $(ar t lib-static/libfmm2d.a 2>/dev/null | wc -l)"
+
+      - name: Upload static lib
+        if: always() && (inputs.stage == 'lib' || inputs.stage == 'mex')
+        uses: actions/upload-artifact@v4
+        with:
+          name: fmm2d-static-lib
+          path: |
+            src/lib-static/*.a
+            src/make.inc
+          if-no-files-found: warn
