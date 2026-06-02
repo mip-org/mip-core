@@ -94,8 +94,12 @@ jobs:
       - name: Set up MIP_ROOT
         shell: bash
         run: |
-          mkdir -p "$HOME/.mip/packages"
-          echo "MIP_ROOT=$HOME/.mip" >> "$GITHUB_ENV"
+          root="$HOME/.mip"
+          mkdir -p "$root/packages"
+          # MATLAB is a native Windows program; hand it a Windows path, not
+          # the MSYS/Git-bash '/c/...' form. cygpath is a no-op on linux/macOS.
+          if command -v cygpath >/dev/null 2>&1; then root="$(cygpath -w "$root")"; fi
+          echo "MIP_ROOT=$root" >> "$GITHUB_ENV"
 
       - name: Linux toolchain (gcc-10)
         if: inputs.architecture == 'linux_x86_64'
@@ -215,8 +219,12 @@ jobs:
       - name: Set up MIP_ROOT
         shell: bash
         run: |
-          mkdir -p "$HOME/.mip/packages"
-          echo "MIP_ROOT=$HOME/.mip" >> "$GITHUB_ENV"
+          root="$HOME/.mip"
+          mkdir -p "$root/packages"
+          # MATLAB is a native Windows program; hand it a Windows path, not
+          # the MSYS/Git-bash '/c/...' form. cygpath is a no-op on linux/macOS.
+          if command -v cygpath >/dev/null 2>&1; then root="$(cygpath -w "$root")"; fi
+          echo "MIP_ROOT=$root" >> "$GITHUB_ENV"
 
       - name: Download bundled artifact
         uses: actions/download-artifact@v4
