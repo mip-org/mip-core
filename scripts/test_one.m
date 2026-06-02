@@ -33,6 +33,10 @@ fprintf('Testing: %s (package: %s)\n', files(1).name, pkg_name);
 mip('install', mhl_path);
 mip('load', pkg_name);
 mip('test', pkg_name);
-mip('uninstall', pkg_name);
+% TEMP: uninstall is disabled. On Windows, mip uninstall's rmdir fails on a
+% test-loaded MEX (the mwrap gateway mexLock()s itself, keeping the .mexw64
+% open). Re-enable once mip handles unloading/locked/read-only MEX on
+% uninstall. Cleanup is unnecessary here — the runner is ephemeral.
+% mip('uninstall', pkg_name);
 
 fprintf('OK: %s\n', pkg_name);
