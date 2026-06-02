@@ -10,11 +10,12 @@ on:
       stage:
         description: 'Probe stage'
         type: choice
-        default: lib
+        default: mextest
         options:
           - discover
           - lib
           - mex
+          - mextest
 
 permissions:
   contents: read
@@ -33,19 +34,18 @@ jobs:
         run: |
           set +e
           for t in gfortran gcc g++ make mingw32-make ar; do echo "## $t"; which -a "$t"; done
-          echo "## versions"; gfortran --version | head -1; gcc --version | head -1
           for g in /c/mingw64/bin/gfortran /c/Strawberry/c/bin/gfortran; do
             echo "## $g"; "$g" --version | head -1; "$g" -print-file-name=libgfortran.a
           done
 
-      # ---- Stage: build the Fortran/C static library (no MATLAB needed) ----
+      # ---- Build the Fortran/C static library (no MATLAB needed) ----
       - name: Build static lib (mingw gfortran 15)
-        if: inputs.stage == 'lib' || inputs.stage == 'mex'
+        if: inputs.stage != 'discover'
         shell: bash
         run: |
           set -e
           export PATH="$MINGW/bin:$PATH"
-          echo "gfortran: $(which gfortran)"; gfortran --version | head -1
+          gfortran --version | head -1
           git clone --depth 1 "$FMM_REPO" src
           cd src
           cat > make.inc <<'EOF'
@@ -57,110 +57,74 @@ jobs:
           OMPFLAGS=-fopenmp
           OMPLIBS=-lgomp
           EOF
-          echo "===== make.inc ====="; cat make.inc
-          echo "===== building lib-static/libfmm2d.a ====="
-          mingw32-make libfmm2d.a 2>&1 | tail -80
-          echo "===== result ====="
-          ls -la lib-static/ 2>/dev/null
-          ar t lib-static/libfmm2d.a 2>/dev/null | head -5
-          echo "object count: $(ar t lib-static/libfmm2d.a 2>/dev/null | wc -l)"
+          mingw32-make libfmm2d.a 2>&1 | tail -10
+          ls -la lib-static/libfmm2d.a
 
-      - name: Upload static lib
-        if: always() && (inputs.stage == 'lib' || inputs.stage == 'mex')
-        uses: actions/upload-artifact@v4
-        with:
-          name: fmm2d-static-lib
-          path: |
-            src/lib-static/*.a
-            src/make.inc
-          if-no-files-found: warn
-
-      # ---- Stage: link the MEX with MATLAB + MinGW ----
+      # ---- Link the MEX with MATLAB + MinGW ----
       - name: Set up MATLAB
-        if: inputs.stage == 'mex'
+        if: inputs.stage == 'mex' || inputs.stage == 'mextest'
         uses: matlab-actions/setup-matlab@v2
         with:
           cache: true
           release: latest
 
-      - name: Write mex probe script
-        if: inputs.stage == 'mex'
+      - name: Write mex script
+        if: inputs.stage == 'mex' || inputs.stage == 'mextest'
         shell: bash
         run: |
           cat > probe_mex.m <<'EOF'
-          fprintf('=== matlabroot=%s\n=== version=%s\n', matlabroot, version);
+          fprintf('matlabroot=%s ver=%s\n', matlabroot, version);
           setenv('MW_MINGW64_LOC','C:\mingw64');
-
-          % What C compilers does this MATLAB see?
-          try
-            ccI = mex.getCompilerConfigurations('C','Installed');
-            fprintf('Installed C compilers: %d\n', numel(ccI));
-            for i=1:numel(ccI)
-              fprintf('  - Name=%s | Mfr=%s | Ver=%s\n', ccI(i).Name, ccI(i).Manufacturer, ccI(i).Version);
-              fprintf('      MexOpt=%s\n', ccI(i).MexOpt);
-            end
-          catch e; fprintf('getCompilerConfigurations err: %s\n', e.message); end
-
-          % Hunt for a MinGW C options file shipped with MATLAB
-          cand = {};
-          d1 = dir(fullfile(matlabroot,'bin','win64','mexopts','*mingw*.xml'));
-          for i=1:numel(d1); cand{end+1} = fullfile(d1(i).folder,d1(i).name); end
-          try
-            spr = matlabshared.supportpkg.getSupportPackageRoot();
-            fprintf('SupportPackageRoot=%s\n', spr);
-            d2 = dir(fullfile(spr,'**','mingw*.xml'));
-            for i=1:numel(d2); cand{end+1} = fullfile(d2(i).folder,d2(i).name); end
-          catch e; fprintf('no support pkg root: %s\n', e.message); end
-          fprintf('mingw xml candidates: %d\n', numel(cand));
-          for i=1:numel(cand); fprintf('  xml: %s\n', cand{i}); end
-
-          % gfortran static lib dir for -L
+          xml = fullfile(matlabroot,'bin','win64','mexopts','mingw64.xml');
+          assert(isfile(xml), 'mingw64.xml not found');
           [~,fdir] = system('C:\mingw64\bin\gfortran -print-file-name=libgfortran.a');
           fdir = fileparts(strtrim(fdir));
-          fprintf('gfortran lib dir = %s\n', fdir);
-
-          mexargs = {'-v','-compatibleArrayDims','-DMWF77_UNDERSCORE1','-D_OPENMP', ...
-                     'src/matlab/fmm2d.c','src/lib-static/libfmm2d.a', ...
-                     ['-L' fdir],'-lgfortran','-lquadmath','-lgomp', ...
-                     '-outdir','src/matlab','-output','fmm2d'};
-
-          ok = false;
-          if ~isempty(cand)
-            try
-              fprintf('=== Trying mex -f %s\n', cand{1});
-              mex('-f', cand{1}, mexargs{:});
-              ok = true;
-            catch e; fprintf('mex -f failed:\n%s\n', getReport(e)); end
-          end
-          if ~ok
-            try
-              fprintf('=== Trying plain mex (default selected compiler)\n');
-              mex(mexargs{:});
-              ok = true;
-            catch e; fprintf('plain mex failed:\n%s\n', getReport(e)); end
-          end
-
-          if ok && isfile('src/matlab/fmm2d.mexw64')
-            dd = dir('src/matlab/fmm2d.mexw64');
-            fprintf('MEX OK: %d bytes\n', dd.bytes);
-          else
-            fprintf('MEX NOT PRODUCED\n');
-          end
+          mex('-f', xml, '-compatibleArrayDims','-DMWF77_UNDERSCORE1','-D_OPENMP', ...
+              'src/matlab/fmm2d.c','src/lib-static/libfmm2d.a', ...
+              ['-L' fdir],'-lgfortran','-lquadmath','-lgomp', ...
+              '-outdir','src/matlab','-output','fmm2d');
+          assert(isfile('src/matlab/fmm2d.mexw64'), 'no mexw64 produced');
+          d = dir('src/matlab/fmm2d.mexw64');
+          fprintf('MEX OK: %d bytes\n', d.bytes);
           EOF
-          echo "wrote probe_mex.m"
 
-      - name: Run mex probe
-        if: inputs.stage == 'mex'
+      - name: Build mex
+        if: inputs.stage == 'mex' || inputs.stage == 'mextest'
         env:
           MW_MINGW64_LOC: C:\mingw64
         uses: matlab-actions/run-command@v2
         with:
           command: "probe_mex"
 
+      # ---- Prove self-containment: list deps, strip toolchains, run tests ----
+      - name: List MEX DLL dependencies
+        if: inputs.stage == 'mextest'
+        shell: bash
+        run: |
+          export PATH="$MINGW/bin:$PATH"
+          echo "=== DLL imports of fmm2d.mexw64 ==="
+          objdump -p src/matlab/fmm2d.mexw64 | grep -i "DLL Name" | sort -u
+          echo "=== flagging any mingw runtime DLLs (should be NONE if static) ==="
+          objdump -p src/matlab/fmm2d.mexw64 | grep -iE "libgfortran|libgcc|libquadmath|libgomp|libwinpthread|libstdc" && echo "!! NOT self-contained" || echo "OK: no mingw runtime DLL imports"
+
+      - name: Strip MinGW/Strawberry (simulate channel test env)
+        if: inputs.stage == 'mextest'
+        shell: pwsh
+        run: |
+          foreach ($p in 'C:\mingw64','C:\Strawberry','C:\msys64','C:\Program Files\Git\mingw64') {
+            if (Test-Path $p) { Rename-Item $p "$p.deleted" -ErrorAction SilentlyContinue; Write-Host "renamed $p" }
+          }
+
+      - name: Run fmm2d tests without MinGW present
+        if: inputs.stage == 'mextest'
+        uses: matlab-actions/run-command@v2
+        with:
+          command: "cd('src/matlab'); try; cfmm2dTest; lfmm2dTest; rfmm2dTest; hfmm2dTest; disp('ALL_FMM2D_TESTS_OK'); catch e; disp(getReport(e)); exit(1); end"
+
       - name: Upload mex
-        if: always() && inputs.stage == 'mex'
+        if: always() && (inputs.stage == 'mex' || inputs.stage == 'mextest')
         uses: actions/upload-artifact@v4
         with:
-          name: fmm2d-mex
+          name: fmm2d-mexw64
           path: src/matlab/fmm2d.mexw64
           if-no-files-found: warn
