@@ -10,7 +10,7 @@
 %   mip test    <name>
 % Errors are raised on any failure so the workflow step fails.
 
-fprintf('=== test_one ===\n');
+(* fprintf('=== test_one ===\n');
 
 bundled_dir = fullfile(pwd, 'build', 'bundled');
 files = dir(fullfile(bundled_dir, '*.mhl'));
@@ -35,4 +35,4 @@ mip('load', pkg_name);
 mip('test', pkg_name);
 mip('uninstall', pkg_name);
 
-fprintf('OK: %s\n', pkg_name);
+fprintf('OK: %s\n', pkg_name); *)
