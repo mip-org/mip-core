@@ -74,3 +74,93 @@ jobs:
             src/lib-static/*.a
             src/make.inc
           if-no-files-found: warn
+
+      # ---- Stage: link the MEX with MATLAB + MinGW ----
+      - name: Set up MATLAB
+        if: inputs.stage == 'mex'
+        uses: matlab-actions/setup-matlab@v2
+        with:
+          cache: true
+          release: latest
+
+      - name: Write mex probe script
+        if: inputs.stage == 'mex'
+        shell: bash
+        run: |
+          cat > probe_mex.m <<'EOF'
+          fprintf('=== matlabroot=%s\n=== version=%s\n', matlabroot, version);
+          setenv('MW_MINGW64_LOC','C:\mingw64');
+
+          % What C compilers does this MATLAB see?
+          try
+            ccI = mex.getCompilerConfigurations('C','Installed');
+            fprintf('Installed C compilers: %d\n', numel(ccI));
+            for i=1:numel(ccI)
+              fprintf('  - Name=%s | Mfr=%s | Ver=%s\n', ccI(i).Name, ccI(i).Manufacturer, ccI(i).Version);
+              fprintf('      MexOpt=%s\n', ccI(i).MexOpt);
+            end
+          catch e; fprintf('getCompilerConfigurations err: %s\n', e.message); end
+
+          % Hunt for a MinGW C options file shipped with MATLAB
+          cand = {};
+          d1 = dir(fullfile(matlabroot,'bin','win64','mexopts','*mingw*.xml'));
+          for i=1:numel(d1); cand{end+1} = fullfile(d1(i).folder,d1(i).name); end
+          try
+            spr = matlabshared.supportpkg.getSupportPackageRoot();
+            fprintf('SupportPackageRoot=%s\n', spr);
+            d2 = dir(fullfile(spr,'**','mingw*.xml'));
+            for i=1:numel(d2); cand{end+1} = fullfile(d2(i).folder,d2(i).name); end
+          catch e; fprintf('no support pkg root: %s\n', e.message); end
+          fprintf('mingw xml candidates: %d\n', numel(cand));
+          for i=1:numel(cand); fprintf('  xml: %s\n', cand{i}); end
+
+          % gfortran static lib dir for -L
+          [~,fdir] = system('C:\mingw64\bin\gfortran -print-file-name=libgfortran.a');
+          fdir = fileparts(strtrim(fdir));
+          fprintf('gfortran lib dir = %s\n', fdir);
+
+          mexargs = {'-v','-compatibleArrayDims','-DMWF77_UNDERSCORE1','-D_OPENMP', ...
+                     'src/matlab/fmm2d.c','src/lib-static/libfmm2d.a', ...
+                     ['-L' fdir],'-lgfortran','-lquadmath','-lgomp', ...
+                     '-outdir','src/matlab','-output','fmm2d'};
+
+          ok = false;
+          if ~isempty(cand)
+            try
+              fprintf('=== Trying mex -f %s\n', cand{1});
+              mex('-f', cand{1}, mexargs{:});
+              ok = true;
+            catch e; fprintf('mex -f failed:\n%s\n', getReport(e)); end
+          end
+          if ~ok
+            try
+              fprintf('=== Trying plain mex (default selected compiler)\n');
+              mex(mexargs{:});
+              ok = true;
+            catch e; fprintf('plain mex failed:\n%s\n', getReport(e)); end
+          end
+
+          if ok && isfile('src/matlab/fmm2d.mexw64')
+            dd = dir('src/matlab/fmm2d.mexw64');
+            fprintf('MEX OK: %d bytes\n', dd.bytes);
+          else
+            fprintf('MEX NOT PRODUCED\n');
+          end
+          EOF
+          echo "wrote probe_mex.m"
+
+      - name: Run mex probe
+        if: inputs.stage == 'mex'
+        env:
+          MW_MINGW64_LOC: C:\mingw64
+        uses: matlab-actions/run-command@v2
+        with:
+          command: "probe_mex"
+
+      - name: Upload mex
+        if: always() && inputs.stage == 'mex'
+        uses: actions/upload-artifact@v4
+        with:
+          name: fmm2d-mex
+          path: src/matlab/fmm2d.mexw64
+          if-no-files-found: warn
