@@ -162,7 +162,11 @@ jobs:
         uses: matlab-actions/setup-matlab@v2
         with:
           cache: true
-          release: R2022a
+          # R2022a has no native Apple Silicon build; on the arm64 macos
+          # runner it links MEX against x86_64 libmx -> "symbol(s) not found
+          # for architecture arm64". Use latest (native arm64) for macos_arm64,
+          # keep R2022a elsewhere (older glibc -> portable linux MEX).
+          release: ${{ inputs.architecture == 'macos_arm64' && 'latest' || 'R2022a' }}
 
       - name: Bundle package
         if: steps.prepared_check.outputs.has_prepared == 'true'
@@ -223,7 +227,11 @@ jobs:
         uses: matlab-actions/setup-matlab@v2
         with:
           cache: true
-          release: R2022a
+          # R2022a has no native Apple Silicon build; on the arm64 macos
+          # runner it links MEX against x86_64 libmx -> "symbol(s) not found
+          # for architecture arm64". Use latest (native arm64) for macos_arm64,
+          # keep R2022a elsewhere (older glibc -> portable linux MEX).
+          release: ${{ inputs.architecture == 'macos_arm64' && 'latest' || 'R2022a' }}
 
       - name: Strip build environment (Linux)
         if: inputs.architecture == 'linux_x86_64' || inputs.architecture == 'any'
