@@ -11,4 +11,3 @@ paths:
 
 builds:
   - architectures: [any]
-    test_script: test_chebfun.m

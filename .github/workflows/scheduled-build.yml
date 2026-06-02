@@ -1,0 +1,108 @@
+name: Scheduled rebuild
+
+# Daily probe of every (package, architecture) pair.
+#
+# Runs `scripts/scheduled_check.py`, which invokes `prepare_one.py` for
+# each pair. A pair "needs rebuilding" iff prepare_one produces output —
+# i.e. the corresponding `.mhl` is missing on GitHub Releases or its
+# source hash no longer matches (typically because the upstream git ref
+# moved). Pairs already up to date are skipped. For every pair that
+# needs rebuilding, `build-package.yml` is dispatched.
+#
+# Schedule: 06:00 UTC daily. Can also be run manually.
+
+on:
+  schedule:
+    - cron: '0 6 * * *'
+  workflow_dispatch:
+
+permissions:
+  actions: write
+  contents: read
+
+concurrency:
+  group: scheduled-build
+  cancel-in-progress: false
+
+jobs:
+  probe-and-dispatch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Python dependencies
+        run: pip install requests pyyaml
+
+      - name: Probe every (package, architecture)
+        id: probe
+        run: |
+          mkdir -p .ci-tmp
+          # Don't fail the workflow yet if prepare hit an error — finish
+          # dispatching the pairs that did resolve, then exit non-zero
+          # in the final step.
+          set +e
+          python3 scripts/scheduled_check.py \
+            --dispatch-file .ci-tmp/dispatch.tsv \
+            --summary-file .ci-tmp/summary.md \
+            --repo-root .
+          rc=$?
+          set -e
+          echo "probe_rc=$rc" >> "$GITHUB_OUTPUT"
+          if [ -s .ci-tmp/dispatch.tsv ]; then
+            n=$(wc -l < .ci-tmp/dispatch.tsv)
+            echo "n_dispatches=$n" >> "$GITHUB_OUTPUT"
+            echo "resolved=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "resolved=false" >> "$GITHUB_OUTPUT"
+          fi
+          {
+            echo "## Probe results"
+            echo
+            cat .ci-tmp/summary.md
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Dispatch build-package workflows
+        if: steps.probe.outputs.resolved == 'true'
+        id: dispatch
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+        run: |
+          failed=0
+          {
+            echo
+            echo "## Dispatched builds"
+            echo
+          } >> "$GITHUB_STEP_SUMMARY"
+          while IFS=$'\t' read -r pkg_path arch; do
+            [ -z "$pkg_path" ] && continue
+            echo "Dispatching: $pkg_path ($arch)"
+            if gh workflow run build-package.yml --repo "$REPO" \
+                -f package_path="$pkg_path" \
+                -f architecture="$arch" \
+                -f force=false; then
+              printf -- '- `%s` (`%s`)\n' "$pkg_path" "$arch" \
+                >> "$GITHUB_STEP_SUMMARY"
+            else
+              printf -- '- `%s` (`%s`) — FAILED to dispatch\n' \
+                "$pkg_path" "$arch" >> "$GITHUB_STEP_SUMMARY"
+              failed=1
+            fi
+          done < .ci-tmp/dispatch.tsv
+          exit "$failed"
+
+      - name: Surface probe failures
+        if: always()
+        env:
+          PROBE_RC: ${{ steps.probe.outputs.probe_rc }}
+        run: |
+          if [ "$PROBE_RC" != "0" ]; then
+            echo "::error::scheduled_check.py reported one or more prepare failures"
+            exit 1
+          fi

@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<config
+    Name="g++-static"
+    ShortName="g++-static"
+    Manufacturer="GNU"
+    Version="$GCC_VERSION"
+    Language="C++"
+    Priority="A"
+    Location="$GXX" >
+    <Details
+        CompilerExecutable="$CXX"
+        CompilerDefines="$DEFINES"
+        CompilerFlags="$CXXFLAGS"
+        OptimizationFlags="$CXXOPTIMFLAGS"
+        DebugFlags="$CXXDEBUGFLAGS"
+        IncludeFlags="$INCLUDE"
+        LinkerExecutable="$LDXX"
+        LinkerFlags="$LDFLAGS"
+        LinkerLibraries="$LINKLIBS"
+        LinkerOptimizationFlags="$LDOPTIMFLAGS"
+        LinkerDebugFlags="$LDDEBUGFLAGS"
+        CompilerDefineFormatter="-D%s"
+        LinkerLibrarySwitchFormatter="-l%s"
+        LinkerPathFormatter="-L%s"
+    />
+    <vars
+        CC="$GCC"
+        CXX="$GXX"
+        CMDLINE100="$CXX -c $DEFINES $INCLUDE $CXXFLAGS $OPTIM $SRC -o $OBJ"
+        CMDLINE200="$LDXX $LDFLAGS $LINKOPTIM $LINKEXPORTVER $OBJS $CXXLIBS $LINKLIBS -o $EXE"
+        DEFINES="-D_GNU_SOURCE -DMATLAB_MEX_FILE"
+        CFLAGS="-fPIC -fexceptions -fwrapv -ffp-contract=off -fno-omit-frame-pointer -pthread"
+        CXXFLAGS="$CFLAGS"
+        INCLUDE="-I&quot;$MATLABROOT/extern/include&quot; -I&quot;$MATLABROOT/simulink/include&quot;"
+        CXXOPTIMFLAGS="-O3 -DNDEBUG"
+        CXXDEBUGFLAGS="-g"
+        LD="$CC"
+        LDXX="$CXX"
+        LDFLAGS="-pthread -Wl,--no-undefined -Wl,-rpath-link,$MATLABROOT/bin/$ARCH -Wl,-rpath-link,$MATLABROOT/extern/bin/$ARCH -Wl,--as-needed -z noexecstack -shared"
+        FUNCTIONMAP="&quot;$MATLABROOT/extern/lib/$ARCH/mexFunction.map&quot;"
+        VERSIONMAP="&quot;$MATLABROOT/extern/lib/$ARCH/c_exportsmexfileversion.map&quot;"
+        LINKEXPORT="-Wl,--version-script,$FUNCTIONMAP"
+        LINKEXPORTVER="-Wl,--version-script,$VERSIONMAP"
+        STATICLIBS="-static-libstdc++ -static-libgcc"
+        LINKLIBS="$STATICLIBS -L&quot;$MATLABROOT/bin/$ARCH&quot; -L&quot;$MATLABROOT/extern/bin/$ARCH&quot; -lMatlabDataArray -lMatlabEngine -lmx -lmex -lmat -lm"
+        LDOPTIMFLAGS="-O"
+        LDDEBUGFLAGS="-g"
+        OBJEXT=".o"
+        LDEXT=".mexa64"
+        SETENV="CC=&quot;$CC&quot;
+                CXX=&quot;$CXX&quot;
+                CFLAGS=&quot;$CFLAGS $DEFINES&quot;
+                CXXFLAGS=&quot;$CXXFLAGS $DEFINES&quot;
+                COPTIMFLAGS=&quot;$CXXOPTIMFLAGS&quot;
+                CXXOPTIMFLAGS=&quot;$CXXOPTIMFLAGS&quot;
+                CDEBUGFLAGS=&quot;$CXXDEBUGFLAGS&quot;
+                CXXDEBUGFLAGS=&quot;$CXXDEBUGFLAGS&quot;
+                MW_GLIBC_SHIM=&quot;$MW_GLIBC_SHIM&quot;
+                LD=&quot;$LD&quot;
+                LDXX=&quot;$LDXX&quot;
+                LDFLAGS=&quot;$LDFLAGS $LINKLIBS $LINKEXPORT&quot;
+                LDDEBUGFLAGS=&quot;$LDDEBUGFLAGS&quot;">
+    </vars>
+    <locationFinder>
+        <GCC>
+            <cmdReturns name="which gcc" />
+        </GCC>
+        <GXX>
+            <cmdReturns name="which g++" />
+        </GXX>
+        <GCC_VERSION>
+            <cmdReturns name="g++ -dumpversion"/>
+        </GCC_VERSION>
+        <GCCDIR>
+            <cmdReturns name="which g++" />
+            <dirExists name="$$/../" />
+        </GCCDIR>
+        <GCC_TARGET>
+            <cmdReturns name="g++ -dumpmachine" />
+        </GCC_TARGET>
+    </locationFinder>
+    <env INCLUDE="$GCCDIR/lib/gcc/$GCC_TARGET/$VER/include;$GCCDIR/include/c++/$VER;$GCCDIR/include/c++/$VER/$GCC_TARGET;$GCCDIR/include/c++/$VER/backward"/>      
+</config>

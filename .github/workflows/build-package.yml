@@ -1,0 +1,433 @@
+name: Build Package
+run-name: "${{ inputs.package_path }} (${{ inputs.architecture }})${{ inputs.force && ' [force]' || '' }}"
+
+# Per-package, per-architecture build pipeline.
+#
+# A single run handles ONE (package_path, architecture) pair, with three jobs:
+#   1. build              - prepare + bundle the package -> .mhl artifact
+#   2. test-and-upload    - install/load/test the .mhl on its native arch,
+#                            then upload to GitHub Releases on success
+#   3. assemble-and-deploy - rebuild the channel index from all releases
+#                            and deploy to GitHub Pages
+#
+# Dispatch directly (workflow_dispatch) or call from another workflow
+# (workflow_call).
+
+on:
+  workflow_dispatch:
+    inputs:
+      package_path:
+        description: 'Release dir, e.g. packages/with_test/1.0.0'
+        required: true
+        type: string
+      architecture:
+        description: 'Target architecture'
+        required: true
+        type: choice
+        options:
+          - any
+          - linux_x86_64
+          - macos_arm64
+          - windows_x86_64
+      force:
+        description: 'Rebuild even if already published'
+        type: boolean
+        default: false
+  workflow_call:
+    inputs:
+      package_path:
+        required: true
+        type: string
+      architecture:
+        required: true
+        type: string
+      force:
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+jobs:
+  setup:
+    name: setup (${{ inputs.architecture }})
+    runs-on: ubuntu-latest
+    outputs:
+      runner: ${{ steps.pick.outputs.runner }}
+    steps:
+      - name: Pick runner for architecture
+        id: pick
+        shell: bash
+        run: |
+          case "${{ inputs.architecture }}" in
+            any)            runner=ubuntu-latest ;;
+            linux_x86_64)   runner=ubuntu-latest ;;
+            macos_arm64)    runner=macos-latest ;;
+            windows_x86_64) runner=windows-latest ;;
+            *)
+              echo "Unknown architecture: ${{ inputs.architecture }}" >&2
+              exit 1
+              ;;
+          esac
+          echo "runner=$runner" >> "$GITHUB_OUTPUT"
+
+  build:
+    name: build (${{ inputs.architecture }})
+    needs: setup
+    runs-on: ${{ needs.setup.outputs.runner }}
+    outputs:
+      has_bundle: ${{ steps.bundle_check.outputs.has_bundle }}
+      mhl_name: ${{ steps.bundle_check.outputs.mhl_name }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Checkout mip
+        uses: actions/checkout@v4
+        with:
+          repository: mip-org/mip
+          path: mip
+
+      - name: Set up MIP_ROOT
+        shell: bash
+        run: |
+          mkdir -p "$HOME/.mip/packages"
+          echo "MIP_ROOT=$HOME/.mip" >> "$GITHUB_ENV"
+
+      - name: Linux toolchain (gcc-10)
+        if: inputs.architecture == 'linux_x86_64'
+        shell: bash
+        run: |
+          sudo apt update
+          sudo apt install -y gcc-10 g++-10 patchelf
+          sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-10 100 \
+            --slave /usr/bin/g++ g++ /usr/bin/g++-10
+          sudo update-alternatives --install /usr/bin/cc cc /usr/bin/gcc-10 100
+          sudo update-alternatives --install /usr/bin/c++ c++ /usr/bin/g++-10 100
+          sudo update-alternatives --set gcc /usr/bin/gcc-10
+          sudo update-alternatives --set cc /usr/bin/gcc-10
+          sudo update-alternatives --set c++ /usr/bin/g++-10
+          echo "CC=gcc-10" >> "$GITHUB_ENV"
+          echo "CXX=g++-10" >> "$GITHUB_ENV"
+          gcc --version
+
+      - name: macOS gfortran alias
+        if: inputs.architecture == 'macos_arm64'
+        run: |
+          gfortran-15 --version
+          ln -sf /opt/homebrew/bin/gfortran-15 /opt/homebrew/bin/gfortran
+          gfortran --version
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Python dependencies
+        run: pip install requests pyyaml
+
+      - name: Prepare package
+        env:
+          BUILD_ARCHITECTURE: ${{ inputs.architecture }}
+        shell: bash
+        run: |
+          python scripts/prepare_one.py \
+            --package-path "${{ inputs.package_path }}" \
+            --architecture "${{ inputs.architecture }}" \
+            ${{ inputs.force && '--force' || '' }}
+
+      - name: Check for prepared package
+        id: prepared_check
+        shell: bash
+        run: |
+          if [ -d build/prepared ] && [ -n "$(ls -A build/prepared 2>/dev/null)" ]; then
+            echo "has_prepared=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_prepared=false" >> "$GITHUB_OUTPUT"
+            echo "Nothing to bundle (arch mismatch or already published)."
+          fi
+
+      - name: Run package setup
+        if: steps.prepared_check.outputs.has_prepared == 'true'
+        shell: bash
+        run: |
+          python scripts/package_setup.py \
+            --architecture "${{ inputs.architecture }}"
+
+      - name: Set up MATLAB
+        if: steps.prepared_check.outputs.has_prepared == 'true'
+        uses: matlab-actions/setup-matlab@v2
+        with:
+          cache: true
+          release: R2022a
+
+      - name: Bundle package
+        if: steps.prepared_check.outputs.has_prepared == 'true'
+        uses: matlab-actions/run-command@v2
+        env:
+          BUILD_ARCHITECTURE: ${{ inputs.architecture }}
+        with:
+          command: "addpath('mip'); addpath('scripts'); bundle_one"
+
+      - name: Bundle check
+        id: bundle_check
+        shell: bash
+        run: |
+          if ls build/bundled/*.mhl >/dev/null 2>&1; then
+            mhl=$(ls build/bundled/*.mhl | head -n1)
+            echo "has_bundle=true" >> "$GITHUB_OUTPUT"
+            echo "mhl_name=$(basename "$mhl")" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_bundle=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Upload bundled artifact
+        if: steps.bundle_check.outputs.has_bundle == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: bundled-${{ inputs.architecture }}
+          path: build/bundled/
+          if-no-files-found: error
+
+  test-and-upload:
+    name: test+upload (${{ inputs.architecture }})
+    needs: [setup, build]
+    if: needs.build.outputs.has_bundle == 'true'
+    runs-on: ${{ needs.setup.outputs.runner }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Checkout mip
+        uses: actions/checkout@v4
+        with:
+          repository: mip-org/mip
+          path: mip
+
+      - name: Set up MIP_ROOT
+        shell: bash
+        run: |
+          mkdir -p "$HOME/.mip/packages"
+          echo "MIP_ROOT=$HOME/.mip" >> "$GITHUB_ENV"
+
+      - name: Download bundled artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: bundled-${{ inputs.architecture }}
+          path: build/bundled
+
+      - name: Set up MATLAB
+        uses: matlab-actions/setup-matlab@v2
+        with:
+          cache: true
+          release: R2022a
+
+      - name: Strip build environment (Linux)
+        if: inputs.architecture == 'linux_x86_64' || inputs.architecture == 'any'
+        shell: bash
+        run: |
+          # Bypass apt's resolver: enumerate installed toolchain packages
+          # and let dpkg purge them with --force-depends. The resolver
+          # rejects our purge sets because some toolchain packages have
+          # reverse-dep chains into essentials (libgcc-s1, libssl3t64,
+          # etc.). --force-depends ignores those checks and removes the
+          # named packages anyway; the resulting dpkg state is inconsistent
+          # but the runner is thrown away after this job.
+          #
+          # Patterns are anchored with ^...$ so partial matches don't slip
+          # in. They intentionally exclude libstdc++6, libgcc-s1, libc6
+          # (essential runtimes that MATLAB and the runner itself need).
+          PURGE_RE='^(gcc.*|g\+\+.*|gfortran.*|clang.*|libclang.*|llvm.*|libllvm.*|lld.*|libomp.*|libgfortran.*|libgomp.*|libquadmath.*|libatomic.*|libitm.*|libasan.*|libubsan.*|liblsan.*|libtsan.*|libcc1.*|libssp.*|libstdc\+\+-.*-dev|libgcc-.*-dev|make|ninja-build|patchelf|build-essential|binutils.*|libbinutils.*|libctf.*|libgprofng.*|autoconf|automake|libtool|pkg-config|pkgconf.*|bison|flex|m4|cmake.*)$'
+
+          PKGS=$(dpkg-query -W --showformat='${Package}\n' 2>/dev/null | grep -E "$PURGE_RE" || true)
+
+          if [ -n "$PKGS" ]; then
+            echo "Purging $(echo "$PKGS" | wc -l) packages via dpkg --force-depends:"
+            echo "$PKGS" | sed 's/^/  /'
+            sudo dpkg --purge --force-depends $PKGS || true
+          fi
+
+          # Non-apt installs added by the runner-image setup (newer than apt):
+          sudo rm -rf /usr/local/bin/cmake /usr/local/bin/ctest /usr/local/bin/cpack \
+                      /usr/local/share/cmake-* /usr/local/doc/cmake* \
+                      /usr/local/man/man1/cmake.1.gz /usr/local/man/man1/ctest.1.gz \
+                      /usr/local/man/man1/cpack.1.gz /usr/local/man/man7/cmake-* \
+                      /usr/local/bin/ninja
+
+          # Linuxbrew tree (preinstalled but not on PATH; wipe anyway)
+          sudo rm -rf /home/linuxbrew
+
+          # Refresh the linker cache so removed .so files don't linger
+          sudo ldconfig
+
+      - name: Verify strip (Linux)
+        if: inputs.architecture == 'linux_x86_64' || inputs.architecture == 'any'
+        shell: bash
+        run: |
+          leaked=0
+          for c in gcc g++ gfortran cc c++ clang ld as cmake patchelf; do
+            if command -v "$c" >/dev/null 2>&1; then
+              echo "::error::Leaked binary: $c at $(command -v "$c")"
+              leaked=1
+            fi
+          done
+          for lib in libgfortran libgomp libquadmath; do
+            if /sbin/ldconfig -p 2>/dev/null | grep -q "$lib"; then
+              hits=$(/sbin/ldconfig -p 2>/dev/null | grep "$lib" | tr -s ' ' || true)
+              echo "::error::Leaked runtime lib $lib:"
+              echo "$hits"
+              leaked=1
+            fi
+          done
+          if [ "$leaked" -ne 0 ]; then
+            echo "Strip did not remove expected toolchain; aborting before test." >&2
+            exit 1
+          fi
+          echo "Strip OK: no compiler binaries or runtime libs on the linker path."
+
+      - name: Strip build environment (macOS)
+        if: inputs.architecture == 'macos_arm64'
+        shell: bash
+        run: |
+          # Rename rather than rm -rf: an APFS rename is a metadata-only
+          # op (~ms), while rm -rf walks 100k+ files in Xcode/Homebrew
+          # and takes ~3 min. The runner is ephemeral so leaving the
+          # bytes on disk is fine; the test only needs the paths to be
+          # unfindable by the linker / loader.
+          for d in /Applications/Xcode*.app; do
+            [ -e "$d" ] || continue
+            sudo mv "$d" "${d}.deleted"
+          done
+          if [ -e /Library/Developer ]; then
+            sudo mv /Library/Developer /Library/Developer.deleted
+          fi
+          if [ -e ~/Library/Developer ]; then
+            sudo mv ~/Library/Developer ~/Library/Developer.deleted
+          fi
+          sudo pkgutil --forget com.apple.pkg.CLTools_Executables 2>/dev/null || true
+          sudo pkgutil --forget com.apple.pkg.CLTools_SDK_macOS 2>/dev/null || true
+          sudo pkgutil --forget com.apple.pkg.DeveloperToolsCLI 2>/dev/null || true
+          sudo xcode-select --reset 2>/dev/null || true
+          if [ -e /opt/homebrew ]; then
+            sudo mv /opt/homebrew /opt/homebrew.deleted
+          fi
+
+      - name: Strip build environment (Windows)
+        if: inputs.architecture == 'windows_x86_64'
+        shell: pwsh
+        run: |
+          $vsInstaller = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vs_installer.exe"
+          $vsPath = "C:\Program Files\Microsoft Visual Studio\2022\Enterprise"
+          if ((Test-Path $vsInstaller) -and (Test-Path $vsPath)) {
+            & $vsInstaller uninstall --installPath $vsPath --quiet --norestart --force --wait
+          }
+          if (Get-Command choco -ErrorAction SilentlyContinue) {
+            choco list -r 2>$null | ForEach-Object {
+              $pkg = ($_ -split '\|')[0]
+              if ($pkg -and $pkg -ne 'chocolatey') {
+                choco uninstall $pkg -y --force --skip-autouninstaller
+              }
+            }
+          }
+          $paths = @(
+            "C:\Program Files\Microsoft Visual Studio",
+            "C:\Program Files (x86)\Microsoft Visual Studio",
+            "C:\Program Files (x86)\Windows Kits",
+            "C:\Program Files\LLVM",
+            "C:\Strawberry",
+            "C:\msys64",
+            "C:\mingw64",
+            "C:\ProgramData\chocolatey",
+            "C:\Program Files\CMake",
+            "C:\Program Files\Git\mingw64"
+          )
+          foreach ($p in $paths) {
+            Remove-Item -Recurse -Force -ErrorAction SilentlyContinue $p
+          }
+
+      - name: Test bundled package
+        # On non-macOS arches, run normally — any matlab error fails the job.
+        if: inputs.architecture != 'macos_arm64'
+        uses: matlab-actions/run-command@v2
+        with:
+          command: "addpath('mip'); addpath('scripts'); test_one"
+
+      - name: Test bundled package (macOS, SIGSEGV-tolerant)
+        # MATLAB R2024b+ on macOS arm64 SIGSEGVs in _pthread_tsd_cleanup at
+        # shutdown for any MEX linking Homebrew libgomp/libgfortran (see
+        # https://github.com/wmutschl/matlab_openmp_tls_bug). The crash is
+        # cosmetic — tests complete before MATLAB exits. We write a marker
+        # file on full success and verify it in the next step so a real
+        # test/load failure still fails the job, but exit-time SIGSEGV is
+        # tolerated. continue-on-error lets the job survive the nonzero
+        # matlab return code; the next step is the real gate.
+        if: inputs.architecture == 'macos_arm64'
+        continue-on-error: true
+        uses: matlab-actions/run-command@v2
+        with:
+          command: "addpath('mip'); addpath('scripts'); try; test_one; fid = fopen('.tests_passed', 'w'); fclose(fid); catch err; disp(getReport(err)); exit(1); end"
+
+      - name: Verify tests passed (macOS)
+        if: inputs.architecture == 'macos_arm64'
+        shell: bash
+        run: |
+          if [ -f .tests_passed ]; then
+            echo "::notice::tests passed (matlab exit-time SIGSEGV tolerated)"
+          else
+            echo "::error::tests failed (no .tests_passed marker)"
+            exit 1
+          fi
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Python dependencies
+        run: pip install requests pyyaml
+
+      - name: Upload to GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python scripts/upload_one.py
+
+  assemble-and-deploy:
+    name: assemble + deploy
+    needs: [build, test-and-upload]
+    if: always() && needs.build.result == 'success' && (needs.test-and-upload.result == 'success' || needs.test-and-upload.result == 'skipped')
+    runs-on: ubuntu-latest
+    # Serialize Pages deploys across concurrent package builds.
+    concurrency:
+      group: "pages"
+      cancel-in-progress: false
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Python dependencies
+        run: pip install requests pyyaml
+
+      - name: Assemble package index
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python scripts/assemble_index.py
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: build/gh-pages
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

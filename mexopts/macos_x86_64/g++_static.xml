@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<config
+    Name="g++-static"
+    ShortName="g++-static"
+    Manufacturer="GNU"
+    Version="$GCC_VERSION"
+    Language="C++"
+    Priority="A"
+    Location="$GXX" >
+    <Details
+        CompilerExecutable="$CXX"
+        CompilerDefines="$DEFINES"
+        CompilerFlags="$CXXFLAGS"
+        OptimizationFlags="$CXXOPTIMFLAGS"
+        DebugFlags="$CXXDEBUGFLAGS"
+        IncludeFlags="$INCLUDE"
+        LinkerExecutable="$LDXX"
+        LinkerFlags="$LDFLAGS"
+        LinkerLibraries="$LINKLIBS"
+        LinkerOptimizationFlags="$LDOPTIMFLAGS"
+        LinkerDebugFlags="$LDDEBUGFLAGS"
+        CompilerDefineFormatter="-D%s"
+        LinkerLibrarySwitchFormatter="-l%s"
+        LinkerPathFormatter="-L%s"
+    />
+    <vars
+        CC="$GCC"
+        CXX="$GXX"
+        CMDLINE100="$CXX -c $DEFINES $INCLUDE $CXXFLAGS $OPTIM $SRC -o $OBJ"
+        CMDLINE200="$LDXX $LDFLAGS $LINKOPTIM $LINKEXPORT $LINKEXPORTVER $LINKEXPORTCPP $OBJS $CXXLIBS $LINKLIBS -o $EXE"
+        DEFINES="-D_GNU_SOURCE -DMATLAB_MEX_FILE"
+        CFLAGS="-arch $GCC_ARCH -fPIC -fexceptions -fwrapv -ffp-contract=off -fno-omit-frame-pointer -pthread"
+        CXXFLAGS="$CFLAGS"
+        INCLUDE="-I&quot;$MATLABROOT/extern/include&quot; -I&quot;$MATLABROOT/simulink/include&quot;"
+        CXXOPTIMFLAGS="-O3 -DNDEBUG"
+        CXXDEBUGFLAGS="-g"
+        LD="$CC"
+        LDXX="$CXX"
+        LDFLAGS="-w -ld_classic -nodefaultrpaths -Wl,-twolevel_namespace -Wl,-dead_strip_dylibs -arch $GCC_ARCH -bundle"
+        FUNCTIONMAP="&quot;$MATLABROOT/extern/lib/$ARCH/mexFunction.map&quot;"
+        VERSIONMAP="&quot;$MATLABROOT/extern/lib/$ARCH/c_exportsmexfileversion.map&quot;"
+        CPPFUNCTIONMAP="&quot;$MATLABROOT/extern/lib/$ARCH/cppMexFunction.map&quot;"
+        LINKEXPORT="-Wl,-exported_symbols_list,$FUNCTIONMAP"
+        LINKEXPORTVER="-Wl,-exported_symbols_list,$VERSIONMAP"
+        LINKEXPORTCPP="-Wl,-U,_mexCreateMexFunction -Wl,-U,_mexDestroyMexFunction -Wl,-U,_mexFunctionAdapter -Wl,-exported_symbols_list,$CPPFUNCTIONMAP"
+        STATICLIBS="-static-libstdc++ -static-libgcc -static-libgfortran -static-libquadmath -lgfortran -lquadmath"
+        LINKLIBS="$STATICLIBS -L&quot;$MATLABROOT/bin/$ARCH&quot; -L&quot;$MATLABROOT/extern/bin/$ARCH&quot; -lMatlabDataArray -lMatlabEngine -lmx -lmex -lmat"
+        LDOPTIMFLAGS="-O"
+        LDDEBUGFLAGS="-g"
+        OBJEXT=".o"
+        LDEXT=".mex$ARCH"
+        SETENV="CC=&quot;$CC&quot;
+                CXX=&quot;$CXX&quot;
+                CFLAGS=&quot;$CFLAGS $DEFINES&quot;
+                CXXFLAGS=&quot;$CXXFLAGS $DEFINES&quot;
+                COPTIMFLAGS=&quot;$COPTIMFLAGS&quot;
+                CXXOPTIMFLAGS=&quot;$CXXOPTIMFLAGS&quot;
+                CDEBUGFLAGS=&quot;$CDEBUGFLAGS&quot;
+                CXXDEBUGFLAGS=&quot;$CXXDEBUGFLAGS&quot;
+                LD=&quot;$LD&quot;
+                LDXX=&quot;$LDXX&quot;
+                LDFLAGS=&quot;$LDFLAGS $LINKLIBS $LINKEXPORT $LINKEXPORTVER $LINKEXPORTCPP&quot;
+                LDDEBUGFLAGS=&quot;$LDDEBUGFLAGS&quot;"
+    />
+    <locationFinder>
+        <GCC>
+            <cmdReturns name="which $(compgen -c | grep -E '^gcc-[0-9]+$' | sort -V | tail -1)" />
+        </GCC>
+        <GXX>
+            <cmdReturns name="which $(compgen -c | grep -E '^g\+\+-[0-9]+$' | sort -V | tail -1)" />
+        </GXX>
+        <GCC_VERSION>
+            <cmdReturns name="$(compgen -c | grep -E '^gcc-[0-9]+$' | sort -V | tail -1) -dumpversion" />
+        </GCC_VERSION>
+        <GCC_ARCH>
+            <cmdReturns name="uname -m" />
+        </GCC_ARCH>
+    </locationFinder>
+</config>

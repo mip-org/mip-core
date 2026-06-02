@@ -1,7 +1,7 @@
 """Channel configuration helpers.
 
 Derives the GitHub repo from the environment ($GITHUB_REPOSITORY in CI)
-or from the git remote origin URL.  No configuration file needed.
+or from the git remote origin URL. No configuration file needed.
 """
 
 import os
@@ -9,7 +9,7 @@ import subprocess
 
 
 def get_github_repo():
-    """Return the GitHub owner/repo string (e.g. 'mip-org/mip-core').
+    """Return the GitHub owner/repo string (e.g. 'magland/mip-core2').
 
     Resolution order:
       1. $GITHUB_REPOSITORY  (always set in GitHub Actions)
@@ -19,7 +19,6 @@ def get_github_repo():
     if repo:
         return repo
 
-    # Fallback: parse git remote
     result = subprocess.run(
         ['git', 'remote', 'get-url', 'origin'],
         capture_output=True, text=True, check=True
@@ -43,10 +42,9 @@ def release_tag_from_mhl(mhl_filename):
 
     Filename format: {name}-{version}-{architecture}.mhl
 
-    A canonical package name may contain '-' (e.g. 'foo-bar'), but '-'
-    is the field separator in the filename, so the name is always
-    encoded with '_' in the filename (e.g. 'foo_bar-1.0-any.mhl').
-    The last hyphen therefore separates version from architecture, and
+    A canonical package name may contain '-', but '-' is the field
+    separator in the filename, so the name is always encoded with '_'
+    in the filename. The last hyphen separates version from architecture;
     the remainder is the release tag '{name-as-underscores}-{version}'.
     """
     basename = mhl_filename
@@ -55,7 +53,6 @@ def release_tag_from_mhl(mhl_filename):
     if basename.endswith('.mhl'):
         basename = basename[:-4]
 
-    # Split on last hyphen to get architecture, rest is name-version
     last_hyphen = basename.rfind('-')
     if last_hyphen == -1:
         return basename

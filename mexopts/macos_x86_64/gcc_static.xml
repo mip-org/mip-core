@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<config
+    Name="gcc-static"
+    ShortName="gcc-static"
+    Manufacturer="GNU"
+    Version="$GCC_VERSION"
+    Language="C"
+    Priority="A"
+    Location="$GCC" >
+    <Details
+        CompilerExecutable="$CC"
+        CompilerDefines="$DEFINES"
+        CompilerFlags="$CFLAGS"
+        OptimizationFlags="$COPTIMFLAGS"
+        DebugFlags="$CDEBUGFLAGS"
+        IncludeFlags="$INCLUDE"
+        LinkerExecutable="$LD"
+        LinkerFlags="$LDFLAGS"
+        LinkerLibraries="$LINKLIBS"
+        LinkerOptimizationFlags="$LDOPTIMFLAGS"
+        LinkerDebugFlags="$LDDEBUGFLAGS"
+        CompilerDefineFormatter="-D%s"
+        LinkerLibrarySwitchFormatter="-l%s"
+        LinkerPathFormatter="-L%s"
+    />
+    <vars
+        CC="$GCC"
+        CMDLINE100="$CC -c $DEFINES $INCLUDE $CFLAGS $OPTIM $SRC -o $OBJ"
+        CMDLINE200="$LD $LDFLAGS $LINKOPTIM $LINKEXPORT $LINKEXPORTVER $OBJS $CLIBS $LINKLIBS -o $EXE"
+        DEFINES="-D_GNU_SOURCE -DMATLAB_MEX_FILE"
+        CFLAGS="-arch $GCC_ARCH -fPIC -fexceptions -fwrapv -ffp-contract=off -fno-omit-frame-pointer -pthread"
+        INCLUDE="-I&quot;$MATLABROOT/extern/include&quot; -I&quot;$MATLABROOT/simulink/include&quot;"
+        COPTIMFLAGS="-O3 -DNDEBUG"
+        CDEBUGFLAGS="-g"
+        LD="$CC"
+        LDFLAGS="-nodefaultrpaths -Wl,-twolevel_namespace -Wl,-dead_strip_dylibs -arch $GCC_ARCH -bundle"
+        FUNCTIONMAP="&quot;$MATLABROOT/extern/lib/$ARCH/mexFunction.map&quot;"
+        VERSIONMAP="&quot;$MATLABROOT/extern/lib/$ARCH/c_exportsmexfileversion.map&quot;"
+        LINKEXPORT="-Wl,-exported_symbols_list,$FUNCTIONMAP"
+        LINKEXPORTVER="-Wl,-exported_symbols_list,$VERSIONMAP"
+        STATICLIBS="-static-libstdc++ -static-libgcc -static-libgfortran -static-libquadmath -lgfortran -lquadmath"
+        LINKLIBS="$STATICLIBS -L&quot;$MATLABROOT/bin/$ARCH&quot; -lmx -lmex -lmat"
+        LDOPTIMFLAGS="-O"
+        LDDEBUGFLAGS="-g"
+        OBJEXT=".o"
+        LDEXT=".mex$ARCH"
+        SETENV="CC=&quot;$CC&quot;
+                CFLAGS=&quot;$CFLAGS $DEFINES&quot;
+                COPTIMFLAGS=&quot;$COPTIMFLAGS&quot;
+                CDEBUGFLAGS=&quot;$CDEBUGFLAGS&quot;
+                LD=&quot;$LD&quot;
+                LDFLAGS=&quot;$LDFLAGS $LINKLIBS $LINKEXPORT&quot;
+                LDDEBUGFLAGS=&quot;$LDDEBUGFLAGS&quot;"
+    />
+    <locationFinder>
+        <GCC>
+            <cmdReturns name="which $(compgen -c | grep -E '^gcc-[0-9]+$' | sort -V | tail -1)" />
+        </GCC>
+        <GCC_VERSION>
+            <cmdReturns name="$(compgen -c | grep -E '^gcc-[0-9]+$' | sort -V | tail -1) -dumpversion" />
+        </GCC_VERSION>
+        <GCC_ARCH>
+            <cmdReturns name="uname -m" />
+        </GCC_ARCH>
+    </locationFinder>
+</config>
