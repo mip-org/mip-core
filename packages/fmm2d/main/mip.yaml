@@ -22,6 +22,11 @@ builds:
     setup:
       macos:
         - "brew install fftw"
+  - architectures: [windows_x86_64]
+    compile_script: compile_windows.m
+    test_script: test_fmm2d.m
+    paths:
+      - path: "matlab"
   - architectures: [numbl_wasm]
     compile_script: compile_numbl_wasm.m
     test_script: test_fmm2d.m
