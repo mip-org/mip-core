@@ -169,9 +169,9 @@ jobs:
           # R2022a lacks native support for some arches: on arm64 macos it
           # links MEX against x86_64 libmx ("symbol(s) not found for arm64"),
           # and on windows it predates the MinGW64 mex config that recognizes
-          # modern GCC. Use latest there; keep R2022a elsewhere (older glibc
+          # modern GCC. Use R2023b there; keep R2022a elsewhere (older glibc
           # -> portable linux MEX).
-          release: ${{ (inputs.architecture == 'macos_arm64' || inputs.architecture == 'windows_x86_64') && 'latest' || 'R2022a' }}
+          release: ${{ (inputs.architecture == 'macos_arm64' || inputs.architecture == 'windows_x86_64') && 'R2023b' || 'R2022a' }}
 
       - name: Bundle package
         if: steps.prepared_check.outputs.has_prepared == 'true'
@@ -239,9 +239,9 @@ jobs:
           # R2022a lacks native support for some arches: on arm64 macos it
           # links MEX against x86_64 libmx ("symbol(s) not found for arm64"),
           # and on windows it predates the MinGW64 mex config that recognizes
-          # modern GCC. Use latest there; keep R2022a elsewhere (older glibc
+          # modern GCC. Use R2023b there; keep R2022a elsewhere (older glibc
           # -> portable linux MEX).
-          release: ${{ (inputs.architecture == 'macos_arm64' || inputs.architecture == 'windows_x86_64') && 'latest' || 'R2022a' }}
+          release: ${{ (inputs.architecture == 'macos_arm64' || inputs.architecture == 'windows_x86_64') && 'R2023b' || 'R2022a' }}
 
       - name: Strip build environment (Linux)
         if: inputs.architecture == 'linux_x86_64' || inputs.architecture == 'any'
