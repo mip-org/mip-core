@@ -94,8 +94,12 @@ jobs:
       - name: Set up MIP_ROOT
         shell: bash
         run: |
-          mkdir -p "$HOME/.mip/packages"
-          echo "MIP_ROOT=$HOME/.mip" >> "$GITHUB_ENV"
+          root="$HOME/.mip"
+          mkdir -p "$root/packages"
+          # MATLAB is a native Windows program; hand it a Windows path, not
+          # the MSYS/Git-bash '/c/...' form. cygpath is a no-op on linux/macOS.
+          if command -v cygpath >/dev/null 2>&1; then root="$(cygpath -w "$root")"; fi
+          echo "MIP_ROOT=$root" >> "$GITHUB_ENV"
 
       - name: Linux toolchain (gcc-10)
         if: inputs.architecture == 'linux_x86_64'
@@ -162,7 +166,12 @@ jobs:
         uses: matlab-actions/setup-matlab@v2
         with:
           cache: true
-          release: R2022a
+          # R2022a lacks native support for some arches: on arm64 macos it
+          # links MEX against x86_64 libmx ("symbol(s) not found for arm64"),
+          # and on windows it predates the MinGW64 mex config that recognizes
+          # modern GCC. Use R2023b there; keep R2022a elsewhere (older glibc
+          # -> portable linux MEX).
+          release: ${{ (inputs.architecture == 'macos_arm64' || inputs.architecture == 'windows_x86_64') && 'R2023b' || 'R2022a' }}
 
       - name: Bundle package
         if: steps.prepared_check.outputs.has_prepared == 'true'
@@ -210,8 +219,12 @@ jobs:
       - name: Set up MIP_ROOT
         shell: bash
         run: |
-          mkdir -p "$HOME/.mip/packages"
-          echo "MIP_ROOT=$HOME/.mip" >> "$GITHUB_ENV"
+          root="$HOME/.mip"
+          mkdir -p "$root/packages"
+          # MATLAB is a native Windows program; hand it a Windows path, not
+          # the MSYS/Git-bash '/c/...' form. cygpath is a no-op on linux/macOS.
+          if command -v cygpath >/dev/null 2>&1; then root="$(cygpath -w "$root")"; fi
+          echo "MIP_ROOT=$root" >> "$GITHUB_ENV"
 
       - name: Download bundled artifact
         uses: actions/download-artifact@v4
@@ -223,7 +236,12 @@ jobs:
         uses: matlab-actions/setup-matlab@v2
         with:
           cache: true
-          release: R2022a
+          # R2022a lacks native support for some arches: on arm64 macos it
+          # links MEX against x86_64 libmx ("symbol(s) not found for arm64"),
+          # and on windows it predates the MinGW64 mex config that recognizes
+          # modern GCC. Use R2023b there; keep R2022a elsewhere (older glibc
+          # -> portable linux MEX).
+          release: ${{ (inputs.architecture == 'macos_arm64' || inputs.architecture == 'windows_x86_64') && 'R2023b' || 'R2022a' }}
 
       - name: Strip build environment (Linux)
         if: inputs.architecture == 'linux_x86_64' || inputs.architecture == 'any'
@@ -324,14 +342,11 @@ jobs:
           if ((Test-Path $vsInstaller) -and (Test-Path $vsPath)) {
             & $vsInstaller uninstall --installPath $vsPath --quiet --norestart --force --wait
           }
-          if (Get-Command choco -ErrorAction SilentlyContinue) {
-            choco list -r 2>$null | ForEach-Object {
-              $pkg = ($_ -split '\|')[0]
-              if ($pkg -and $pkg -ne 'chocolatey') {
-                choco uninstall $pkg -y --force --skip-autouninstaller
-              }
-            }
-          }
+          # No per-package `choco uninstall` loop: chocolatey packages are
+          # dev tools, not runtime libraries a MEX links against, and the
+          # whole C:\ProgramData\chocolatey tree is removed below anyway. The
+          # MinGW runtime DLLs that actually matter for self-containment live
+          # in the directories stripped below.
           $paths = @(
             "C:\Program Files\Microsoft Visual Studio",
             "C:\Program Files (x86)\Microsoft Visual Studio",
@@ -388,6 +403,18 @@ jobs:
 
       - name: Install Python dependencies
         run: pip install requests pyyaml
+
+      - name: Restore Homebrew for upload (macOS)
+        # The macOS strip step renamed /opt/homebrew (which holds `gh`) to
+        # exercise the package in a brew-free env. The test is done, so put it
+        # back — otherwise the upload step below can't find `gh`. APFS rename
+        # is metadata-only (~ms).
+        if: inputs.architecture == 'macos_arm64'
+        shell: bash
+        run: |
+          if [ -e /opt/homebrew.deleted ]; then
+            sudo mv /opt/homebrew.deleted /opt/homebrew
+          fi
 
       - name: Upload to GitHub Release
         env:
