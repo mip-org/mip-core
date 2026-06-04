@@ -152,7 +152,11 @@ jobs:
           python-version: '3.11'
 
       - name: Install Python dependencies
-        run: pip install requests pyyaml
+        # `python -m pip`, not bare `pip`: in the ubi8 container the runner
+        # mounts the tool cache at /__t, but setup-python's pip wrapper has the
+        # host path /opt/hostedtoolcache baked into its shebang and fails with
+        # "bad interpreter". Going through the interpreter sidesteps that.
+        run: python -m pip install requests pyyaml
 
       - name: Prepare package
         env:
@@ -461,7 +465,11 @@ jobs:
           python-version: '3.11'
 
       - name: Install Python dependencies
-        run: pip install requests pyyaml
+        # `python -m pip`, not bare `pip`: in the ubi8 container the runner
+        # mounts the tool cache at /__t, but setup-python's pip wrapper has the
+        # host path /opt/hostedtoolcache baked into its shebang and fails with
+        # "bad interpreter". Going through the interpreter sidesteps that.
+        run: python -m pip install requests pyyaml
 
       - name: Restore Homebrew for upload (macOS)
         # The macOS strip step renamed /opt/homebrew (which holds `gh`) to
@@ -502,7 +510,11 @@ jobs:
           python-version: '3.11'
 
       - name: Install Python dependencies
-        run: pip install requests pyyaml
+        # `python -m pip`, not bare `pip`: in the ubi8 container the runner
+        # mounts the tool cache at /__t, but setup-python's pip wrapper has the
+        # host path /opt/hostedtoolcache baked into its shebang and fails with
+        # "bad interpreter". Going through the interpreter sidesteps that.
+        run: python -m pip install requests pyyaml
 
       - name: Assemble package index
         env:
