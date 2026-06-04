@@ -134,8 +134,13 @@ jobs:
           # used by bundle_runtime_libs to rpath bundled .so deps. We run as root
           # in the container, so no sudo. mexopts resolve gcc via `which gcc`, so
           # no CC/CXX overrides are needed.
+          # libatomic is required by MATLAB's mpm installer (setup-matlab). It's
+          # not in the matlab-deps image (nor in MATLAB's dependency list), and
+          # install-system-dependencies can't add it: that input runs a MathWorks
+          # script that only supports apt (Ubuntu/Debian) and errors on RHEL. So
+          # install it (and our other prerequisites) here via dnf.
           dnf install -y gcc gcc-c++ gcc-gfortran make binutils unzip \
-                         python39 python39-pip
+                         python39 python39-pip libatomic
           dnf install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm
           dnf install -y patchelf
           # The build steps invoke `python`, but RHEL 8 ships only python3.x, and
