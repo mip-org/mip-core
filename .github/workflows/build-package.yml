@@ -139,8 +139,11 @@ jobs:
           # install-system-dependencies can't add it: that input runs a MathWorks
           # script that only supports apt (Ubuntu/Debian) and errors on RHEL. So
           # install it (and our other prerequisites) here via dnf.
+          # libstdc++-static (libstdc++.a) is needed because the mexopts link
+          # libstdc++ statically (-Wl,-Bstatic -lstdc++) for portability; gcc-c++
+          # only pulls libstdc++-devel (the .so), not the static archive.
           dnf install -y gcc gcc-c++ gcc-gfortran make binutils unzip \
-                         python39 python39-pip libatomic
+                         python39 python39-pip libatomic libstdc++-static
           dnf install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm
           dnf install -y patchelf
           # The build steps invoke `python`, but RHEL 8 ships only python3.x, and
