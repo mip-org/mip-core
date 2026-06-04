@@ -51,6 +51,13 @@ permissions:
   pages: write
   id-token: write
 
+# GitHub forces JS actions onto Node 24 from 2026-06-16; opt in early so CI
+# already runs on the runtime we'll be living with. Node 24 still requires only
+# glibc 2.28 (RHEL 8 is its Tier-1 and official build platform), so this is safe
+# inside the ubi8 container the Linux build uses. See MATLAB-GLIBC.md.
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+
 jobs:
   setup:
     name: setup (${{ inputs.architecture }})
@@ -78,10 +85,24 @@ jobs:
     name: build (${{ inputs.architecture }})
     needs: setup
     runs-on: ${{ needs.setup.outputs.runner }}
+    # linux_x86_64 builds inside an old-glibc (2.28) container so the MEX and any
+    # bundled .so load on the RHEL/Rocky 8 fleet. ubi8 is the oldest glibc
+    # MathWorks supports for MATLAB and matches the deployment target exactly; it
+    # is also the lowest glibc the GitHub Actions runner's Node (20/24) runs on.
+    # Other arches use no container (empty string). See MATLAB-GLIBC.md.
+    container: ${{ inputs.architecture == 'linux_x86_64' && 'mathworks/matlab-deps:r2022a-ubi8' || '' }}
     outputs:
       has_bundle: ${{ steps.bundle_check.outputs.has_bundle }}
       mhl_name: ${{ steps.bundle_check.outputs.mhl_name }}
     steps:
+      # ubi8 ships no git; actions/checkout falls back to a slow API tarball
+      # without it. Install it first (a run: step needs no Node, so it works
+      # before checkout even in the container).
+      - name: Install git for checkout (Linux container)
+        if: inputs.architecture == 'linux_x86_64'
+        shell: bash
+        run: dnf install -y git
+
       - name: Checkout repository
         uses: actions/checkout@v4
 
@@ -101,21 +122,21 @@ jobs:
           if command -v cygpath >/dev/null 2>&1; then root="$(cygpath -w "$root")"; fi
           echo "MIP_ROOT=$root" >> "$GITHUB_ENV"
 
-      - name: Linux toolchain (gcc-10)
+      - name: Linux toolchain (UBI8 GCC 8.5; links against glibc 2.28)
         if: inputs.architecture == 'linux_x86_64'
         shell: bash
         run: |
-          sudo apt update
-          sudo apt install -y gcc-10 g++-10 patchelf
-          sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-10 100 \
-            --slave /usr/bin/g++ g++ /usr/bin/g++-10
-          sudo update-alternatives --install /usr/bin/cc cc /usr/bin/gcc-10 100
-          sudo update-alternatives --install /usr/bin/c++ c++ /usr/bin/g++-10 100
-          sudo update-alternatives --set gcc /usr/bin/gcc-10
-          sudo update-alternatives --set cc /usr/bin/gcc-10
-          sudo update-alternatives --set c++ /usr/bin/g++-10
-          echo "CC=gcc-10" >> "$GITHUB_ENV"
-          echo "CXX=g++-10" >> "$GITHUB_ENV"
+          # ubi8's stock GCC 8.5 is exactly what MATLAB-GCC.md wants: it emits
+          # libgfortran.so.5 / GLIBCXX_3.4.25, both within R2022a's bundled
+          # versions, so no gcc-toolset pin is needed. Building here also pins the
+          # glibc floor to 2.28. binutils provides objdump for the glibc gate;
+          # unzip lets the gate read the shipped .mhl (a zip); patchelf (EPEL) is
+          # used by bundle_runtime_libs to rpath bundled .so deps. We run as root
+          # in the container, so no sudo. mexopts resolve gcc via `which gcc`, so
+          # no CC/CXX overrides are needed.
+          dnf install -y gcc gcc-c++ gcc-gfortran make binutils unzip
+          dnf install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm
+          dnf install -y patchelf
           gcc --version
 
       - name: macOS gfortran alias
@@ -166,12 +187,17 @@ jobs:
         uses: matlab-actions/setup-matlab@v2
         with:
           cache: true
-          # R2022a lacks native support for some arches: on arm64 macos it
-          # links MEX against x86_64 libmx ("symbol(s) not found for arm64"),
-          # and on windows it predates the MinGW64 mex config that recognizes
-          # modern GCC. Use R2023b there; keep R2022a elsewhere (older glibc
-          # -> portable linux MEX).
+          # R2022a pins the libstdc++/libgfortran ABI axis (MATLAB-GCC.md). The
+          # glibc axis is the ubi8 container's job (MATLAB-GLIBC.md), NOT the
+          # MATLAB version. R2022a lacks native support for some arches: on arm64
+          # macos it links MEX against x86_64 libmx ("symbol(s) not found for
+          # arm64"), and on windows it predates the MinGW64 mex config that
+          # recognizes modern GCC. Use R2023b there; keep R2022a elsewhere.
           release: ${{ (inputs.architecture == 'macos_arm64' || inputs.architecture == 'windows_x86_64') && 'R2023b' || 'R2022a' }}
+          # The matlab-deps:ubi8 image already carries MATLAB's system libs, and
+          # it's RHEL — setup-matlab's apt-based dependency install can't run
+          # there. Skip it inside the container; let it run normally elsewhere.
+          install-system-dependencies: ${{ inputs.architecture != 'linux_x86_64' }}
 
       - name: Bundle package
         if: steps.prepared_check.outputs.has_prepared == 'true'
@@ -192,6 +218,40 @@ jobs:
           else
             echo "has_bundle=false" >> "$GITHUB_OUTPUT"
           fi
+
+      - name: Gate the glibc floor (Linux; fail if a shipped binary needs > 2.28)
+        if: inputs.architecture == 'linux_x86_64' && steps.bundle_check.outputs.has_bundle == 'true'
+        shell: bash
+        run: |
+          # MATLAB-GLIBC.md: a MEX (or a bundled .so) built against newer glibc
+          # won't load on the Rocky/RHEL 8 fleet (glibc 2.28). Inspect every ELF
+          # inside the shipped .mhl (a zip) and fail if anything requires a symbol
+          # newer than 2.28, so a base-image bump can't silently raise the floor.
+          mhl=$(ls build/bundled/*.mhl | head -n1)
+          echo "Gating $mhl"
+          tmp=$(mktemp -d)
+          unzip -q "$mhl" -d "$tmp"
+          fail=0
+          found=0
+          while IFS= read -r f; do
+            max=$(objdump -T "$f" 2>/dev/null | grep -oE 'GLIBC_[0-9.]+' \
+                  | sed 's/GLIBC_//' | sort -V | tail -1)
+            [ -z "$max" ] && continue
+            found=1
+            highest=$(printf '%s\n2.28\n' "$max" | sort -V | tail -1)
+            if [ "$highest" = "2.28" ]; then
+              echo "  OK   $(basename "$f"): max GLIBC_$max"
+            else
+              echo "::error::$(basename "$f") requires GLIBC_$max (> 2.28)"
+              fail=1
+            fi
+          done < <(find "$tmp" \( -name '*.mexa64' -o -name '*.so' -o -name '*.so.*' \) -type f)
+          if [ "$found" -eq 0 ]; then
+            echo "::error::No ELF binaries (.mexa64/.so) found in $mhl to gate"
+            exit 1
+          fi
+          [ "$fail" -eq 0 ] || { echo "glibc gate FAILED"; exit 1; }
+          echo "glibc gate passed: every shipped binary loads on glibc 2.28"
 
       - name: Upload bundled artifact
         if: steps.bundle_check.outputs.has_bundle == 'true'
@@ -236,11 +296,10 @@ jobs:
         uses: matlab-actions/setup-matlab@v2
         with:
           cache: true
-          # R2022a lacks native support for some arches: on arm64 macos it
-          # links MEX against x86_64 libmx ("symbol(s) not found for arm64"),
-          # and on windows it predates the MinGW64 mex config that recognizes
-          # modern GCC. Use R2023b there; keep R2022a elsewhere (older glibc
-          # -> portable linux MEX).
+          # Mirror the build job's release choice (R2022a / R2023b). This job
+          # runs on the bare runner (no container): it only loads and tests the
+          # already-built .mhl, so glibc portability isn't a concern here — the
+          # 2.28-floored MEX loads fine on the newer runner (build-low/run-high).
           release: ${{ (inputs.architecture == 'macos_arm64' || inputs.architecture == 'windows_x86_64') && 'R2023b' || 'R2022a' }}
 
       - name: Strip build environment (Linux)
