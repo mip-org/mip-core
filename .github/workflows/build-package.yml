@@ -134,10 +134,16 @@ jobs:
           # used by bundle_runtime_libs to rpath bundled .so deps. We run as root
           # in the container, so no sudo. mexopts resolve gcc via `which gcc`, so
           # no CC/CXX overrides are needed.
-          dnf install -y gcc gcc-c++ gcc-gfortran make binutils unzip
+          dnf install -y gcc gcc-c++ gcc-gfortran make binutils unzip \
+                         python39 python39-pip
           dnf install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm
           dnf install -y patchelf
+          # The build steps invoke `python`, but RHEL 8 ships only python3.x, and
+          # setup-python's prebuilt CPython needs glibc >= 2.34 (won't run here).
+          # Point `python` at the container's native (glibc-2.28) python3.9.
+          ln -sf /usr/bin/python3.9 /usr/bin/python
           gcc --version
+          python --version
 
       - name: macOS gfortran alias
         if: inputs.architecture == 'macos_arm64'
@@ -147,15 +153,19 @@ jobs:
           gfortran --version
 
       - name: Set up Python
+        # Skipped in the ubi8 container: setup-python's prebuilt CPython is built
+        # against a newer glibc (needs >= 2.34) and won't run on 2.28. The Linux
+        # toolchain step installs the container's native python3 instead.
+        if: inputs.architecture != 'linux_x86_64'
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
 
       - name: Install Python dependencies
-        # `python -m pip`, not bare `pip`: in the ubi8 container the runner
-        # mounts the tool cache at /__t, but setup-python's pip wrapper has the
-        # host path /opt/hostedtoolcache baked into its shebang and fails with
-        # "bad interpreter". Going through the interpreter sidesteps that.
+        # `python -m pip`, not bare `pip`: setup-python's pip wrapper bakes the
+        # host tool-cache path into its shebang, so bare `pip` fails with "bad
+        # interpreter" in the container. In the ubi8 container `python` is the
+        # native python3.9 from the toolchain step.
         run: python -m pip install requests pyyaml
 
       - name: Prepare package
