@@ -12,6 +12,8 @@
 
 fprintf('=== test_one ===\n');
 
+setenv('MIP_CONFIRM', 'y');
+
 bundled_dir = fullfile(pwd, 'build', 'bundled');
 files = dir(fullfile(bundled_dir, '*.mhl'));
 if isempty(files)
