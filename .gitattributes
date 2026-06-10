@@ -1,0 +1,4 @@
+# No line-ending conversion: checkouts must be byte-identical on all
+# platforms so source hashes computed on Windows runners match the
+# Linux-based scheduled probe (see scripts/prepare_one.py).
+* -text
