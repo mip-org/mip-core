@@ -50,6 +50,12 @@ end
 mip('install', installArgs{:});
 mip('load', pkg_name);
 mip('test', pkg_name);
-mip('uninstall', pkg_name);
+% Uninstalling 'mip' itself is a particularly tricky case (it removes the
+% running package), so skip it as part of the package build test.
+if strcmp(pkg_name, 'mip')
+    fprintf('Skipping uninstall for package "mip".\n');
+else
+    mip('uninstall', pkg_name);
+end
 
 fprintf('OK: %s\n', pkg_name);
