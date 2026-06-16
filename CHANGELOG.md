@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- Add test scripts for chebfun@5.7.0 (construction, integration, diff, roots,
+  max, cumsum), export_fig@3.54 (crop_borders plus an end-to-end PNG export),
+  and flam@master (interpolative decomposition and an rskelf multiply/solve),
+  wiring each up via `test_script` in the package `mip.yaml`.
+
 - Add finufft@2.5.1 (linux_x86_64, macos_arm64, windows_x86_64): FINUFFT — fast
   parallel nonuniform FFTs (types 1/2/3 in 1D/2D/3D), MATLAB interface (Flatiron
   Institute). The MEX is built from source with CMake (DUCC0 FFT backend on
