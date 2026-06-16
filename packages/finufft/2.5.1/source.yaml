@@ -1,0 +1,3 @@
+source:
+  git: "https://github.com/flatironinstitute/finufft"
+  branch: "v2.5.1"
