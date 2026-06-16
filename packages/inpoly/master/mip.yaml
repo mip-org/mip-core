@@ -1,0 +1,17 @@
+name: inpoly
+description: "INPOLY: a fast point(s)-in-polygon test for general (non-convex, multiply-connected) polygons."
+version:
+license: "Custom (see LICENSE.md)"
+homepage: "https://github.com/dengwirda/inpoly"
+repository: "https://github.com/dengwirda/inpoly"
+dependencies: []
+
+# Upstream install is `addpath` of the toolbox root; all functions live there.
+# (inpoly2_oct.cpp is an Octave-only accelerator and is unused on MATLAB, where
+# inpoly2 runs the pure-MATLAB inpoly2_mat.)
+paths:
+  - path: "."
+
+builds:
+  - architectures: [any]
+    test_script: test_inpoly_channel.m

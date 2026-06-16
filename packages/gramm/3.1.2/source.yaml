@@ -1,0 +1,7 @@
+source:
+  git: "https://github.com/piermorel/gramm"
+  branch: "v3.1.2"
+  # The repo wraps the toolbox in a gramm/ subdirectory (the @gramm class plus
+  # its docs); extract that as the package root. The large sample_data/,
+  # images/, and paper/ directories live outside it and are not included.
+  subdirectory: "gramm"

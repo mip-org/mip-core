@@ -1,0 +1,5 @@
+source:
+  # No release tags upstream; track the default branch (master).
+  git: "https://github.com/dengwirda/jigsaw-geo-matlab"
+  # image/ holds README artwork only; keep the example datasets under files/.
+  remove_dirs: [image]

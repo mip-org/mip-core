@@ -1,0 +1,16 @@
+name: nurbs
+description: "NURBS toolbox: construction and manipulation of Non-Uniform Rational B-Splines (curves, surfaces, volumes)."
+version: "1.4.4"
+license: "GPL-3.0"
+homepage: "https://octave.sourceforge.io/nurbs/"
+repository: "https://octave.sourceforge.io/nurbs/"
+dependencies: []
+
+# All user functions live in inst/; inst/private resolves automatically from
+# functions in inst/, so only inst/ needs to be on the path.
+paths:
+  - path: inst
+
+builds:
+  - architectures: [any]
+    test_script: test_nurbs_channel.m

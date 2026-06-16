@@ -1,0 +1,3 @@
+source:
+  git: "https://github.com/mpf/spot"
+  branch: "1.2"

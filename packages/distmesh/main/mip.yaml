@@ -1,0 +1,16 @@
+name: distmesh
+description: "DistMesh: a simple MATLAB mesh generator for unstructured triangular and tetrahedral meshes (Persson & Strang)."
+version:
+license: "MIT"
+homepage: "https://persson.berkeley.edu/distmesh/"
+repository: "https://github.com/popersson/DistMesh"
+dependencies: []
+
+# Mirrors startup.m, which adds src/ (the toolbox functions) and examples/.
+paths:
+  - path: src
+  - path: examples
+
+builds:
+  - architectures: [any]
+    test_script: test_distmesh_channel.m

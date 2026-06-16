@@ -1,0 +1,14 @@
+name: dotenv
+description: "Load environment variables from a .env file into MATLAB at runtime."
+version: "1.1.4"
+license: "LicenseRef-MathWorks"
+homepage: "https://github.com/mathworks/dotenv-for-MATLAB"
+repository: "https://github.com/mathworks/dotenv-for-MATLAB"
+dependencies: []
+
+paths:
+  - path: "."
+
+builds:
+  - architectures: [any]
+    test_script: test_dotenv.m

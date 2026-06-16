@@ -1,0 +1,6 @@
+source:
+  # No release tags upstream; track the default branch (master).
+  git: "https://github.com/dengwirda/find-poly"
+  # The repo vendors trimmed copies of aabb-tree and inpoly (poly-test/); drop
+  # them and use the aabb_tree and inpoly packages (declared as dependencies).
+  remove_dirs: [aabb-tree, poly-test]

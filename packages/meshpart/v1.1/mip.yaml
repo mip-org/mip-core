@@ -1,0 +1,16 @@
+name: meshpart
+description: "Meshpart: a Matlab mesh-partitioning and graph-separator toolbox (geometric, spectral, coordinate, inertial, and nested dissection)."
+version: "1.1"
+license: "MIT"
+homepage: "https://github.com/YingzhouLi/meshpart"
+repository: "https://github.com/YingzhouLi/meshpart"
+dependencies: []
+
+# Install mirrors meshpart_startup.m: addpath(genpath('src')).
+paths:
+  - path: "src"
+    recursive: true
+
+builds:
+  - architectures: [any]
+    test_script: test_meshpart_channel.m

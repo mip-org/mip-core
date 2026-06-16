@@ -1,0 +1,8 @@
+source:
+  # No release tags upstream; track the default branch (master).
+  git: "https://github.com/dengwirda/mesh2d"
+  # poly-test/ is a trimmed copy of inpoly; drop it and use the inpoly package
+  # (dependency). The bundled aabb-tree/ is KEPT: it is a richer variant than the
+  # standalone aabb_tree package (it adds findball/findline/lineline/linenear and
+  # findtria, which mesh2d uses), so it cannot be replaced by that dependency.
+  remove_dirs: [poly-test]

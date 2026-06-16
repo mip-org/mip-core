@@ -51,26 +51,25 @@ jobs:
 
       - name: Checkout repository
         if: steps.check.outputs.proceed == 'true'
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Set up Python
         if: steps.check.outputs.proceed == 'true'
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: '3.11'
 
-      - name: Install Python dependencies
+      - name: Install channel tooling
         if: steps.check.outputs.proceed == 'true'
-        run: pip install pyyaml
+        run: pip install ./tools
 
       - name: Build validation comment
         if: steps.check.outputs.proceed == 'true'
         env:
-          ISSUE_TITLE: ${{ github.event.issue.title }}
           ISSUE_BODY: ${{ github.event.issue.body }}
         run: |
           mkdir -p .ci-tmp
-          python3 scripts/build_request_from_issue.py validate \
+          python3 -m mip_channel_tools build-request validate \
             --output-file .ci-tmp/comment.md \
             --title-file .ci-tmp/title.txt \
             --repo-root .
@@ -139,27 +138,26 @@ jobs:
 
       - name: Checkout repository
         if: steps.check.outputs.proceed == 'true'
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Set up Python
         if: steps.check.outputs.proceed == 'true'
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: '3.11'
 
-      - name: Install Python dependencies
+      - name: Install channel tooling
         if: steps.check.outputs.proceed == 'true'
-        run: pip install pyyaml
+        run: pip install ./tools
 
       - name: Resolve build request
         if: steps.check.outputs.proceed == 'true'
         id: resolve
         env:
-          ISSUE_TITLE: ${{ github.event.issue.title }}
           ISSUE_BODY: ${{ github.event.issue.body }}
         run: |
           mkdir -p .ci-tmp
-          if ! python3 scripts/build_request_from_issue.py apply \
+          if ! python3 -m mip_channel_tools build-request apply \
               --dispatch-file .ci-tmp/dispatch.tsv \
               --errors-file .ci-tmp/errors.md \
               --repo-root .; then
@@ -231,3 +229,15 @@ jobs:
             body=$'Some dispatches failed:\n\n'"$partial"$'\n\nSee the workflow run for details.'
           fi
           gh issue comment "$ISSUE_NUMBER" --repo "$REPO" --body "$body"
+
+      - name: Close issue after successful dispatch
+        if: >-
+          steps.check.outputs.proceed == 'true' &&
+          steps.resolve.outputs.resolved == 'true' &&
+          steps.dispatch.outcome == 'success'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+        run: |
+          gh issue close "$ISSUE_NUMBER" --repo "$REPO" --reason completed

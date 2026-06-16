@@ -1,0 +1,22 @@
+name: tensor_toolbox
+description: "Tensor Toolbox for MATLAB: dense, sparse, and decomposed (CP, Tucker, ...) N-way arrays."
+version: "3.8"
+license: "BSD-2-Clause"
+homepage: "https://www.tensortoolbox.org"
+repository: "https://gitlab.com/tensors/tensor_toolbox"
+dependencies: []
+
+# The toolbox root holds all functions and the @-class folders (resolved from
+# the root being on the path). The two bundled optimization libraries live
+# under libraries/ and must be added explicitly.
+paths:
+  - path: "."
+  - path: "libraries/lbfgsb/Matlab"
+  - path: "libraries/compact/src"
+
+builds:
+  - architectures: [linux_x86_64, macos_arm64, windows_x86_64]
+    compile_script: compile.m
+    test_script: test_tensor_toolbox_channel.m
+  - architectures: [any]
+    test_script: test_tensor_toolbox_any.m

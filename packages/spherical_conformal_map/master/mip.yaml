@@ -1,0 +1,16 @@
+name: spherical_conformal_map
+description: "Spherical Conformal Map: a linear method for conformally mapping genus-0 closed triangle meshes onto the unit sphere (FLASH)."
+version:
+license: "Apache-2.0"
+homepage: "https://github.com/garyptchoi/spherical-conformal-map"
+repository: "https://github.com/garyptchoi/spherical-conformal-map"
+dependencies: []
+
+# Core functions live in mfile/; the Mobius area-correction extension in extension/.
+paths:
+  - path: "mfile"
+  - path: "extension"
+
+builds:
+  - architectures: [any]
+    test_script: test_spherical_conformal_map_channel.m

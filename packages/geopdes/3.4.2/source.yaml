@@ -1,0 +1,6 @@
+source:
+  git: "https://github.com/rafavzqz/geopdes"
+  branch: "v3.4.2"
+  # The repo wraps the toolbox in geopdes/ with an Octave-package layout; the
+  # MATLAB functions are under geopdes/inst. Extract that as the package root.
+  subdirectory: "geopdes/inst"

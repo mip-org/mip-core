@@ -1,0 +1,5 @@
+source:
+  # RKToolbox is distributed only as a zip from the project website (no git
+  # repo, no versioned URL). This is the current 2.9 release; the zip extracts
+  # into a top-level rktoolbox/ folder (see mip.yaml paths).
+  zip: "http://guettel.com/rktoolbox/rktoolbox.zip"

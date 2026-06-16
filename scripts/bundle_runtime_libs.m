@@ -14,6 +14,13 @@ function bundle_runtime_libs(mexFile)
 % guaranteed by the OS and libraries MATLAB resolves itself.
 %
 % No-op on Windows.
+%
+% Bundling is deliberately NON-recursive: it scans only the MEX's own NEEDED
+% entries, not the NEEDED entries of the libs it copies. This is intentional,
+% not a bug — a bundled lib's transitive deps (e.g. libgfortran -> libquadmath,
+% libz) are expected to be provided at runtime by the OS or by MATLAB. See
+% notes/MEX-RUNTIME-LIBS.md for the full rationale and for how to add recursion
+% safely if a genuinely third-party transitive dep ever appears.
 
 if ~exist(mexFile, 'file')
     error('mip:bundleRuntimeLibs:notFound', ...
@@ -119,11 +126,17 @@ end
 % -------------------------------------------------------------------------
 function s = linux_skip_set()
 % SONAMEs we never bundle: OS-guaranteed system libs, and libs MATLAB
-% resolves at runtime via its own LD_LIBRARY_PATH.
+% resolves at runtime via its own LD_LIBRARY_PATH (sys/os/glnxa64).
+%
+% libgfortran.so.5 is skipped: Linux MATLAB ships it, it is on MATLAB's
+% LD_LIBRARY_PATH (searched before the MEX's $ORIGIN RPATH), and the build
+% toolchain is pinned so our symbol requirements stay within MATLAB's copy
+% (see notes/MEX-RUNTIME-LIBS.md and MATLAB-GCC.md). libgomp is deliberately
+% NOT here: Linux MATLAB does NOT ship it, so its bundled copy is load-bearing.
 s = { ...
     'linux-vdso.so.1', 'ld-linux-x86-64.so.2', ...
     'libc.so.6', 'libm.so.6', 'libpthread.so.0', 'libdl.so.2', 'librt.so.1', ...
-    'libstdc++.so.6', 'libgcc_s.so.1', ...
+    'libstdc++.so.6', 'libgcc_s.so.1', 'libgfortran.so.5', ...
     'libmx.so', 'libmex.so', 'libmat.so', ...
     'libMatlabDataArray.so', 'libMatlabEngine.so'};
 end

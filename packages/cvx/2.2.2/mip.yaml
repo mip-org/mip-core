@@ -1,0 +1,24 @@
+name: cvx
+description: "CVX: a MATLAB-based modeling system for disciplined convex programming."
+version: "2.2.2"
+license: "GPL-2.0"
+homepage: "https://cvxr.com/cvx"
+repository: "https://github.com/cvxr/CVX"
+dependencies: [sedumi]
+
+paths:
+  - path: "."
+  - path: "builtins"
+  - path: "commands"
+  - path: "functions"
+  - path: "lib"
+  - path: "structures"
+
+extra_paths:
+  examples:
+    - path: "examples"
+
+builds:
+  - architectures: [linux_x86_64, macos_arm64, windows_x86_64]
+    compile_script: compile.m
+    test_script: test_cvx_channel.m

@@ -1,0 +1,6 @@
+source:
+  git: "https://github.com/csrc-sdsu/mole"
+  branch: "v1.2.0"
+  # MOLE ships C++ and MATLAB/Octave implementations; package the pure-MATLAB
+  # one under src/matlab_octave as the package root.
+  subdirectory: "src/matlab_octave"

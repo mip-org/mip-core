@@ -1,0 +1,4 @@
+source:
+  # No release tags upstream; track the default branch (master).
+  git: "https://github.com/cfwen/geometry-processing-package"
+  branch: "master"

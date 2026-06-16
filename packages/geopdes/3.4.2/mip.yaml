@@ -1,0 +1,17 @@
+name: geopdes
+description: "GeoPDEs: a research tool for Isogeometric Analysis (IGA) of partial differential equations."
+version: "3.4.2"
+license: "GPL-3.0"
+homepage: "http://rafavzqz.github.io/geopdes/"
+repository: "https://github.com/rafavzqz/geopdes"
+dependencies: [nurbs]
+
+# All of inst/ goes on the path (the @sp_*/@msh_* class folders resolve from
+# their parent dirs). The geometry/spline backend comes from the nurbs package.
+paths:
+  - path: "."
+    recursive: true
+
+builds:
+  - architectures: [any]
+    test_script: test_geopdes_channel.m

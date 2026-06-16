@@ -1,0 +1,16 @@
+name: hm_toolbox
+description: "hm-toolbox: HODLR, HSS and HALR hierarchical (rank-structured) matrices in MATLAB."
+version:
+license: "GPL-3.0"
+homepage: "https://github.com/numpi/hm-toolbox"
+repository: "https://github.com/numpi/hm-toolbox"
+dependencies: []
+
+# Install is just `addpath /path/to/hm-toolbox` (the root): the @hodlr / @hss /
+# @halr class folders and private/ resolve from the root being on the path.
+paths:
+  - path: "."
+
+builds:
+  - architectures: [any]
+    test_script: test_hm_toolbox_channel.m

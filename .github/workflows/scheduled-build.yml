@@ -2,8 +2,8 @@ name: Scheduled rebuild
 
 # Daily probe of every (package, architecture) pair.
 #
-# Runs `scripts/scheduled_check.py`, which invokes `prepare_one.py` for
-# each pair. A pair "needs rebuilding" iff prepare_one produces output —
+# Runs `mip-channel scheduled-check`, which invokes `mip-channel prepare`
+# for each pair. A pair "needs rebuilding" iff prepare produces output —
 # i.e. the corresponding `.mhl` is missing on GitHub Releases or its
 # source hash no longer matches (typically because the upstream git ref
 # moved). Pairs already up to date are skipped. For every pair that
@@ -29,15 +29,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: '3.11'
 
-      - name: Install Python dependencies
-        run: pip install requests pyyaml
+      - name: Install channel tooling
+        run: pip install ./tools
 
       - name: Probe every (package, architecture)
         id: probe
@@ -47,7 +47,7 @@ jobs:
           # dispatching the pairs that did resolve, then exit non-zero
           # in the final step.
           set +e
-          python3 scripts/scheduled_check.py \
+          python3 -m mip_channel_tools scheduled-check \
             --dispatch-file .ci-tmp/dispatch.tsv \
             --summary-file .ci-tmp/summary.md \
             --repo-root .
@@ -103,6 +103,6 @@ jobs:
           PROBE_RC: ${{ steps.probe.outputs.probe_rc }}
         run: |
           if [ "$PROBE_RC" != "0" ]; then
-            echo "::error::scheduled_check.py reported one or more prepare failures"
+            echo "::error::scheduled-check reported one or more prepare failures"
             exit 1
           fi

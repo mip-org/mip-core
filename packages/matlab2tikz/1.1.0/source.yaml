@@ -1,0 +1,5 @@
+source:
+  git: "https://github.com/matlab2tikz/matlab2tikz"
+  branch: "v1.1.0"
+  subdirectory: "src"
+  remove_dirs: [dev]

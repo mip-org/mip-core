@@ -26,9 +26,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
-          fetch-depth: 2
+          # Full history: the "Determine changed files" step diffs the push's
+          # BEFORE..AFTER, and BEFORE can be many commits back when a push
+          # carries more than one new commit. A shallow clone (e.g.
+          # fetch-depth: 2) only reaches AFTER's immediate parent, so any
+          # multi-commit push fails with `fatal: bad object <BEFORE>`.
+          fetch-depth: 0
 
       - name: Determine changed files
         env:
@@ -48,17 +53,17 @@ jobs:
           sed 's/^/  /' .ci-tmp/changed.txt || true
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: '3.11'
 
-      - name: Install Python dependencies
-        run: pip install pyyaml
+      - name: Install channel tooling
+        run: pip install ./tools
 
       - name: Resolve affected builds
         id: resolve
         run: |
-          python3 scripts/affected_builds.py \
+          python3 -m mip_channel_tools affected \
             --changed-files .ci-tmp/changed.txt \
             --dispatch-file .ci-tmp/dispatch.tsv \
             --repo-root .

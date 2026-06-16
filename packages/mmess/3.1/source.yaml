@@ -1,0 +1,3 @@
+source:
+  git: "https://gitlab.mpi-magdeburg.mpg.de/mess/mmess-releases"
+  branch: "v3.1"

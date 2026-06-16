@@ -1,0 +1,4 @@
+source:
+  # No matching release tag for the bundled backend version; track the default
+  # branch (master), which carries the JIGSAW C++ source under external/jigsaw.
+  git: "https://github.com/dengwirda/jigsaw-matlab"

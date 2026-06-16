@@ -1,0 +1,16 @@
+name: disk_conformal_map
+description: "Disk Conformal Map: a fast method for conformally mapping simply-connected open triangle meshes onto the unit disk."
+version:
+license: "Apache-2.0"
+homepage: "https://github.com/garyptchoi/disk-conformal-map"
+repository: "https://github.com/garyptchoi/disk-conformal-map"
+dependencies: []
+
+# Core functions live in mfile/; the Mobius/remeshing extensions in extension/.
+paths:
+  - path: "mfile"
+  - path: "extension"
+
+builds:
+  - architectures: [any]
+    test_script: test_disk_conformal_map_channel.m

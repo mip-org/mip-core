@@ -1,0 +1,14 @@
+name: cmocean
+description: "Perceptually uniform colormaps for oceanography and general scientific visualization."
+version: ""
+license: "MIT"
+homepage: "https://matplotlib.org/cmocean/"
+repository: "https://github.com/chadagreene/cmocean"
+dependencies: []
+
+paths:
+  - path: "."
+
+builds:
+  - architectures: [any]
+    test_script: test_cmocean.m

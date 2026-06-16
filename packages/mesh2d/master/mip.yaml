@@ -1,0 +1,25 @@
+name: mesh2d
+description: "MESH2D: Delaunay-refinement and Frontal-Delaunay unstructured triangular mesh generation in MATLAB."
+version:
+license: "Custom (see LICENSE.md)"
+homepage: "https://github.com/dengwirda/mesh2d"
+repository: "https://github.com/dengwirda/mesh2d"
+dependencies: [inpoly]
+
+# Mirrors initmsh.m, which adds the code subfolders to the path. poly-test/ is
+# replaced by the inpoly dependency; the bundled aabb-tree/ (a richer variant)
+# is kept and stays on the path.
+paths:
+  - path: "."
+  - path: aabb-tree
+  - path: geom-util
+  - path: hfun-util
+  - path: hjac-util
+  - path: mesh-ball
+  - path: mesh-cost
+  - path: mesh-file
+  - path: mesh-util
+
+builds:
+  - architectures: [any]
+    test_script: test_mesh2d_channel.m

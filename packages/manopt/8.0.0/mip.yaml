@@ -1,0 +1,26 @@
+name: manopt
+description: "Manopt: a Matlab toolbox for optimization on manifolds (Riemannian optimization)."
+version: "8.0.0"
+license: "GPL-3.0"
+homepage: "https://www.manopt.org"
+repository: "https://github.com/NicolasBoumal/manopt"
+dependencies: []
+
+# Mirrors importmanopt.m: the toolbox root plus every code directory under
+# manopt/ (recursive). examples/ is available on demand but not on the
+# default path (matching importmanopt, which adds only root + manopt/).
+paths:
+  - path: "."
+  - path: "manopt"
+    recursive: true
+
+extra_paths:
+  examples:
+    - path: "examples"
+
+builds:
+  - architectures: [linux_x86_64, macos_arm64, windows_x86_64]
+    compile_script: compile.m
+    test_script: test_manopt_channel.m
+  - architectures: [any]
+    test_script: test_manopt_any.m

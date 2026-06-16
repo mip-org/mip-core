@@ -1,12 +1,16 @@
 name: Assemble Index
 
-# Manual-only utility: rebuild the channel index from existing GitHub
-# Releases and redeploy GitHub Pages, without triggering any package
-# build. Useful after deleting/restoring a release or to refresh the
-# index out-of-band from build-package.yml.
+# Rebuild the channel index from existing GitHub Releases and redeploy
+# GitHub Pages, without triggering any package build. Runs manually
+# (e.g. after deleting/restoring a release) and automatically on pushes
+# to main that change the site assets.
 
 on:
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'site/**'
 
 permissions:
   contents: read
@@ -25,26 +29,26 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: '3.11'
 
-      - name: Install Python dependencies
-        run: pip install requests pyyaml
+      - name: Install channel tooling
+        run: pip install ./tools
 
       - name: Assemble package index
         env:
           GH_TOKEN: ${{ github.token }}
-        run: python scripts/assemble_index.py
+        run: python -m mip_channel_tools assemble-index
 
       - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@v5
         with:
           path: build/gh-pages
 
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5

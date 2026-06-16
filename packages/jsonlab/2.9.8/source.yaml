@@ -1,0 +1,4 @@
+source:
+  git: "https://github.com/NeuroJSON/jsonlab"
+  branch: "v2.9.8"
+  remove_dirs: [test]

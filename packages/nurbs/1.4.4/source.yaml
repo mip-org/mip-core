@@ -1,0 +1,4 @@
+source:
+  # Octave-Forge package, distributed only as a source tarball (no git repo).
+  # The extractor strips the single top-level nurbs-1.4.4/ directory.
+  tarball: "https://downloads.sourceforge.net/project/octave/Octave%20Forge%20Packages/Individual%20Package%20Releases/nurbs-1.4.4.tar.gz"

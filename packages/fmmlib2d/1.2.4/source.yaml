@@ -1,0 +1,4 @@
+source:
+  git: "https://github.com/zgimbutas/fmmlib2d"
+  branch: "v1.2.4"
+  remove_dirs: [contrib, doc, bin, examples]

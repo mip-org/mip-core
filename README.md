@@ -12,7 +12,7 @@ Changes outside `packages/` (scripts, mexopts, workflows, site, README) do not t
 
 ## Scheduled rebuild
 
-Daily at 06:00 UTC, `scheduled-build.yml` probes every (package, architecture) pair in the channel by running `prepare_one.py` for each. A pair "needs rebuilding" iff its `.mhl` is missing on GitHub Releases or its source hash no longer matches — typically because an upstream git branch (e.g. `master`, `main`) advanced. Pairs that need rebuilding are dispatched to `build-package.yml`.
+Daily at 06:00 UTC, `scheduled-build.yml` probes every (package, architecture) pair in the channel by running `mip-channel prepare` for each. A pair "needs rebuilding" iff its `.mhl` is missing on GitHub Releases or its source hash no longer matches — typically because an upstream git branch (e.g. `master`, `main`) advanced. Pairs that need rebuilding are dispatched to `build-package.yml`.
 
 The workflow can also be invoked manually:
 
@@ -25,16 +25,16 @@ gh workflow run scheduled-build.yml
 Open an issue. The title must start with `Build` (case-insensitive). The body lists one or more build lines:
 
 ```
-packages/<name>/<version> <architecture>
+<name>@<release> <architecture>
 ```
 
-Multiple architectures on one line dispatch multiple builds for that package. Multiple lines dispatch multiple packages. Lines without a package path are ignored.
+Multiple architectures on one line dispatch multiple builds for that package. Multiple lines dispatch multiple packages. Lines without a package reference are ignored.
 
 Example body:
 
 ```
-packages/foo/1.0.0 any
-packages/bar/2.0 linux_x86_64 macos_arm64
+foo@1.0.0 any
+bar@2.0 linux_x86_64 macos_arm64
 ```
 
 Within ~30s the request bot replies with the list of `(package, architecture)` pairs it parsed (or an error list). An admin — anyone with write access on the repo — then replies `approve` on its own line to dispatch.
@@ -43,13 +43,13 @@ Within ~30s the request bot replies with the list of `(package, architecture)` p
 
 - `any` — pure MATLAB; runs on ubuntu.
 - `linux_x86_64`, `macos_arm64`, `windows_x86_64` — native; run on the matching OS.
-- `all` — expand to every arch declared in the package's `mip.yaml` (intersected with the four above).
+- `all` — expand to every arch declared in the package's `mip.yaml` (intersected with the four above). A package with no channel-side `mip.yaml` cannot expand `all`.
 
 A build for an architecture the package does not declare exits cleanly with nothing to do.
 
 ### Building every package in one go
 
-Replace the path with the literal keyword `all-packages` to fan out across the channel:
+Replace the package reference with the literal keyword `all-packages` to fan out across the channel:
 
 ```
 all-packages linux_x86_64
@@ -65,7 +65,7 @@ By default, a build that would produce a `.mhl` matching what is already publish
 To rebuild anyway, append `force` to a build line:
 
 ```
-packages/foo/1.0.0 linux_x86_64 force
+foo@1.0.0 linux_x86_64 force
 ```
 
 `force` applies only to the line it is on.

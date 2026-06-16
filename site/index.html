@@ -236,6 +236,13 @@
             return { owner, repo: name };
         }
 
+        function channelName(slug) {
+            // The channel identifier strips the "mip-" repo prefix:
+            // repo <owner>/mip-<channel> -> channel <owner>/<channel>.
+            if (!slug || !slug.repo) return null;
+            return slug.repo.startsWith("mip-") ? slug.repo.slice(4) : slug.repo;
+        }
+
         function deriveChannelSlug() {
             // On GitHub Pages: https://<owner>.github.io/<repo>/... -> owner/repo
             const host = location.hostname;
@@ -255,8 +262,9 @@
                 document.title = "MIP Channel";
                 return;
             }
-            titleEl.innerHTML = `<span class="owner">${escapeHtml(slug.owner)}</span><span class="slash">/</span>${escapeHtml(slug.repo)}`;
-            document.title = `${slug.owner}/${slug.repo} — MIP Channel`;
+            const channel = channelName(slug);
+            titleEl.innerHTML = `<span class="owner">${escapeHtml(slug.owner)}</span><span class="slash">/</span>${escapeHtml(channel)}`;
+            document.title = `${slug.owner}/${channel} — MIP Channel`;
         }
 
         function renderCard(pkg, slug) {
@@ -271,7 +279,7 @@
                 .map((a) => a.trim())
                 .filter(Boolean);
 
-            const channelArg = slug ? `--channel ${slug.owner}/${slug.repo} ` : "";
+            const channelArg = slug ? `--channel ${slug.owner}/${channelName(slug)} ` : "";
             const installCmd = `mip install ${channelArg}${pkg.name}`;
 
             const versionEl = version

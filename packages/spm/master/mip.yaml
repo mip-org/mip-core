@@ -1,0 +1,20 @@
+name: spm
+description: "Statistical Parametric Mapping — analysis of brain imaging data sequences (fMRI, PET, SPECT, EEG, MEG)."
+version:
+license: "GPL-2.0"
+homepage: "https://www.fil.ion.ucl.ac.uk/spm/"
+repository: "https://github.com/spm/spm"
+dependencies: []
+
+paths:
+  - path: "."
+
+builds:
+  - architectures: [linux_x86_64, macos_arm64]
+    compile_script: compile.m
+    test_script: test_spm_mex.m
+  - architectures: [windows_x86_64]
+    compile_script: compile_windows.m
+    test_script: test_spm_mex.m
+  - architectures: [any]
+    test_script: test_spm.m

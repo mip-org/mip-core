@@ -3,7 +3,7 @@
 Static assets deployed to GitHub Pages alongside the generated `index.json`.
 
 `index.html` fetches `./index.json` at load time and renders the package list.
-It is copied verbatim into `build/gh-pages/` by `scripts/assemble_index.py`.
+It is copied verbatim into `build/gh-pages/` by `mip-channel assemble-index`.
 
 ## Local preview
 

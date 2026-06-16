@@ -1,0 +1,14 @@
+name: matlab2tikz
+description: "Convert MATLAB figures to TikZ/Pgfplots for seamless LaTeX integration."
+version: "1.1.0"
+license: "BSD-2-Clause"
+homepage: "https://github.com/matlab2tikz/matlab2tikz"
+repository: "https://github.com/matlab2tikz/matlab2tikz"
+dependencies: []
+
+paths:
+  - path: "."
+
+builds:
+  - architectures: [any]
+    test_script: test_matlab2tikz.m

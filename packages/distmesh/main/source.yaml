@@ -1,0 +1,5 @@
+source:
+  # Track the default branch (main), which is the modernized, pure-MATLAB
+  # v1.2 line (CITATION.cff: 1.2.0). The only release tags (v1.0, v1.1) are the
+  # older versions that still shipped C/MEX binaries.
+  git: "https://github.com/popersson/DistMesh"

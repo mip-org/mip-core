@@ -1,0 +1,50 @@
+# mip-channel-tools
+
+Build, index, and release tooling shared by MIP package channels. A channel's
+GitHub Actions workflows call this package to prepare package sources, run
+per-OS setup, upload bundled `.mhl` artifacts to GitHub Releases, assemble the
+channel index, and parse issue-driven build requests.
+
+This currently lives inside the `mip-dev` channel repo under `tools/`. It is
+self-contained (`pyproject.toml` + `src/`) so it can be lifted out to its own
+repository and published to PyPI, after which channels would depend on it via
+`pip install mip-channel-tools` instead of an in-repo path.
+
+## Install
+
+In CI (and for a non-editable local install):
+
+```bash
+python -m pip install ./tools
+```
+
+For local development against the source:
+
+```bash
+python -m pip install -e ./tools
+```
+
+## Usage
+
+A single CLI with subcommands, exposed both as the `mip-channel` console
+script and as a runnable module. Workflows use the module form
+(`python -m mip_channel_tools ...`) because it avoids console-script PATH and
+shebang issues in the Linux build container; locally either works:
+
+```bash
+mip-channel --help
+python -m mip_channel_tools --help
+
+mip-channel prepare --package-path packages/<name>/<release> --architecture <arch>
+mip-channel package-setup --architecture <arch>
+mip-channel upload [--mhl build/bundled/<file>.mhl]
+mip-channel assemble-index [--repo-root .]
+mip-channel build-request validate --output-file <path> [--title-file <path>]
+mip-channel build-request apply --dispatch-file <path> [--errors-file <path>]
+mip-channel affected --changed-files <path> --dispatch-file <path>
+mip-channel scheduled-check --dispatch-file <path> [--summary-file <path>]
+```
+
+Commands that read the channel tree (`assemble-index`, `affected`,
+`scheduled-check`, `build-request`) take `--repo-root` (default: the current
+directory), so they must be run from, or pointed at, the channel checkout.

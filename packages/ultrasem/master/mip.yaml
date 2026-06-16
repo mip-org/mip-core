@@ -1,0 +1,16 @@
+name: ultrasem
+description: "ultraSEM: an ultraspherical spectral element method for solving PDEs on unstructured polygonal/curved domains."
+version:
+license: "MIT"
+homepage: "https://github.com/danfortunato/ultraSEM"
+repository: "https://github.com/danfortunato/ultraSEM"
+dependencies: []
+
+# Upstream install is `addpath(ultraSEMroot)`: the @ultraSEM class folder and
+# the +ultraSEM / +util packages resolve from the root being on the path.
+paths:
+  - path: "."
+
+builds:
+  - architectures: [any]
+    test_script: test_ultrasem_channel.m

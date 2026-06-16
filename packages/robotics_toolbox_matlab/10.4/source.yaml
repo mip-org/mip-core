@@ -1,0 +1,6 @@
+source:
+  git: "https://github.com/petercorke/robotics-toolbox-matlab"
+  branch: "10.4"
+  # Drop large docs and parts that need extra toolboxes/hardware or shadow the
+  # MATLAB classes (Octave port). The core kinematics/dynamics code remains.
+  remove_dirs: [doc, distrib, interfaces, simulink, Octave]

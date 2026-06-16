@@ -1,0 +1,4 @@
+source:
+  git: "https://github.com/scottclowe/matlab-schemer"
+  branch: "v1.4.0"
+  remove_dirs: [develop]

@@ -1,0 +1,7 @@
+source:
+  git: "https://github.com/NicolasBoumal/manopt"
+  branch: "Release_8.0"
+  # Drop the bundled TTeMPS tensor-train sub-toolbox (fixedTTrankfactory): it
+  # vendors a third-party library needing several extra MEX (incl. OpenMP
+  # variants upstream's own installer doesn't build) for one niche manifold.
+  remove_dirs: [tests, manopt/manifolds/ttfixedrank]

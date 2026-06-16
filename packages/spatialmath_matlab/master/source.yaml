@@ -1,0 +1,4 @@
+source:
+  # Only auto-generated "untagged-*" release tags upstream; track default branch (master).
+  git: "https://github.com/petercorke/spatialmath-matlab"
+  branch: "master"

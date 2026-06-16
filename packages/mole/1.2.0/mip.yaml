@@ -1,0 +1,16 @@
+name: mole
+description: "MOLE: Mimetic Operators Library Enhanced — high-order mimetic discretizations (grad/div/laplacian/curl) for PDEs on staggered grids."
+version: "1.2.0"
+license: "GPL-3.0"
+homepage: "https://github.com/csrc-sdsu/mole"
+repository: "https://github.com/csrc-sdsu/mole"
+dependencies: []
+
+# Upstream install is `addpath('src/matlab_octave')`; that directory (extracted
+# as the package root) holds all the operator functions.
+paths:
+  - path: "."
+
+builds:
+  - architectures: [any]
+    test_script: test_mole_channel.m

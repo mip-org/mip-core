@@ -8,12 +8,14 @@ MATLAB or by the GCC version, and which `MATLAB-GCC.md` does not address.
 
 ## TL;DR
 
-A Linux MEX binary links against two unrelated sets of system libraries:
+A Linux MEX binary links against two unrelated sets of system libraries — plus
+MATLAB's own MEX API, a third, non-system axis covered fully in `MATLAB-GCC.md`:
 
 | Axis | Libraries | Pinned by | Covered by |
 |---|---|---|---|
 | **MATLAB runtime ABI** | `libstdc++` (GLIBCXX), `libgfortran` | the **GCC version** you compile *with* | `MATLAB-GCC.md` |
 | **System ABI** | `glibc` (`libc.so.6`, `libm`, `libdl`, the dynamic loader `ld-linux`) | the **glibc on the build host** | this note |
+| **MEX API** | `libmx`/`libmex`/`libmat`/`MatlabDataArray` + MEX-file-version stamp | the **MATLAB release you link `mex` against** | `MATLAB-GCC.md` (forward-compatible only — sets the floor) |
 
 `glibc` is **backward compatible but not forward compatible**: a binary built
 against new glibc requires symbol versions that old glibc does not contain.

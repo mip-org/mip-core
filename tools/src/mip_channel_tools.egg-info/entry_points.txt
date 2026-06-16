@@ -1,0 +1,2 @@
+[console_scripts]
+mip-channel = mip_channel_tools.cli:main

@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<config
+    Name="clang"
+    ShortName="clang"
+    Manufacturer="Apple"
+    Version="$CLANG_VERSION"
+    Language="C"
+    Priority="A"
+    Location="$XCODE_DIR" >
+    <Details
+        CompilerExecutable="$CC"
+        CompilerDefines="$DEFINES"
+        CompilerFlags="$CFLAGS"
+        OptimizationFlags="$COPTIMFLAGS"
+        DebugFlags="$CDEBUGFLAGS"
+        IncludeFlags="$INCLUDE"
+        LinkerExecutable="$LD"
+        LinkerFlags="$LDFLAGS"
+        LinkerLibraries="$LINKLIBS"
+        LinkerOptimizationFlags="$LDOPTIMFLAGS"
+        LinkerDebugFlags="$LDDEBUGFLAGS"
+        CompilerDefineFormatter="-D%s"
+        LinkerLibrarySwitchFormatter="-l%s"
+        LinkerPathFormatter="-L%s"
+    />
+    <vars
+        CMDLINE100="$CC -c $DEFINES $INCLUDE $CFLAGS $OPTIM $SRC -o $OBJ"
+        CMDLINE200="$LD $LDFLAGS $OBJS $LINKOPTIM $LINKEXPORTVER $CLIBS $LINKLIBS -o $EXE"
+        CC="$XCRUN_DIR/xcrun -sdk macosx$SDKVER clang"
+        DEFINES="-DMATLAB_MEX_FILE"
+        MACOSX_DEPLOYMENT_TARGET="14.0"
+        CFLAGS="-fno-common -arch arm64 -mmacosx-version-min=$MACOSX_DEPLOYMENT_TARGET -fexceptions -isysroot $ISYSROOT -fwrapv -ffp-contract=off"
+        INCLUDE="-I&quot;$MATLABROOT/extern/include&quot; -I&quot;$MATLABROOT/simulink/include&quot;"
+        COPTIMFLAGS="-O3 -DNDEBUG"
+        CDEBUGFLAGS="-g"
+        LD="$CC"
+        LDFLAGS="-Wl,-twolevel_namespace -Wl,-dead_strip_dylibs -arch arm64 -mmacosx-version-min=$MACOSX_DEPLOYMENT_TARGET -Wl,-syslibroot,$ISYSROOT -bundle $LINKEXPORT"
+        FUNCTIONMAP="&quot;$MATLABROOT/extern/lib/$ARCH/mexFunction.map&quot;"
+        VERSIONMAP="&quot;$MATLABROOT/extern/lib/$ARCH/c_exportsmexfileversion.map&quot;"
+        LINKEXPORT="-Wl,-exported_symbols_list,$FUNCTIONMAP"
+        LINKEXPORTVER="-Wl,-exported_symbols_list,$VERSIONMAP"
+        LINKLIBS="-L&quot;$MATLABROOT/bin/$ARCH&quot; -lmx -lmex -lmat -lc++"
+        LDOPTIMFLAGS="-O"
+        LDDEBUGFLAGS="-g"
+        OBJEXT=".o"
+        LDEXT=".mex$ARCH"
+        SETENV="CC=&quot;$CC&quot;
+                CFLAGS=&quot;$CFLAGS $DEFINES&quot;
+                COPTIMFLAGS=&quot;$COPTIMFLAGS&quot;
+                CDEBUGFLAGS=&quot;$CDEBUGFLAGS&quot;
+                LD=&quot;$LD&quot;
+                LDFLAGS=&quot;$LDFLAGS $LINKLIBS $LINKEXPORT&quot;
+                LDDEBUGFLAGS=&quot;$LDDEBUGFLAGS&quot;"
+    />
+    <locationFinder>
+        <XCRUN_DIR>
+            <and>
+                <cmdReturns name="which xcrun" />
+                <dirExists name="$$" />
+            </and>
+        </XCRUN_DIR>
+        <XCODE_DIR>
+            <and diagnostic="Xcode appears to be installed, but it has not been configured.  Run &quot; xcode-select -switch /Applications/Xcode.app &quot;." >
+                <cmdReturns name="xcode-select -print-path" />
+                <dirExists name="$$" />
+            </and>
+        </XCODE_DIR>
+        <ISYSROOT>
+            <cmdReturns name="xcrun -sdk macosx --show-sdk-path" />
+        </ISYSROOT>
+        <SDKVER>
+            <cmdReturns name="xcrun -sdk macosx --show-sdk-version | awk 'BEGIN {FS=&quot;.&quot;} ; {print $1&quot;.&quot;$2}'" />
+        </SDKVER>
+        <CLANG_VERSION>
+            <cmdReturns name="clang --version | grep -Eo '[0-9]+\.[0-9]+\.[0-9]'|head -1" />
+        </CLANG_VERSION>
+    </locationFinder>
+</config>

@@ -1,0 +1,20 @@
+name: mmess
+description: "M-M.E.S.S.: the Matrix Equation Sparse Solver library for large-scale Lyapunov, Riccati, and model-reduction problems."
+version: "3.1"
+license: "BSD-2-Clause"
+homepage: "https://www.mpi-magdeburg.mpg.de/projects/mess"
+repository: "https://gitlab.mpi-magdeburg.mpg.de/mess/mmess-releases"
+dependencies: []
+
+# Mirrors mess_path.m, which adds the whole tree recursively via
+# genpath_exclude(root, {html, _prototypes, _packages, resources}). genpath
+# also skips private/ (resolved relative to each function), so it is excluded
+# here too.
+paths:
+  - path: "."
+    recursive: true
+    exclude: [html, _prototypes, _packages, resources, private]
+
+builds:
+  - architectures: [any]
+    test_script: test_mmess_channel.m

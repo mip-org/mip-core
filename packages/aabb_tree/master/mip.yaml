@@ -1,0 +1,17 @@
+name: aabb_tree
+description: "AABB-TREE: d-dimensional axis-aligned bounding-box tree construction and spatial queries."
+version:
+license: "Custom (see LICENSE.md)"
+homepage: "https://github.com/dengwirda/aabb-tree"
+repository: "https://github.com/dengwirda/aabb-tree"
+dependencies: []
+
+# Upstream install is `addpath` of the root; all query functions (maketree,
+# queryset, scantree, ...) live there. The demos add their own mesh-file/ dir
+# at runtime, so it is not on the default path.
+paths:
+  - path: "."
+
+builds:
+  - architectures: [any]
+    test_script: test_aabb_tree_channel.m

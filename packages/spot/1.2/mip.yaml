@@ -1,0 +1,19 @@
+name: spot
+description: "Spot: a linear-operator toolbox for matrix-free linear algebra (build, combine, and apply abstract operators)."
+version: "1.2"
+license: "GPL-3.0"
+homepage: "https://www.cs.ubc.ca/labs/scl/spot/"
+repository: "https://github.com/mpf/spot"
+dependencies: []
+
+# Upstream install is `addpath /path/to/spot`: the op*.m operator classes, the
+# @opSpot class, and the +spot package all resolve from the root on the path.
+paths:
+  - path: "."
+
+builds:
+  - architectures: [linux_x86_64, macos_arm64, windows_x86_64]
+    compile_script: compile.m
+    test_script: test_spot_channel.m
+  - architectures: [any]
+    test_script: test_spot_any.m

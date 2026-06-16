@@ -9,6 +9,12 @@
 %   mip load    <name>
 %   mip test    <name>
 % Errors are raised on any failure so the workflow step fails.
+%
+% After `mip test`, enforces issue #16: every MEX shipped in the package (for
+% this architecture) must have been invoked by the test_script. `mip test` runs
+% the test_script in this same MATLAB session, so a MEX that was loaded shows up
+% in `inmem`; any built-but-never-loaded MEX means the test left it un-exercised
+% and we fail the build. No-op for pure-MATLAB packages (no .mex* files).
 
 fprintf('=== test_one ===\n');
 
@@ -50,6 +56,7 @@ end
 mip('install', installArgs{:});
 mip('load', pkg_name);
 mip('test', pkg_name);
+assert_all_mex_exercised(pkg_name);
 % Uninstalling 'mip' itself is a particularly tricky case (it removes the
 % running package), so skip it as part of the package build test.
 if strcmp(pkg_name, 'mip')
@@ -59,3 +66,33 @@ else
 end
 
 fprintf('OK: %s\n', pkg_name);
+
+
+function assert_all_mex_exercised(pkg_name)
+% issue #16: fail if the test_script left any shipped MEX un-exercised. A MEX
+% appears in `inmem` only once it has been invoked, so (built \ loaded) is the
+% set the test never ran. Resolve the bare name to an fqn at the boundary,
+% then ask mip.build.list_mex for the shipped MEX (scoped to the package's own
+% source dir, so dependencies' MEX don't count). No-op when the package ships
+% no MEX (pure-MATLAB / `any`).
+    r = mip.resolve.resolve_to_installed(pkg_name);
+    built = mip.build.list_mex(r.fqn);
+    if isempty(built)
+        return
+    end
+
+    [~, loadedPaths] = inmem('-completenames');
+    loaded = cell(size(loadedPaths));
+    for i = 1:numel(loadedPaths)
+        [~, loaded{i}] = fileparts(loadedPaths{i});
+    end
+
+    missing = setdiff(built, loaded);
+    if ~isempty(missing)
+        error('mip:test:mexNotExercised', ...
+            ['Test script for "%s" did not exercise every shipped MEX.\n' ...
+             'Un-exercised (built but never loaded): %s'], ...
+            pkg_name, strjoin(missing, ', '));
+    end
+    fprintf('Coverage: all %d shipped MEX exercised by the test.\n', numel(built));
+end

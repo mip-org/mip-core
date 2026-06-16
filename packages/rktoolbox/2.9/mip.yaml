@@ -1,0 +1,17 @@
+name: rktoolbox
+description: "Rational Krylov Toolbox: rational Arnoldi, RKFIT, and the RKFUN class for numerical computing with rational functions."
+version: "2.9"
+license: "BSD-3-Clause"
+homepage: "http://guettel.com/rktoolbox/"
+repository: "http://guettel.com/rktoolbox/"
+dependencies: []
+
+# The zip extracts into a top-level rktoolbox/ folder; the upstream install is
+# `addpath` of that folder (the @rkfun / @rkfunm / @baryfun class folders
+# resolve from there). examples/, guide/ and tests/ stay off the path.
+paths:
+  - path: "rktoolbox"
+
+builds:
+  - architectures: [any]
+    test_script: test_rktoolbox_channel.m

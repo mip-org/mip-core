@@ -1,0 +1,16 @@
+name: gramm
+description: "gramm: a grammar-of-graphics plotting toolbox for MATLAB (ggplot2-style data visualization)."
+version: "3.1.2"
+license: "MIT"
+homepage: "https://github.com/piermorel/gramm"
+repository: "https://github.com/piermorel/gramm"
+dependencies: []
+
+# gramm is the single @gramm class; it resolves from the toolbox dir (the
+# extracted gramm/ subdirectory) being on the path.
+paths:
+  - path: "."
+
+builds:
+  - architectures: [any]
+    test_script: test_gramm_channel.m

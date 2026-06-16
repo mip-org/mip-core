@@ -1,0 +1,39 @@
+name: gptoolbox
+description: "Geometry Processing Toolbox — MATLAB functions for mesh processing, discrete differential geometry, and geometric optimization."
+version:
+license: "MIT"
+homepage: "https://github.com/alecjacobson/gptoolbox"
+repository: "https://github.com/alecjacobson/gptoolbox"
+dependencies: []
+
+paths:
+  - path: external
+    recursive: true
+  - path: imageprocessing
+  - path: images
+  - path: matrix
+  - path: mesh
+  - path: mex
+  - path: quat
+  - path: utility
+  - path: wrappers
+
+builds:
+  - architectures: [any]
+    test_script: test_gptoolbox.m
+  - architectures: [macos_arm64, linux_x86_64, windows_x86_64]
+    test_script: test_gptoolbox.m
+    compile_script: compile.m
+    setup:
+      macos:
+        - "brew install cmake cgal"
+      linux:
+        - "dnf install -y CGAL-devel boost-devel openblas-devel cmake m4 xz"
+      windows:
+        # CGAL + Boost are fetched header-only by compile.m; vcpkg supplies the
+        # one real dependency, static gmp/mpfr, as MSVC-compatible .lib. The
+        # triplet must match compile.m's VCPKG_TARGET_TRIPLET (static libs,
+        # dynamic CRT). The channel applies its release-only overlay triplets to
+        # every vcpkg install via VCPKG_OVERLAY_TRIPLETS (set in build-package.yml),
+        # so no --overlay-triplets flag is needed here. cmake ships on windows-latest.
+        - "vcpkg install gmp:x64-windows-static-md mpfr:x64-windows-static-md"

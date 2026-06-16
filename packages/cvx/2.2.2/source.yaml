@@ -1,0 +1,4 @@
+source:
+  git: "https://github.com/cvxr/CVX"
+  branch: "2.2.2"
+  remove_dirs: [doc]

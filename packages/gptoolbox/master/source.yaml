@@ -1,0 +1,4 @@
+source:
+  git: "https://github.com/alecjacobson/gptoolbox"
+  branch: "master"
+  remove_dirs: [external/toolbox_fast_marching, external/exactgeodesic]

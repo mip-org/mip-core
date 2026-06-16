@@ -1,0 +1,15 @@
+name: jsonlab
+description: "JSONLab: encode/decode JSON, binary JSON (BJData/UBJSON/MessagePack), and JData/NIfTI/HDF5 in MATLAB."
+version: "2.9.8"
+license: "BSD-3-Clause"
+homepage: "https://neurojson.org/"
+repository: "https://github.com/NeuroJSON/jsonlab"
+dependencies: []
+
+# Flat toolbox: all functions live at the root, which is the whole install.
+paths:
+  - path: "."
+
+builds:
+  - architectures: [any]
+    test_script: test_jsonlab_channel.m

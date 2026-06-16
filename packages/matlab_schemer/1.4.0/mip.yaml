@@ -1,0 +1,14 @@
+name: matlab_schemer
+description: "Apply and export color schemes (themes) for the MATLAB editor and GUI."
+version: "1.4.0"
+license: "BSD-2-Clause"
+homepage: "https://github.com/scottclowe/matlab-schemer"
+repository: "https://github.com/scottclowe/matlab-schemer"
+dependencies: []
+
+paths:
+  - path: "."
+
+builds:
+  - architectures: [any]
+    test_script: test_matlab_schemer.m

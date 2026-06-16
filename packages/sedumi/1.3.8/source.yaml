@@ -1,0 +1,4 @@
+source:
+  git: "https://github.com/sqlp/sedumi"
+  branch: "v1.3.8"
+  remove_dirs: [doc]

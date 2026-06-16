@@ -1,0 +1,4 @@
+source:
+  # No release tags upstream; track the default branch (master).
+  git: "https://github.com/garyptchoi/spherical-conformal-map"
+  branch: "master"
