@@ -66,7 +66,10 @@ jobs:
             any)            runner=ubuntu-latest ;;
             linux_x86_64)   runner=ubuntu-latest ;;
             macos_arm64)    runner=macos-14 ;;
-            windows_x86_64) runner=windows-latest ;;
+            # Pin VS2022, not windows-latest: that image moved to Visual Studio
+            # 2026 (v18), which MATLAB does not support as a MEX compiler ("No
+            # Microsoft Visual C++ compiler found"). R2023a detects VS2022 here.
+            windows_x86_64) runner=windows-2022 ;;
             *)
               echo "Unknown architecture: ${{ inputs.architecture }}" >&2
               exit 1
