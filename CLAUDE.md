@@ -10,20 +10,26 @@ Builds run one `(package, architecture)` pair at a time via GitHub Actions.
 
 ## Layout
 
+This repo holds only channel-specific content:
+
 - `packages/<name>/<release>/` — package definitions.
-- The `mip-channel` CLI the workflows install and call (`mip-channel-tools`
-  package; subcommands prepare, package-setup, upload, assemble-index,
-  build-request, affected, scheduled-check) lives in its own repo,
-  `mip-org/mip_channel_tools`. CI installs it via the shared local composite
-  action `.github/actions/install-channel-tools`, which is the single source of
-  truth for the repo URL and the installed ref. Edit that action's `ref` input
-  default (`main`) to point every workflow at a different branch while
-  developing the tooling.
-- `scripts/` — MATLAB helpers (`bundle_one.m`, `test_one.m`, ...) called
-  directly by the workflows.
+- `site/` — this channel's static GitHub Pages site, copied into the published
+  index by `mip-channel assemble-index`.
 - `.github/workflows/` — build, scheduled, and issue-driven build triggers.
-- `mexopts/`, `vcpkg-triplets/`, `site/` — MEX compiler configs, shared vcpkg
-  overlay triplets (Windows native-dep builds), and the channel site.
+- `.github/actions/install-channel-tools/` — composite action that clones the
+  shared tooling repo into `mip_channel_tools/` and `pip install`s its Python
+  package (see below).
+
+The shared build engine lives in its own repo, `mip-org/mip_channel_tools`, and
+is cloned into `mip_channel_tools/` at CI time by the install action above. It
+holds the `mip-channel` CLI (`mip-channel-tools` package; subcommands prepare,
+package-setup, upload, assemble-index, build-request, affected,
+scheduled-check), the MATLAB build scripts (`bundle_one.m`, `test_one.m`, ...),
+the MEX compiler configs (`mexopts/`), the shared vcpkg overlay triplets
+(`vcpkg-triplets/`), and the developer notes (`notes/`). Workflows reference it
+from the clone, e.g. MATLAB `addpath('mip_channel_tools/scripts')`. The install
+action is the single source of truth for the tooling repo URL and ref; edit its
+`ref` input default (`main`) to develop against a different tooling branch.
 
 ## Conventions
 

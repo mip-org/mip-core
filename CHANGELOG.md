@@ -2,14 +2,21 @@
 
 ## Unreleased
 
-- Move the `mip-channel-tools` package out of `tools/` into its own repo,
-  `mip-org/mip_channel_tools`, and remove `tools/`. Workflows now install it via
-  a shared local composite action (`.github/actions/install-channel-tools`),
-  which `pip install`s `git+https://github.com/mip-org/mip_channel_tools.git@<ref>`.
-  The repo URL and ref live only in that action, so workflows just
-  `uses: ./.github/actions/install-channel-tools`. The ref defaults to `main`;
-  edit the action's `ref` input default to switch every workflow to a different
-  branch while developing the tooling.
+- Move the shared build engine out of the channel repo into its own repo,
+  `mip-org/mip_channel_tools`: the `mip-channel-tools` Python package (CLI
+  subcommands prepare, package-setup, upload, assemble-index, build-request,
+  affected, scheduled-check), the MATLAB build scripts (`bundle_one.m`,
+  `test_one.m`, ...), the MEX configs (`mexopts/`), the vcpkg overlay triplets
+  (`vcpkg-triplets/`), and the developer notes (`notes/`). CI clones that repo
+  into `mip_channel_tools/` and `pip install`s its package via a shared local
+  composite action (`.github/actions/install-channel-tools`); workflows just
+  `uses: ./.github/actions/install-channel-tools` and reference the clone (e.g.
+  MATLAB `addpath('mip_channel_tools/scripts')`). The action is the single
+  source of truth for the tooling repo URL and ref — edit its `ref` input
+  default (`main`) to develop against a different tooling branch. Removes
+  `tools/`, `scripts/`, `mexopts/`, `vcpkg-triplets/`, `notes/`, and
+  `adding_a_package.md` from the channel; only channel-specific content
+  (`packages/`, `site/`) remains.
 
 - Add test scripts for chebfun@5.7.0 (construction, integration, diff, roots,
   max, cumsum), export_fig@3.54 (crop_borders plus an end-to-end PNG export),

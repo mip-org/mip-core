@@ -130,7 +130,7 @@ jobs:
           # same GLIBCXX_3.4.25 floor as gcc-8.5 (within R2022a's bundled libstdc++)
           # with a newer compiler and no floor regression. Verified on ubi8: a C++17
           # std::filesystem .so links yet still requires only GLIBCXX_3.4.21, and
-          # glibc stays 2.28. See notes/MATLAB-GCC.md.
+          # glibc stays 2.28. See mip_channel_tools/notes/MATLAB-GCC.md.
           #
           # gcc-toolset-10 lives in Rocky's AppStream (not ubi8's subset), so add the
           # Rocky repos first. Rocky 8 is a 1:1 RHEL 8 rebuild with open repos (same
@@ -202,7 +202,7 @@ jobs:
           # toolchain on disk and export MW_MINGW64_LOC (the documented hook
           # mingw64.xml reads); no support-package install or XML editing. The
           # install path has no spaces, per the MathWorks requirement.
-          # See notes/MATLAB-MINGW.md.
+          # See mip_channel_tools/notes/MATLAB-MINGW.md.
           $url = 'https://downloads.sourceforge.net/project/mingw-w64/Toolchains%20targetting%20Win64/Personal%20Builds/mingw-builds/8.1.0/threads-posix/seh/x86_64-8.1.0-release-posix-seh-rt_v6-rev0.7z'
           $arc = "$env:RUNNER_TEMP\mingw810.7z"
           curl.exe -L --retry 5 --retry-all-errors --fail -o "$arc" "$url"
@@ -308,9 +308,10 @@ jobs:
           # asking for some other triplet silently gets the builtin. Channel-level
           # (not per-package) keeps ABI hashes identical so every package -- and
           # every channel -- shares the binary cache above: the triplet's bytes
-          # feed each port's ABI hash, so keep vcpkg-triplets/ byte-identical
-          # across channels (it ships in mip-channel-template; don't drift it).
-          echo "VCPKG_OVERLAY_TRIPLETS=$(cygpath -w "$GITHUB_WORKSPACE/vcpkg-triplets")" >> "$GITHUB_ENV"
+          # feed each port's ABI hash. The triplets now live in the shared
+          # mip_channel_tools repo (cloned into mip_channel_tools/), so every
+          # channel uses byte-identical triplets from one source.
+          echo "VCPKG_OVERLAY_TRIPLETS=$(cygpath -w "$GITHUB_WORKSPACE/mip_channel_tools/vcpkg-triplets")" >> "$GITHUB_ENV"
 
       - name: Run package setup
         if: steps.prepared_check.outputs.has_prepared == 'true'
@@ -342,7 +343,7 @@ jobs:
           #     (R2022a links arm64 MEX against x86_64 libmx, "symbol(s) not
           #     found for arm64").
           #   - windows_x86_64: R2023a, the oldest release that certifies the
-          #     MinGW we install (8.1.0; see notes/MATLAB-MINGW.md). R2022a's
+          #     MinGW we install (8.1.0; see mip_channel_tools/notes/MATLAB-MINGW.md). R2022a's
           #     mex config predates 8.1.0 and rejects modern GCC outright.
           #   - everything else: R2022a.
           release: ${{ inputs.architecture == 'macos_arm64' && 'R2023b' || inputs.architecture == 'windows_x86_64' && 'R2023a' || 'R2022a' }}
@@ -357,7 +358,7 @@ jobs:
         env:
           BUILD_ARCHITECTURE: ${{ inputs.architecture }}
         with:
-          command: "addpath('mip'); addpath('scripts'); bundle_one"
+          command: "addpath('mip'); addpath('mip_channel_tools/scripts'); bundle_one"
 
       - name: Bundle check
         id: bundle_check
@@ -674,7 +675,7 @@ jobs:
         if: inputs.architecture != 'macos_arm64'
         uses: matlab-actions/run-command@v3
         with:
-          command: "addpath('mip'); addpath('scripts'); test_one"
+          command: "addpath('mip'); addpath('mip_channel_tools/scripts'); test_one"
 
       - name: Test bundled package (macOS, SIGSEGV-tolerant)
         # MATLAB R2024b+ on macOS arm64 SIGSEGVs in _pthread_tsd_cleanup at
@@ -689,7 +690,7 @@ jobs:
         continue-on-error: true
         uses: matlab-actions/run-command@v3
         with:
-          command: "addpath('mip'); addpath('scripts'); try; test_one; fid = fopen('.tests_passed', 'w'); fclose(fid); catch err; disp(getReport(err)); exit(1); end"
+          command: "addpath('mip'); addpath('mip_channel_tools/scripts'); try; test_one; fid = fopen('.tests_passed', 'w'); fclose(fid); catch err; disp(getReport(err)); exit(1); end"
 
       - name: Verify tests passed (macOS)
         if: inputs.architecture == 'macos_arm64'

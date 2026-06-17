@@ -1,32 +1,36 @@
 name: Install channel tooling
 description: >
-  Install the mip-channel-tools package (the mip-channel CLI the workflows
-  call) from its own repo, mip-org/mip_channel_tools. Single source of truth
-  for the repo URL and the installed ref so individual workflows don't repeat
-  it. Requires the channel repo to be checked out first (this is a local
-  action). The repo is also checked out, so `python -m mip_channel_tools <sub>`
-  runs against the channel tree.
+  Clone the shared mip-org/mip_channel_tools repo (the Python package plus the
+  MATLAB build scripts, mexopts, vcpkg triplets, and notes) into the channel
+  workspace and install its Python package. Run this after the channel repo is
+  checked out. Exports MIP_TOOLS_DIR pointing at the clone so later steps can
+  reference its scripts/, mexopts/, and vcpkg-triplets/ — e.g. MATLAB
+  `addpath('mip_channel_tools/scripts')`.
 inputs:
   ref:
     description: >
-      Git ref (tag, branch, or SHA) of mip-org/mip_channel_tools to install.
-      Edit the default below to point every workflow at a different branch
-      while developing the tooling; a single workflow can override it by
-      passing `with: ref: <ref>`.
+      Git ref (tag, branch, or SHA) of mip-org/mip_channel_tools to use. Edit
+      the default below to develop against a different tooling branch; a single
+      workflow can override it with `with: ref: <ref>`.
     required: false
     default: main
 runs:
   using: composite
   steps:
-    - name: pip install mip-channel-tools
+    - name: Clone channel tooling
+      uses: actions/checkout@v5
+      with:
+        repository: mip-org/mip_channel_tools
+        ref: ${{ inputs.ref }}
+        path: mip_channel_tools
+    - name: Install channel tooling
       shell: bash
-      env:
-        REPO: https://github.com/mip-org/mip_channel_tools.git
-        REF: ${{ inputs.ref }}
       # `python -m pip`, not bare `pip`: setup-python's pip wrapper bakes the
       # host tool-cache path into its shebang, so bare `pip` fails with "bad
       # interpreter" in the ubi8 build container (where `python` is the
       # toolchain python3.9). Workflows likewise invoke the CLI as
       # `python -m mip_channel_tools <sub>` so it never depends on a
       # console-script shebang.
-      run: python -m pip install "git+${REPO}@${REF}"
+      run: |
+        echo "MIP_TOOLS_DIR=$GITHUB_WORKSPACE/mip_channel_tools" >> "$GITHUB_ENV"
+        python -m pip install "$GITHUB_WORKSPACE/mip_channel_tools"
