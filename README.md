@@ -6,7 +6,7 @@ A MIP package channel. Builds run one (package, architecture) at a time. They ar
 
 Pushes to `main` run the `push-build.yml` workflow, which diffs the push and dispatches `build-package.yml` once per `(package, architecture)` pair affected by the change.
 
-A file affects `packages/<name>/<version>` iff its path lies inside that directory. Each affected package expands to every arch declared in its `mip.yaml`, intersected with the channel's supported arches (`any`, `linux_x86_64`, `macos_arm64`, `windows_x86_64`). Recipe-only packages (no channel-side `mip.yaml`) expand to all four.
+A file affects `packages/<name>/<version>` iff its path lies inside that directory. Each affected package expands to every arch declared in its `mip.yaml`, intersected with the channel's supported arches (`any`, `linux_x86_64`, `macos_arm64`, `windows_x86_64`, and the x86-64 SIMD levels `linux_x86_64_v{2,3,4}` / `windows_x86_64_v{3,4}`). Recipe-only packages (no channel-side `mip.yaml`) expand to every supported arch.
 
 Changes outside `packages/` (workflows, README) do not trigger any builds. Deleted packages are skipped. The skip-if-unchanged logic still applies — pushes that don't change a package's source hash short-circuit at the prepare step.
 
@@ -43,7 +43,8 @@ Within ~30s the request bot replies with the list of `(package, architecture)` p
 
 - `any` — pure MATLAB; runs on ubuntu.
 - `linux_x86_64`, `macos_arm64`, `windows_x86_64` — native; run on the matching OS.
-- `all` — expand to every arch declared in the package's `mip.yaml` (intersected with the four above). A package with no channel-side `mip.yaml` cannot expand `all`.
+- `linux_x86_64_v{2,3,4}`, `windows_x86_64_v{3,4}` — x86-64 microarchitecture (SIMD) levels (v2=SSE4.2, v3=AVX2, v4=AVX-512). Built like their base arch but with the matching `-march`/`/arch:`; the client installs the highest level the CPU supports.
+- `all` — expand to every arch declared in the package's `mip.yaml` (intersected with those above). A package with no channel-side `mip.yaml` cannot expand `all`.
 
 A build for an architecture the package does not declare exits cleanly with nothing to do.
 

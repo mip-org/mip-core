@@ -20,8 +20,13 @@ on:
         options:
           - any
           - linux_x86_64
+          - linux_x86_64_v2
+          - linux_x86_64_v3
+          - linux_x86_64_v4
           - macos_arm64
           - windows_x86_64
+          - windows_x86_64_v3
+          - windows_x86_64_v4
       force:
         description: 'Rebuild even if already published'
         type: boolean

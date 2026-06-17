@@ -23,9 +23,25 @@ builds:
       # Clang ducc0 template crash.
       macos:
         - "brew install fftw"
-  # Windows uses MinGW-w64 for mex, so the static lib must be MinGW-built too
-  # (a mex can only link same-compiler objects). compile_windows.m builds it
-  # with the MinGW Makefiles generator and the dependency-free DUCC0 backend.
+  # Linux x86-64 microarchitecture (SIMD) levels. Same compile.m, which reads
+  # BUILD_ARCHITECTURE and pins -march to the level (v2/v3/v4); the base
+  # linux_x86_64 build above is the portable SSE2 floor. The client installs
+  # the highest level the user's CPU supports. v4 (AVX-512) is built but its
+  # runtime test is skipped on runners lacking AVX-512 (see build-package.yml).
+  - architectures: [linux_x86_64_v2, linux_x86_64_v3, linux_x86_64_v4]
+    compile_script: compile.m
+    test_script: test_finufft.m
+    setup:
+      linux:
+        - "dnf install -y cmake"
+  # Windows uses MSVC for mex (MinGW miscompiles finufft). compile_windows.m
+  # builds the static lib + mex with MSVC and the dependency-free DUCC0 backend.
   - architectures: [windows_x86_64]
+    compile_script: compile_windows.m
+    test_script: test_finufft.m
+  # Windows SIMD levels: v3 (/arch:AVX2) and v4 (/arch:AVX512). MSVC's /arch:
+  # can't target psABI v2 distinctly, so the windows_x86_64 build above is the
+  # SSE2 baseline and only v3/v4 are added here.
+  - architectures: [windows_x86_64_v3, windows_x86_64_v4]
     compile_script: compile_windows.m
     test_script: test_finufft.m
