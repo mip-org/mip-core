@@ -8,7 +8,7 @@ Pushes to `main` run the `push-build.yml` workflow, which diffs the push and dis
 
 A file affects `packages/<name>/<version>` iff its path lies inside that directory. Each affected package expands to every arch declared in its `mip.yaml`, intersected with the channel's supported arches (`any`, `linux_x86_64`, `macos_arm64`, `windows_x86_64`). Recipe-only packages (no channel-side `mip.yaml`) expand to all four.
 
-Changes outside `packages/` (scripts, mexopts, workflows, site, README) do not trigger any builds. Deleted packages are skipped. The skip-if-unchanged logic still applies — pushes that don't change a package's source hash short-circuit at the prepare step.
+Changes outside `packages/` (workflows, site, README) do not trigger any builds. Deleted packages are skipped. The skip-if-unchanged logic still applies — pushes that don't change a package's source hash short-circuit at the prepare step.
 
 ## Scheduled rebuild
 
