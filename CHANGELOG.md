@@ -2,21 +2,26 @@
 
 ## Unreleased
 
-- Move the shared build engine out of the channel repo into its own repo,
-  `mip-org/mip_channel_tools`: the `mip-channel-tools` Python package (CLI
-  subcommands prepare, package-setup, upload, assemble-index, build-request,
-  affected, scheduled-check), the MATLAB build scripts (`bundle_one.m`,
-  `test_one.m`, ...), the MEX configs (`mexopts/`), the vcpkg overlay triplets
-  (`vcpkg-triplets/`), and the developer notes (`notes/`). CI clones that repo
-  into `mip_channel_tools/` and `pip install`s its package via a shared local
-  composite action (`.github/actions/install-channel-tools`); workflows just
-  `uses: ./.github/actions/install-channel-tools` and reference the clone (e.g.
-  MATLAB `addpath('mip_channel_tools/scripts')`). The action is the single
-  source of truth for the tooling repo URL and ref — edit its `ref` input
-  default (`main`) to develop against a different tooling branch. Removes
-  `tools/`, `scripts/`, `mexopts/`, `vcpkg-triplets/`, `notes/`, and
-  `adding_a_package.md` from the channel; only channel-specific content
-  (`packages/`, `site/`) remains.
+- Move the entire build engine out of the channel into its own repo,
+  `mip-org/mip_channel_tools`: the GitHub Actions logic (now **reusable
+  workflows**: build-package, assemble-index, push-build, scheduled-build,
+  build-request), the `mip-channel-tools` Python package (CLI subcommands
+  prepare, package-setup, upload, assemble-index, build-request, affected,
+  scheduled-check), the MATLAB build scripts (`bundle_one.m`, `test_one.m`,
+  ...), the MEX configs (`mexopts/`), the vcpkg overlay triplets
+  (`vcpkg-triplets/`), and the developer notes (`notes/`). The channel's
+  `.github/workflows/*` are now thin callers that own only the event triggers
+  and delegate to the reusable workflows
+  (`uses: mip-org/mip_channel_tools/.github/workflows/<name>.yml@<ref>`,
+  `secrets: inherit`). Each reusable workflow checks out the calling channel by
+  default (for `packages/`, `site/`) and checks out its own repo at the called
+  ref (`job.workflow_sha`) into `mip_channel_tools/` for the scripts and Python
+  package (e.g. MATLAB `addpath('mip_channel_tools/scripts')`). To run against a
+  different tooling branch, edit the `@<ref>` on a caller's `uses:` line.
+  Removes `tools/`, `scripts/`, `mexopts/`, `vcpkg-triplets/`, `notes/`,
+  `adding_a_package.md`, and `.github/actions/` from the channel; only
+  channel-specific content (`packages/`, `site/`) and thin caller workflows
+  remain.
 
 - Add test scripts for chebfun@5.7.0 (construction, integration, diff, roots,
   max, cumsum), export_fig@3.54 (crop_borders plus an end-to-end PNG export),

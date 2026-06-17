@@ -15,21 +15,25 @@ This repo holds only channel-specific content:
 - `packages/<name>/<release>/` — package definitions.
 - `site/` — this channel's static GitHub Pages site, copied into the published
   index by `mip-channel assemble-index`.
-- `.github/workflows/` — build, scheduled, and issue-driven build triggers.
-- `.github/actions/install-channel-tools/` — composite action that clones the
-  shared tooling repo into `mip_channel_tools/` and `pip install`s its Python
-  package (see below).
+- `.github/workflows/` — thin **caller** workflows. Each owns its event
+  triggers (push, schedule, issues, dispatch) and concurrency, then delegates
+  all logic to a reusable workflow in `mip-org/mip_channel_tools` via
+  `uses: mip-org/mip_channel_tools/.github/workflows/<name>.yml@<ref>` with
+  `secrets: inherit`. (`claude.yml` is the exception — a self-contained PR
+  assistant.)
 
-The shared build engine lives in its own repo, `mip-org/mip_channel_tools`, and
-is cloned into `mip_channel_tools/` at CI time by the install action above. It
-holds the `mip-channel` CLI (`mip-channel-tools` package; subcommands prepare,
-package-setup, upload, assemble-index, build-request, affected,
+The build engine lives in its own repo, `mip-org/mip_channel_tools`: the
+reusable workflows (build-package, assemble-index, push-build, scheduled-build,
+build-request), the `mip-channel` CLI (`mip-channel-tools` package; subcommands
+prepare, package-setup, upload, assemble-index, build-request, affected,
 scheduled-check), the MATLAB build scripts (`bundle_one.m`, `test_one.m`, ...),
 the MEX compiler configs (`mexopts/`), the shared vcpkg overlay triplets
-(`vcpkg-triplets/`), and the developer notes (`notes/`). Workflows reference it
-from the clone, e.g. MATLAB `addpath('mip_channel_tools/scripts')`. The install
-action is the single source of truth for the tooling repo URL and ref; edit its
-`ref` input default (`main`) to develop against a different tooling branch.
+(`vcpkg-triplets/`), and the developer notes (`notes/`). A reusable workflow
+checks out the calling channel by default (for `packages/`, `site/`) and checks
+out its own repo at the called ref (`job.workflow_sha`) into `mip_channel_tools/`
+for the scripts and Python package, e.g. MATLAB
+`addpath('mip_channel_tools/scripts')`. To run against a different tooling
+branch, edit the `@<ref>` on the caller's `uses:` line.
 
 ## Conventions
 

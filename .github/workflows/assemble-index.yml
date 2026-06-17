@@ -1,9 +1,9 @@
 name: Assemble Index
 
-# Rebuild the channel index from existing GitHub Releases and redeploy
-# GitHub Pages, without triggering any package build. Runs manually
-# (e.g. after deleting/restoring a release) and automatically on pushes
-# to main that change the site assets.
+# Thin caller. Rebuilds the channel index from existing GitHub Releases and
+# redeploys GitHub Pages, without triggering any package build. The logic lives
+# in the reusable workflow in mip-org/mip_channel_tools; edit the `@ref` on the
+# `uses:` line to run against a different tooling branch.
 
 on:
   workflow_dispatch:
@@ -22,33 +22,6 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  assemble-and-deploy:
-    runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v5
-
-      - name: Set up Python
-        uses: actions/setup-python@v6
-        with:
-          python-version: '3.11'
-
-      - name: Install channel tooling
-        uses: ./.github/actions/install-channel-tools
-
-      - name: Assemble package index
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: python -m mip_channel_tools assemble-index
-
-      - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v5
-        with:
-          path: build/gh-pages
-
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v5
+  assemble-index:
+    uses: mip-org/mip_channel_tools/.github/workflows/assemble-index.yml@main
+    secrets: inherit

@@ -1,17 +1,9 @@
 name: Auto-build on push
 
-# Pushes to `main` automatically dispatch `build-package.yml` for every
-# (package, architecture) pair affected by the push.
-#
-# A file affects package `packages/<name>/<version>` iff its path is
-# inside that directory. Each affected package expands to every arch
-# declared in its `mip.yaml`, intersected with the channel's supported
-# arches (`any`, `linux_x86_64`, `macos_arm64`, `windows_x86_64`).
-# Recipe-only packages (no channel-side `mip.yaml`) expand to every
-# supported arch.
-#
-# Changes outside `packages/` (scripts, mexopts, workflows, site, README)
-# do not trigger any builds.
+# Thin caller. Pushes to `main` dispatch a build for every (package,
+# architecture) pair affected by the push. The logic lives in the reusable
+# workflow in mip-org/mip_channel_tools; edit the `@ref` on the `uses:` line to
+# run against a different tooling branch.
 
 on:
   push:
@@ -23,83 +15,5 @@ permissions:
 
 jobs:
   dispatch:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v5
-        with:
-          # Full history: the "Determine changed files" step diffs the push's
-          # BEFORE..AFTER, and BEFORE can be many commits back when a push
-          # carries more than one new commit. A shallow clone (e.g.
-          # fetch-depth: 2) only reaches AFTER's immediate parent, so any
-          # multi-commit push fails with `fatal: bad object <BEFORE>`.
-          fetch-depth: 0
-
-      - name: Determine changed files
-        env:
-          BEFORE: ${{ github.event.before }}
-          AFTER: ${{ github.event.after }}
-        run: |
-          mkdir -p .ci-tmp
-          # New-branch pushes send BEFORE=0000...; nothing to diff against.
-          if [ "$BEFORE" = "0000000000000000000000000000000000000000" ]; then
-            echo "First push to branch — no diff base; skipping."
-            : > .ci-tmp/changed.txt
-          else
-            git diff --name-only "$BEFORE" "$AFTER" -- packages/ \
-              > .ci-tmp/changed.txt
-          fi
-          echo "Changed files under packages/:"
-          sed 's/^/  /' .ci-tmp/changed.txt || true
-
-      - name: Set up Python
-        uses: actions/setup-python@v6
-        with:
-          python-version: '3.11'
-
-      - name: Install channel tooling
-        uses: ./.github/actions/install-channel-tools
-
-      - name: Resolve affected builds
-        id: resolve
-        run: |
-          python3 -m mip_channel_tools affected \
-            --changed-files .ci-tmp/changed.txt \
-            --dispatch-file .ci-tmp/dispatch.tsv \
-            --repo-root .
-          if [ -s .ci-tmp/dispatch.tsv ]; then
-            n=$(wc -l < .ci-tmp/dispatch.tsv)
-            echo "n_dispatches=$n" >> "$GITHUB_OUTPUT"
-            echo "resolved=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "resolved=false" >> "$GITHUB_OUTPUT"
-            echo "No affected packages."
-          fi
-
-      - name: Dispatch build-package workflows
-        if: steps.resolve.outputs.resolved == 'true'
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          REPO: ${{ github.repository }}
-        run: |
-          failed=0
-          {
-            echo "## Dispatched builds"
-            echo
-          } >> "$GITHUB_STEP_SUMMARY"
-          while IFS=$'\t' read -r pkg_path arch; do
-            [ -z "$pkg_path" ] && continue
-            echo "Dispatching: $pkg_path ($arch)"
-            if gh workflow run build-package.yml --repo "$REPO" \
-                -f package_path="$pkg_path" \
-                -f architecture="$arch" \
-                -f force=false; then
-              printf -- '- `%s` (`%s`)\n' "$pkg_path" "$arch" \
-                >> "$GITHUB_STEP_SUMMARY"
-            else
-              printf -- '- `%s` (`%s`) — FAILED to dispatch\n' \
-                "$pkg_path" "$arch" >> "$GITHUB_STEP_SUMMARY"
-              failed=1
-            fi
-          done < .ci-tmp/dispatch.tsv
-          exit "$failed"
+    uses: mip-org/mip_channel_tools/.github/workflows/push-build.yml@main
+    secrets: inherit
