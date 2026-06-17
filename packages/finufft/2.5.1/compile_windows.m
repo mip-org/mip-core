@@ -18,6 +18,25 @@ if ~exist(buildDir, 'dir')
     mkdir(buildDir);
 end
 
+% On the channel build farm (BUILD_ARCHITECTURE set), pin a fixed, portable
+% target ISA per build variant so the published MEX runs on every matching user
+% CPU. Setting FINUFFT_ARCH_FLAGS explicitly bypasses finufft's "native"
+% default, whose MSVC path (check_msvc_arch_support) probes the build runner's
+% CPU and is not portable. MSVC's /arch: granularity can't target psABI v2
+% distinctly, so the base build is the SSE2 baseline (empty flag => MSVC default,
+% no /arch: warning) and only v3/v4 are added:
+%   windows_x86_64    -> (none)       SSE2 baseline, runs everywhere
+%   windows_x86_64_v3 -> /arch:AVX2
+%   windows_x86_64_v4 -> /arch:AVX512
+% Local builds (BUILD_ARCHITECTURE unset) keep the historical /arch:AVX2.
+buildArch = getenv('BUILD_ARCHITECTURE');
+switch buildArch
+    case 'windows_x86_64',    archFlags = '';
+    case 'windows_x86_64_v3', archFlags = '/arch:AVX2';
+    case 'windows_x86_64_v4', archFlags = '/arch:AVX512';
+    otherwise,                archFlags = '/arch:AVX2';
+end
+
 % Step 1: Build the FINUFFT static library with CMake (Visual Studio / MSVC).
 fprintf('Configuring FINUFFT with CMake (Visual Studio / MSVC)...\n');
 cfgCmd = sprintf(['cmake -S "%s" -B "%s" -G "Visual Studio 17 2022" -A x64', ...
@@ -28,9 +47,9 @@ cfgCmd = sprintf(['cmake -S "%s" -B "%s" -G "Visual Studio 17 2022" -A x64', ...
     ' -DFINUFFT_BUILD_TESTS=OFF', ...
     ' -DFINUFFT_BUILD_EXAMPLES=OFF', ...
     ' -DFINUFFT_ENABLE_INSTALL=OFF', ...
-    ' -DFINUFFT_ARCH_FLAGS=/arch:AVX2', ...                 % portable ISA, not the build CPU's
+    ' -DFINUFFT_ARCH_FLAGS=%s', ...                         % portable per-variant ISA (see above)
     ' -DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded', ...      % static CRT (/MT)
-    ' -DCMAKE_POLICY_DEFAULT_CMP0091=NEW'], srcRoot, buildDir);
+    ' -DCMAKE_POLICY_DEFAULT_CMP0091=NEW'], srcRoot, buildDir, archFlags);
 [status, output] = system(cfgCmd, '-echo');
 if status ~= 0
     error('CMake configuration failed (exit code %d)', status);

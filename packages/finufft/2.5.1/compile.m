@@ -52,6 +52,34 @@ else
     cmakeArgs{end+1} = ' -DCMAKE_CXX_FLAGS="-fPIC"';
 end
 
+% On the channel build farm (BUILD_ARCHITECTURE set), pin a fixed, portable
+% target ISA so the published MEX runs on every matching user CPU. This
+% overrides finufft's default FINUFFT_ARCH_FLAGS=native, which compiles for the
+% build runner's own CPU (applied to both finufft and ducc0) and would crash on
+% older user machines. Local builds (BUILD_ARCHITECTURE unset) keep the native
+% default, optimal for the user's own machine.
+%
+% The channel's Linux builder is gcc-toolset-10 (GCC 10.3), which predates the
+% psABI level names -march=x86-64-v{2,3,4} (added in GCC 11). The named baseline
+% microarchitectures below generate code using exactly each level's guaranteed
+% instruction set, so a binary built for one runs on any CPU at that level or
+% above:
+%   linux_x86_64    -> x86-64          (psABI v1: SSE2; runs everywhere)
+%   linux_x86_64_v2 -> nehalem         (SSE4.2 + POPCNT)
+%   linux_x86_64_v3 -> haswell         (AVX2 + FMA + BMI)
+%   linux_x86_64_v4 -> skylake-avx512  (AVX-512 F/CD/BW/DQ/VL)
+% (macOS arm64 is left on the native default, as before.)
+buildArch = getenv('BUILD_ARCHITECTURE');
+if isunix && ~ismac && ~isempty(buildArch)
+    switch buildArch
+        case 'linux_x86_64_v2', march = 'nehalem';
+        case 'linux_x86_64_v3', march = 'haswell';
+        case 'linux_x86_64_v4', march = 'skylake-avx512';
+        otherwise,              march = 'x86-64';
+    end
+    cmakeArgs{end+1} = sprintf(' -DFINUFFT_ARCH_FLAGS=-march=%s', march);
+end
+
 cmakeCmd = strjoin(cmakeArgs, '');
 
 [status, output] = system(cmakeCmd);

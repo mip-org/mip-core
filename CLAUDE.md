@@ -38,6 +38,10 @@ tooling branch, edit the `@<ref>` on the caller's `uses:` line.
 
 - Record every notable change in `CHANGELOG.md`. Keep entries brief.
 - Supported channel architectures: `any`, `linux_x86_64`, `macos_arm64`,
-  `windows_x86_64`.
+  `windows_x86_64`, plus x86-64 microarchitecture (SIMD) levels
+  `linux_x86_64_v{2,3,4}` and `windows_x86_64_v{3,4}`. A `_vN` level shares its
+  base arch's runner/container/toolchain and differs only by the compile flags
+  the package's compile script applies (keyed on `BUILD_ARCHITECTURE`); the
+  client installs the highest level the user's CPU supports.
 - Build requests are submitted via issues (title starts with `build`); each
   body line is `<name>@<release> <architecture>`. See `README.md` for details.

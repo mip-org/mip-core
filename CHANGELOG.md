@@ -2,6 +2,18 @@
 
 ## Unreleased
 
+- finufft@2.5.1: add x86-64 microarchitecture (SIMD) build variants —
+  `linux_x86_64_v{2,3,4}` and `windows_x86_64_v{3,4}` — alongside the existing
+  base builds. `compile.m`/`compile_windows.m` read `BUILD_ARCHITECTURE` and pin
+  a fixed, portable target ISA per variant (Linux: `-march=x86-64` baseline and
+  `nehalem`/`haswell`/`skylake-avx512` for v2/v3/v4, since the gcc-toolset-10
+  builder predates the `x86-64-vN` names; Windows: SSE2 baseline / `/arch:AVX2`
+  / `/arch:AVX512`). This also fixes the base builds, which previously inherited
+  finufft's `FINUFFT_ARCH_FLAGS=native` default and baked in the build runner's
+  ISA. The `mip` client detects the host CPU level and installs the highest
+  published variant it supports; v4 (AVX-512) is built but its runtime test is
+  skipped on runners lacking AVX-512. Requires `mip_channel_tools` SIMD support.
+
 - Move the entire build engine out of the channel into its own repo,
   `mip-org/mip_channel_tools`: the GitHub Actions logic (now **reusable
   workflows**: build-package, assemble-index, push-build, scheduled-build,
