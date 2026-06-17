@@ -1,16 +1,14 @@
 name: Assemble Index
 
 # Thin caller. Rebuilds the channel index from existing GitHub Releases and
-# redeploys GitHub Pages, without triggering any package build. The logic lives
-# in the reusable workflow in mip-org/mip_channel_tools; edit the `@ref` on the
+# redeploys GitHub Pages, without triggering any package build. Run manually
+# (e.g. after deleting/restoring a release); the site also redeploys as part of
+# every package build. The logic and the site template both live in the
+# reusable workflow's repo, mip-org/mip_channel_tools; edit the `@ref` on the
 # `uses:` line to run against a different tooling branch.
 
 on:
   workflow_dispatch:
-  push:
-    branches: [main]
-    paths:
-      - 'site/**'
 
 permissions:
   contents: read

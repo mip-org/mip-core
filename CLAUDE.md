@@ -13,8 +13,6 @@ Builds run one `(package, architecture)` pair at a time via GitHub Actions.
 This repo holds only channel-specific content:
 
 - `packages/<name>/<release>/` — package definitions.
-- `site/` — this channel's static GitHub Pages site, copied into the published
-  index by `mip-channel assemble-index`.
 - `.github/workflows/` — thin **caller** workflows. Each owns its event
   triggers (push, schedule, issues, dispatch) and concurrency, then delegates
   all logic to a reusable workflow in `mip-org/mip_channel_tools` via
@@ -28,12 +26,13 @@ build-request), the `mip-channel` CLI (`mip-channel-tools` package; subcommands
 prepare, package-setup, upload, assemble-index, build-request, affected,
 scheduled-check), the MATLAB build scripts (`bundle_one.m`, `test_one.m`, ...),
 the MEX compiler configs (`mexopts/`), the shared vcpkg overlay triplets
-(`vcpkg-triplets/`), and the developer notes (`notes/`). A reusable workflow
-checks out the calling channel by default (for `packages/`, `site/`) and checks
-out its own repo at the called ref (`job.workflow_sha`) into `mip_channel_tools/`
-for the scripts and Python package, e.g. MATLAB
-`addpath('mip_channel_tools/scripts')`. To run against a different tooling
-branch, edit the `@<ref>` on the caller's `uses:` line.
+(`vcpkg-triplets/`), the generic GitHub Pages site template (`site/`), and the
+developer notes (`notes/`). A reusable workflow checks out the calling channel
+by default (for `packages/`) and checks out its own repo at the called ref
+(`job.workflow_sha`) into `mip_channel_tools/` for the scripts, site, and Python
+package, e.g. MATLAB `addpath('mip_channel_tools/scripts')` and
+`assemble-index --site-dir mip_channel_tools/site`. To run against a different
+tooling branch, edit the `@<ref>` on the caller's `uses:` line.
 
 ## Conventions
 

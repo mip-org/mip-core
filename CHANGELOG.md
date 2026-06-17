@@ -9,19 +9,19 @@
   prepare, package-setup, upload, assemble-index, build-request, affected,
   scheduled-check), the MATLAB build scripts (`bundle_one.m`, `test_one.m`,
   ...), the MEX configs (`mexopts/`), the vcpkg overlay triplets
-  (`vcpkg-triplets/`), and the developer notes (`notes/`). The channel's
-  `.github/workflows/*` are now thin callers that own only the event triggers
-  and delegate to the reusable workflows
-  (`uses: mip-org/mip_channel_tools/.github/workflows/<name>.yml@<ref>`,
+  (`vcpkg-triplets/`), the generic GitHub Pages site template (`site/`), and the
+  developer notes (`notes/`). The channel's `.github/workflows/*` are now thin
+  callers that own only the event triggers and delegate to the reusable
+  workflows (`uses: mip-org/mip_channel_tools/.github/workflows/<name>.yml@<ref>`,
   `secrets: inherit`). Each reusable workflow checks out the calling channel by
-  default (for `packages/`, `site/`) and checks out its own repo at the called
-  ref (`job.workflow_sha`) into `mip_channel_tools/` for the scripts and Python
-  package (e.g. MATLAB `addpath('mip_channel_tools/scripts')`). To run against a
-  different tooling branch, edit the `@<ref>` on a caller's `uses:` line.
-  Removes `tools/`, `scripts/`, `mexopts/`, `vcpkg-triplets/`, `notes/`,
+  default (for `packages/`) and checks out its own repo at the called ref
+  (`job.workflow_sha`) into `mip_channel_tools/` for the scripts, site, and
+  Python package (e.g. MATLAB `addpath('mip_channel_tools/scripts')`,
+  `assemble-index --site-dir mip_channel_tools/site`). To run against a different
+  tooling branch, edit the `@<ref>` on a caller's `uses:` line. Removes `tools/`,
+  `scripts/`, `mexopts/`, `vcpkg-triplets/`, `site/`, `notes/`,
   `adding_a_package.md`, and `.github/actions/` from the channel; only
-  channel-specific content (`packages/`, `site/`) and thin caller workflows
-  remain.
+  `packages/` and thin caller workflows remain.
 
 - Add test scripts for chebfun@5.7.0 (construction, integration, diff, roots,
   max, cumsum), export_fig@3.54 (crop_borders plus an end-to-end PNG export),
