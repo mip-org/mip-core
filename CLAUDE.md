@@ -11,9 +11,14 @@ Builds run one `(package, architecture)` pair at a time via GitHub Actions.
 ## Layout
 
 - `packages/<name>/<release>/` — package definitions.
-- `tools/` — the `mip-channel-tools` Python package (`mip-channel` CLI) the
-  workflows install and call; self-contained for eventual extraction to its
-  own repo / PyPI.
+- The `mip-channel` CLI the workflows install and call (`mip-channel-tools`
+  package; subcommands prepare, package-setup, upload, assemble-index,
+  build-request, affected, scheduled-check) lives in its own repo,
+  `mip-org/mip_channel_tools`. CI installs it via the shared local composite
+  action `.github/actions/install-channel-tools`, which is the single source of
+  truth for the repo URL and the installed ref. Edit that action's `ref` input
+  default (`main`) to point every workflow at a different branch while
+  developing the tooling.
 - `scripts/` — MATLAB helpers (`bundle_one.m`, `test_one.m`, ...) called
   directly by the workflows.
 - `.github/workflows/` — build, scheduled, and issue-driven build triggers.

@@ -37,7 +37,7 @@ jobs:
           python-version: '3.11'
 
       - name: Install channel tooling
-        run: pip install ./tools
+        uses: ./.github/actions/install-channel-tools
 
       - name: Probe every (package, architecture)
         id: probe

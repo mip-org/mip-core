@@ -8,7 +8,7 @@ Unlike a "build everything on every push" channel, builds here run **one
 `(package, architecture)` pair at a time** and are triggered three ways:
 automatically on push to `main` (only for the packages a push touches), daily
 by a scheduled probe, or manually via a GitHub issue. The end-to-end flow for
-one pair: [`mip-channel prepare`](tools/src/mip_channel_tools/prepare.py) clones
+one pair: [`mip-channel prepare`](https://github.com/mip-org/mip_channel_tools/blob/main/src/mip_channel_tools/prepare.py) clones
 the upstream source per `source.yaml` and overlays the channel-provided files;
 [`scripts/bundle_one.m`](scripts/bundle_one.m) runs `mip bundle` (which sets up
 the MEX toolchain and runs `compile.m` if needed) to produce the `.mhl`;
@@ -136,7 +136,7 @@ Things to determine:
    `mip.yaml`, and the generated `.mip.json` metadata. Rules:
 
    - **Must be all lowercase.** The prepare step rejects non-lowercase names
-     (see [`mip-channel prepare`](tools/src/mip_channel_tools/prepare.py) —
+     (see [`mip-channel prepare`](https://github.com/mip-org/mip_channel_tools/blob/main/src/mip_channel_tools/prepare.py) —
      "package name must be lowercase"). `TFOCS` → `tfocs`, `matGeom` →
      `matgeom`.
    - **`-` and `_` are both allowed.** Match the upstream spelling when
@@ -185,7 +185,7 @@ version (`1.2.9`) matching `mip.yaml` `version:`, or a branch name
 ## Step 3 — Write `source.yaml`
 
 `source.yaml` tells the prepare step where to fetch the upstream source. It is
-processed by [`mip-channel prepare`](tools/src/mip_channel_tools/prepare.py).
+processed by [`mip-channel prepare`](https://github.com/mip-org/mip_channel_tools/blob/main/src/mip_channel_tools/prepare.py).
 
 ### Minimal form (clone default branch)
 
@@ -220,7 +220,7 @@ sources everything from upstream git repositories.
 ### Version rules (enforced by the prepare step)
 
 `validate_channel_version_rules` in
-[`mip-channel prepare`](tools/src/mip_channel_tools/prepare.py) enforces:
+[`mip-channel prepare`](https://github.com/mip-org/mip_channel_tools/blob/main/src/mip_channel_tools/prepare.py) enforces:
 
 - **`source.yaml` must not contain a `version:` field.** The release directory
   name *is* the version.
@@ -658,7 +658,7 @@ mip load my_package
 
 ## Step 8 — Verify locally (optional but recommended)
 
-Install the channel tooling once (`pip install ./tools`) if needed. Prepare a
+Install the channel tooling once (`pip install "git+https://github.com/mip-org/mip_channel_tools.git@main"`) if needed. Prepare a
 single `(package, architecture)` pair the same way CI does:
 
 ```bash

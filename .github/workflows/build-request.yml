@@ -61,7 +61,7 @@ jobs:
 
       - name: Install channel tooling
         if: steps.check.outputs.proceed == 'true'
-        run: pip install ./tools
+        uses: ./.github/actions/install-channel-tools
 
       - name: Build validation comment
         if: steps.check.outputs.proceed == 'true'
@@ -148,7 +148,7 @@ jobs:
 
       - name: Install channel tooling
         if: steps.check.outputs.proceed == 'true'
-        run: pip install ./tools
+        uses: ./.github/actions/install-channel-tools
 
       - name: Resolve build request
         if: steps.check.outputs.proceed == 'true'

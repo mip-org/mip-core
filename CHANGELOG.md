@@ -2,6 +2,15 @@
 
 ## Unreleased
 
+- Move the `mip-channel-tools` package out of `tools/` into its own repo,
+  `mip-org/mip_channel_tools`, and remove `tools/`. Workflows now install it via
+  a shared local composite action (`.github/actions/install-channel-tools`),
+  which `pip install`s `git+https://github.com/mip-org/mip_channel_tools.git@<ref>`.
+  The repo URL and ref live only in that action, so workflows just
+  `uses: ./.github/actions/install-channel-tools`. The ref defaults to `main`;
+  edit the action's `ref` input default to switch every workflow to a different
+  branch while developing the tooling.
+
 - Add test scripts for chebfun@5.7.0 (construction, integration, diff, roots,
   max, cumsum), export_fig@3.54 (crop_borders plus an end-to-end PNG export),
   and flam@master (interpolative decomposition and an rskelf multiply/solve),

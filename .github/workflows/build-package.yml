@@ -232,13 +232,7 @@ jobs:
           python-version: '3.11'
 
       - name: Install channel tooling
-        # `python -m pip`, not bare `pip`: setup-python's pip wrapper bakes the
-        # host tool-cache path into its shebang, so bare `pip` fails with "bad
-        # interpreter" in the container. In the ubi8 container `python` is the
-        # native python3.9 from the toolchain step. Invoke the tools the same
-        # way (`python -m mip_channel_tools`) so the entry point never depends
-        # on a console-script shebang either.
-        run: python -m pip install ./tools
+        uses: ./.github/actions/install-channel-tools
 
       - name: Prepare package
         env:
@@ -714,11 +708,7 @@ jobs:
           python-version: '3.11'
 
       - name: Install channel tooling
-        # `python -m pip`, not bare `pip`: in the ubi8 container the runner
-        # mounts the tool cache at /__t, but setup-python's pip wrapper has the
-        # host path /opt/hostedtoolcache baked into its shebang and fails with
-        # "bad interpreter". Going through the interpreter sidesteps that.
-        run: python -m pip install ./tools
+        uses: ./.github/actions/install-channel-tools
 
       - name: Restore Homebrew for upload (macOS)
         # The macOS strip step renamed /opt/homebrew (which holds `gh`) to
@@ -759,11 +749,7 @@ jobs:
           python-version: '3.11'
 
       - name: Install channel tooling
-        # `python -m pip`, not bare `pip`: in the ubi8 container the runner
-        # mounts the tool cache at /__t, but setup-python's pip wrapper has the
-        # host path /opt/hostedtoolcache baked into its shebang and fails with
-        # "bad interpreter". Going through the interpreter sidesteps that.
-        run: python -m pip install ./tools
+        uses: ./.github/actions/install-channel-tools
 
       - name: Assemble package index
         env:
