@@ -1,0 +1,25 @@
+name: Download Stats
+
+# Thin caller. Daily, snapshot release asset download counts and fold them
+# into a monotonic lifetime total on the `stats` branch (download-stats.json),
+# surviving the count resets that happen when a package is rebuilt. Also
+# runnable manually. The logic lives in the reusable workflow's repo,
+# mip-org/mip_channel_tools; edit the `@ref` on the `uses:` line to run
+# against a different tooling branch.
+
+on:
+  schedule:
+    - cron: '30 6 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: "download-stats"
+  cancel-in-progress: false
+
+jobs:
+  download-stats:
+    uses: mip-org/mip_channel_tools/.github/workflows/download-stats.yml@main
+    secrets: inherit

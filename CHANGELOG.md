@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+- Add a daily `download-stats.yml` workflow that snapshots GitHub Release
+  asset download counts and folds them into a monotonic lifetime total on
+  a dedicated `stats` branch (`download-stats.json`). Survives the count
+  resets that occur when a package is rebuilt (`gh release upload
+  --clobber` starts the new asset at zero). Logic lives in the
+  `mip-channel download-stats` subcommand in `mip-org/mip_channel_tools`.
+
 - Move the entire build engine out of the channel into its own repo,
   `mip-org/mip_channel_tools`: the GitHub Actions logic (now **reusable
   workflows**: build-package, assemble-index, push-build, scheduled-build,
