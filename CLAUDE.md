@@ -38,6 +38,6 @@ tooling branch, edit the `@<ref>` on the caller's `uses:` line.
 
 - Record every notable change in `CHANGELOG.md`. Keep entries brief.
 - Supported channel architectures: `any`, `linux_x86_64`, `macos_arm64`,
-  `windows_x86_64`.
+  `windows_x86_64`, `numbl_wasm`.
 - Build requests are submitted via issues (title starts with `build`); each
   body line is `<name>@<release> <architecture>`. See `README.md` for details.

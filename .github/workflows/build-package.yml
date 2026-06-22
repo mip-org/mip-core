@@ -22,6 +22,7 @@ on:
           - linux_x86_64
           - macos_arm64
           - windows_x86_64
+          - numbl_wasm
       force:
         description: 'Rebuild even if already published'
         type: boolean
