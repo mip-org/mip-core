@@ -37,7 +37,7 @@ foo@1.0.0 any
 bar@2.0 linux_x86_64 macos_arm64
 ```
 
-Within ~30s the request bot replies with the list of `(package, architecture)` pairs it parsed (or an error list). An admin — anyone with write access on the repo — then replies `approve` on its own line to dispatch.
+Within ~30s the request bot replies with the list of `(package, architecture)` pairs it parsed (or an error list). If an admin — anyone with write access on the repo — opened the issue, the builds dispatch automatically. Otherwise an admin replies `approve` on its own line to dispatch.
 
 ### Architecture keywords
 
@@ -72,7 +72,7 @@ foo@1.0.0 linux_x86_64 force
 
 ### Approval
 
-Builds dispatch only when an admin replies with `approve` on its own line. Emoji reactions and `approve` embedded in prose do not count.
+Builds dispatch automatically when an admin — anyone with write access on the repo — opens the build issue. For an issue opened by anyone else, builds dispatch only when an admin replies with `approve` on its own line; emoji reactions and `approve` embedded in prose do not count.
 
 ### Editing an issue
 

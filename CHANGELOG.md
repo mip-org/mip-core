@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Build-request issues opened by an admin (write+ on the repo) now dispatch
+  automatically — no `approve` comment needed. README updated.
+
 - `finufft` (`2.5.1`): extend `test_finufft.m` to cover all 9 simple-interface
   transforms (1D/2D/3D, types 1/2/3), each checked for output size, NaN, and
   accuracy against a direct evaluation.
