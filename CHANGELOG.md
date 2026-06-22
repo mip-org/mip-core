@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- `finufft` (`2.5.1`): extend `test_finufft.m` to cover all 9 simple-interface
+  transforms (1D/2D/3D, types 1/2/3), each checked for output size, NaN, and
+  accuracy against a direct evaluation.
+
 - `fmm2d` (`main`): drop all numbl builds (`numbl_wasm`, `numbl_linux_x86_64`,
   `numbl_macos_x86_64`) and their compile scripts; point `source.yaml` at
   upstream `flatironinstitute/fmm2d` instead of the `fmm2d_c_translation` fork.
