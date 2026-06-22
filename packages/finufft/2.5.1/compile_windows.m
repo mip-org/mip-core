@@ -5,12 +5,11 @@
 % interpolation code miscompiles there (type-2 transforms hit an access
 % violation at runtime). MSVC is MATLAB's native Windows MEX compiler and
 % builds FINUFFT + DUCC0 correctly, so — like gptoolbox — we use MSVC for both
-% the CMake static-library build and the MEX link (overriding the channel
-% default MinGW selected by bundle_one).
+% the CMake static-library build and the MEX link. The framework selects MSVC
+% before running this script (via `compiler: {windows_x86_64: msvc}` in
+% mip.yaml), so no setup_mex_compilers call is needed here.
 
 fprintf('=== Compiling FINUFFT MEX file (Windows/MSVC) ===\n');
-
-setup_mex_compilers('windows_x86_64', 'msvc');
 
 srcRoot = pwd;
 buildDir = fullfile(srcRoot, 'build_mex');

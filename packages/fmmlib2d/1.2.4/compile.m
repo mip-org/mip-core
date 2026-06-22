@@ -6,10 +6,10 @@
 % with fmm2d.c into a MEX file placed next to the .m shims in matlab/.
 % The Fortran/OpenMP runtime (libgfortran, libquadmath, libgomp) is made
 % self-contained per platform: statically linked on macOS (Homebrew ships
-% the .a archives), and dynamically linked then vendored next to the MEX via
-% bundle_runtime_libs on Linux (the ubi8 build container has no static
-% archives). OpenMP is enabled (-fopenmp); d2tstrcr_omp.f parallelizes the
-% tree build.
+% the .a archives), and dynamically linked on Linux (the ubi8 build container
+% has no static archives), where the build pipeline then vendors the .so files
+% next to the MEX automatically (mip.build.bundle_mex_libs). OpenMP is enabled
+% (-fopenmp); d2tstrcr_omp.f parallelizes the tree build.
 
 fprintf('=== Compiling fmmlib2d MEX file ===\n');
 
@@ -81,10 +81,10 @@ if ismac
     mexArgs{end+1} = libgomp_a;
 else
     % Linux: the ubi8 build container provides only the shared libgfortran /
-    % libgomp (no static archives), so link them dynamically and let
-    % bundle_runtime_libs vendor the .so files next to the MEX with an
-    % $ORIGIN RPATH. This is the channel's standard self-containment path
-    % on Linux (see packages/fmm2d). Resolve the runtime dir from the shared
+    % libgomp (no static archives), so link them dynamically; the build
+    % pipeline then vendors the .so files next to the MEX with an $ORIGIN
+    % RPATH (mip.build.bundle_mex_libs). This is the channel's standard
+    % self-containment path on Linux. Resolve the runtime dir from the shared
     % libgfortran so -L points at the system gcc, not MATLAB's bundled libs.
     % Only libgfortran/libgomp are required (the FMM code uses no quad
     % precision, so libquadmath is not linked). The workflow's strip-then-
@@ -102,13 +102,6 @@ mexArgs{end+1} = '-output';
 mexArgs{end+1} = fullfile(matlabDir, 'fmm2d');
 
 mex(mexArgs{:});
-
-if isunix && ~ismac
-    % Vendor libgfortran/libquadmath/libgomp next to the MEX and patch RPATH
-    % so it loads them via $ORIGIN, surviving the workflow's post-build strip
-    % of the compiler runtime from the linker path.
-    bundle_runtime_libs(fullfile(matlabDir, ['fmm2d.' mexext]));
-end
 
 fprintf('=== fmmlib2d MEX compilation complete ===\n');
 

@@ -45,12 +45,10 @@ prefixArg = '';
 extraInc = {};   % extra -I flags prepended to the MEX include path (Linux gmp/mpfr)
 genArg   = '';   % CMake generator selection (Windows uses the VS generator)
 if ismac
-    % Use Apple Clang on macOS (the native toolchain for CGAL/libigl/embree,
-    % uniform libc++, and it can compile the Objective-C++ impaste). This
-    % overrides the channel-default gcc selected by bundle_one and exports
-    % CC/CXX so the CMake deps build uses the same clang.
-    setup_mex_compilers('macos_arm64', 'clang');
-
+    % Apple Clang is selected by the framework on macOS (per mip.yaml's
+    % `compiler` field) — the native toolchain for CGAL/libigl/embree, uniform
+    % libc++, and able to compile the Objective-C++ impaste. The framework also
+    % exports CC/CXX so the CMake deps build below uses the same clang.
     [s, brewPrefix] = system('brew --prefix');
     if s == 0
         brewPrefix = strtrim(brewPrefix);
@@ -88,14 +86,13 @@ elseif isunix
     % dnf deps may also drop older headers in /usr/include).
     extraInc = {['-I' fullfile(gmpmpfr, 'include')]};
 elseif ispc
-    % Windows: MSVC 2022. embree has no MinGW support on Windows, and MSVC is
-    % MATLAB's native Windows MEX compiler, so the .mexw64 is ABI-correct
-    % against MATLAB's libmx. This overrides the channel-default MinGW that
-    % bundle_one selected. CGAL + Boost are fetched as header-only releases
-    % (never compiled); gmp/mpfr come from vcpkg as MSVC static .lib (installed
-    % in mip.yaml setup) via its CMake toolchain. El Topo is skipped on Windows
+    % Windows: MSVC 2022, selected by the framework (per mip.yaml's `compiler`
+    % field). embree has no MinGW support on Windows, and MSVC is MATLAB's
+    % native Windows MEX compiler, so the .mexw64 is ABI-correct against
+    % MATLAB's libmx. CGAL + Boost are fetched as header-only releases (never
+    % compiled); gmp/mpfr come from vcpkg as MSVC static .lib (installed in
+    % mip.yaml setup) via its CMake toolchain. El Topo is skipped on Windows
     % (see the eltopo block below).
-    setup_mex_compilers('windows_x86_64', 'msvc');
     genArg = ' -G "Visual Studio 17 2022" -A x64';
 
     cgalRoot  = fetch_archive(['https://github.com/CGAL/cgal/releases/' ...
@@ -336,15 +333,6 @@ if ismac
 end
 
 fprintf('Built %d MEX files.\n', nBuilt);
-
-% ---- 4. Bundle any non-OS / non-MATLAB runtime libs ---------------------
-% No-op on macOS/Windows (static mexopts / static deps → self-contained). On
-% Linux it copies any genuinely third-party .so (e.g. libgomp) next to the MEX
-% with an $ORIGIN rpath. Lives in scripts/, on the path via bundle_one.
-mexFiles = dir(fullfile(mexDir, '*.mex*'));
-for i = 1:numel(mexFiles)
-    bundle_runtime_libs(fullfile(mexFiles(i).folder, mexFiles(i).name));
-end
 
 fprintf('=== gptoolbox MEX compilation complete ===\n');
 

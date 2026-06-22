@@ -24,6 +24,14 @@ builds:
   - architectures: [macos_arm64, linux_x86_64, windows_x86_64]
     test_script: test_gptoolbox.m
     compile_script: compile.m
+    # Per-architecture MEX compiler. macOS uses Apple Clang (native toolchain for
+    # CGAL/libigl/embree, uniform libc++); Windows uses MSVC (embree has no MinGW
+    # support, and MSVC is MATLAB's native Windows compiler). Linux is omitted, so
+    # it uses the channel-default gcc. The framework selects these before running
+    # compile.m and exports CC/CXX so the CMake dep builds match.
+    compiler:
+      macos_arm64: clang
+      windows_x86_64: msvc
     setup:
       macos:
         - "brew install cmake cgal"

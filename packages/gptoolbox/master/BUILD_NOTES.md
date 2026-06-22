@@ -48,9 +48,9 @@ no Boost build and no ABI concern for them.
 
 | Arch | compiler | how |
 |---|---|---|
-| macos_arm64 | `clang++.xml` (Apple Clang, libc++) | `compile.m` selects clang via `setup_mex_compilers('macos_arm64','clang')` — native toolchain for CGAL/libigl/embree; overrides the channel-default gcc |
+| macos_arm64 | `clang++.xml` (Apple Clang, libc++) | `mip.yaml` `compiler: {macos_arm64: clang}` — native toolchain for CGAL/libigl/embree; overrides the channel-default gcc |
 | linux_x86_64 | `gcc.xml` (gcc-toolset-10, GCC 10.3, libstdc++) | channel default |
-| windows_x86_64 | **MSVC 2022** | `compile.m` re-selects MSVC, overriding the channel's MinGW default (gptoolbox has no Fortran; MinGW gcc 8.1 is too old for CGAL 6 / Boost 1.86 / embree 4) |
+| windows_x86_64 | **MSVC 2022** | `mip.yaml` `compiler: {windows_x86_64: msvc}`, overriding the channel's MinGW default (gptoolbox has no Fortran; MinGW gcc 8.1 is too old for CGAL 6 / Boost 1.86 / embree 4) |
 
 ## Dependencies — per architecture
 
@@ -160,10 +160,11 @@ macOS the only dynamic deps across all built MEX are `@rpath/libmx`,
 - **Linux:** static everything → the glibc-2.28 gate trivially passes (all
   built in the ubi8/glibc-2.28 container). **One possible exception:** if
   libigl's parallel code pulls `libgomp` (GNU OpenMP, which Linux MATLAB does
-  *not* ship), we bundle that single **leaf `.so`** via
-  `scripts/bundle_runtime_libs` — the same pattern `fmm2d`/`fmmlib2d` already
-  use. It is a clean leaf (only system deps), so the existing non-recursive
-  bundler suffices. We deliberately avoid shipping any **transitive** `.so`
+  *not* ship), the build pipeline bundles that single **leaf `.so`**
+  automatically after compile (`mip.build.bundle_mex_libs`, which delegates to
+  `scripts/bundle_runtime_libs`) for every package's MEX files, so no
+  per-package call is needed. It is a clean leaf (only system deps), so the
+  existing non-recursive bundler suffices. We deliberately avoid shipping any **transitive** `.so`
   chain (e.g. `mpfr→gmp`, `embree→tbb`) — that is why gmp/mpfr are static and
   embree is built TBB-free.
 
@@ -231,7 +232,7 @@ the CI loop:
 
 Previously-open risks, now resolved: embree builds under Linux gcc-toolset-10
 (GCC 10.3); `libgomp` on Linux is bundled as a leaf `.so` only if it appears
-(`scripts/bundle_runtime_libs`).
+(automatically, via `mip.build.bundle_mex_libs` → `scripts/bundle_runtime_libs`).
 
 ## BLAS integer width (El Topo, Linux + Windows)
 

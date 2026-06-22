@@ -23,9 +23,13 @@ builds:
       # Clang ducc0 template crash.
       macos:
         - "brew install fftw"
-  # Windows uses MinGW-w64 for mex, so the static lib must be MinGW-built too
-  # (a mex can only link same-compiler objects). compile_windows.m builds it
-  # with the MinGW Makefiles generator and the dependency-free DUCC0 backend.
+  # FINUFFT miscompiles under the channel-default MinGW-w64 (type-2 transforms
+  # hit a runtime access violation), so Windows uses MSVC. The framework selects
+  # it (per the `compiler` field below) before running compile_windows.m, which
+  # builds the static lib with MSVC too — a mex can only link same-compiler
+  # objects.
   - architectures: [windows_x86_64]
     compile_script: compile_windows.m
     test_script: test_finufft.m
+    compiler:
+      windows_x86_64: msvc

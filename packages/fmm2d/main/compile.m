@@ -38,14 +38,6 @@ if status ~= 0
     error('fmm2d:makeMatlabFailed', 'make matlab failed with exit code %d', status);
 end
 
-if ~ismac()
-    % Bundle runtime-library deps (libgfortran, libgomp, ...) next to each MEX.
-    mexFiles = dir(fullfile('matlab', '*.mex*'));
-    for i = 1:numel(mexFiles)
-        bundle_runtime_libs(fullfile(mexFiles(i).folder, mexFiles(i).name));
-    end
-end
-
 fprintf('fmm2d MEX compilation completed.\n');
 
 end
