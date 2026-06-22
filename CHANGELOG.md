@@ -12,11 +12,13 @@
   transforms (1D/2D/3D, types 1/2/3), each checked for output size, NaN, and
   accuracy against a direct evaluation.
 
-- `fmm2d` (`main`): drop all numbl builds (`numbl_wasm`, `numbl_linux_x86_64`,
-  `numbl_macos_x86_64`) and their compile scripts; point `source.yaml` at
-  upstream `flatironinstitute/fmm2d` instead of the `fmm2d_c_translation` fork.
-  mip-core now ships only the MATLAB MEX builds; numbl builds of fmm2d live in
-  the `mip-org/labs` channel.
+- `fmm2d` (`main`): point `source.yaml` at upstream `flatironinstitute/fmm2d`
+  (not the `fmm2d_c_translation` fork) and add a `numbl_wasm` build —
+  developed and validated in the `mip-org/mip-staging` channel. It transpiles
+  the upstream Fortran to C with fort2c at build time and compiles a standalone
+  `fmm2d.wasm`, so it needs no fork. The native numbl builds
+  (`numbl_linux_x86_64`, `numbl_macos_x86_64`) remain in the `mip-org/labs`
+  channel.
 
 - Add a daily `download-stats.yml` workflow that snapshots GitHub Release
   asset download counts and folds them into a monotonic lifetime total on
