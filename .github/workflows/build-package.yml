@@ -1,5 +1,5 @@
 name: Build Package
-run-name: "${{ inputs.package_path }} (${{ inputs.architecture }})${{ inputs.force && ' [force]' || '' }}"
+run-name: "${{ inputs.package_path }} (${{ inputs.architecture }})${{ inputs.force && ' [force]' || '' }}${{ inputs.publish && '' || ' [no-publish]' }}"
 
 # Thin caller. The whole per-(package, architecture) build pipeline lives in the
 # reusable workflow in mip-org/mip_channel_tools; this file only defines the
@@ -27,6 +27,10 @@ on:
         description: 'Rebuild even if already published'
         type: boolean
         default: false
+      publish:
+        description: 'Publish the result (upload to Releases + redeploy the index). Uncheck for a no-publish build: build + test only, .mhl kept as a CI artifact, live channel untouched.'
+        type: boolean
+        default: true
 
 permissions:
   contents: write
@@ -40,4 +44,5 @@ jobs:
       package_path: ${{ inputs.package_path }}
       architecture: ${{ inputs.architecture }}
       force: ${{ inputs.force }}
+      publish: ${{ inputs.publish }}
     secrets: inherit
