@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- `fmm2d` (`main`): drop all numbl builds (`numbl_wasm`, `numbl_linux_x86_64`,
+  `numbl_macos_x86_64`) and their compile scripts; point `source.yaml` at
+  upstream `flatironinstitute/fmm2d` instead of the `fmm2d_c_translation` fork.
+  mip-core now ships only the MATLAB MEX builds; numbl builds of fmm2d live in
+  the `mip-org/labs` channel.
+
 - Add a daily `download-stats.yml` workflow that snapshots GitHub Release
   asset download counts and folds them into a monotonic lifetime total on
   a dedicated `stats` branch (`download-stats.json`). Survives the count
