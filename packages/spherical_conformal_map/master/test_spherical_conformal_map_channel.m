@@ -8,12 +8,17 @@ assert(~isempty(which('spherical_conformal_map')), 'spherical_conformal_map is n
 assert(~isempty(which('cotangent_laplacian')), 'cotangent_laplacian is not on the path');
 assert(~isempty(which('mobius_area_correction_spherical')), 'extension is not on the path');
 
-% --- Build a genus-0 closed triangle mesh: convex hull of points on a sphere,
-%     then stretched into an ellipsoid so the conformal map does real work. ---
-rng(0);
+% --- Build a genus-0 closed triangle mesh: a deterministic Fibonacci-sphere
+%     lattice, convex-hulled, then stretched into an ellipsoid so the conformal
+%     map does real work. The lattice is used instead of randn so the mesh (and
+%     hence the result) is identical across MATLAB-compatible interpreters that
+%     do not reproduce MATLAB's exact RNG sequence. ---
 n = 300;
-p = randn(n, 3);
-p = p ./ sqrt(sum(p.^2, 2));        % points on the unit sphere
+idx = (0:n-1)';
+phi = acos(1 - 2*(idx+0.5)/n);      % polar angle, evenly spaced in cos
+golden = pi*(1+sqrt(5));            % golden angle
+theta = golden*idx;
+p = [sin(phi).*cos(theta), sin(phi).*sin(theta), cos(phi)];  % points on the sphere
 f = convhull(p(:,1), p(:,2), p(:,3));
 v = p .* [2.0, 1.0, 0.6];           % stretch into an ellipsoid
 
