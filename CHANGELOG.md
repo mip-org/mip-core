@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+- Cross-channel submissions: open an issue titled
+  `submit <owner>/<channel>/<name>@<release>` to propose a package from another
+  channel. An admin comments `build` to run test builds (full build+test, no
+  release — the `.mhl` is a downloadable artifact) and `accept` to promote the
+  package onto `main` and publish it. New `submit-package-request.yml` caller;
+  `build-package.yml` caller gains `source_repo`/`upload` inputs.
+
 - `numbl_wasm` added to the `build-package.yml` architecture choices so push
   builds can dispatch it (the reusable workflow already supports it).
 

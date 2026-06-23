@@ -78,6 +78,30 @@ Builds dispatch automatically when an admin — anyone with write access on the 
 
 Editing a submitted issue does not re-validate. To change anything, open a new issue.
 
+## Submitting a package from another channel
+
+To propose a package that lives in a **different** channel for inclusion here,
+open an issue whose title is:
+
+```
+submit <owner>/<channel>/<name>@<release>
+```
+
+This names the package release `packages/<name>/<release>` in the source repo
+`<owner>/mip-<channel>`. For example `submit mip-org/staging/fmm2d@main`
+proposes `packages/fmm2d/main` from `mip-org/mip-staging`. The body is free-form.
+
+The bot replies confirming the package exists in the source repo and lists its
+declared architectures. Then an admin (anyone with write access) drives it:
+
+- Comment `build` (on its own line) to run **test builds** for every declared
+  architecture. Each runs the full build-and-test pipeline but publishes
+  nothing — the resulting `.mhl` is uploaded as a workflow artifact you can
+  download and `mip install` locally to test. The issue stays open.
+- Comment `accept` (on its own line) to **promote** the package: its folder is
+  copied into this channel's `packages/` on `main` and the normal publishing
+  builds are dispatched. The issue is then closed.
+
 ## Direct dispatch
 
 The same effect from the command line:

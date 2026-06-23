@@ -1,0 +1,24 @@
+name: Submit package request
+
+# Thin caller. Cross-channel submission flow: an issue titled
+# `submit <owner>/<channel>/<name>@<release>` proposes a package from another
+# channel. An admin comments `build` to run test builds (no release) and
+# `accept` to promote it into this channel. The logic lives in the reusable
+# workflow in mip-org/mip_channel_tools; edit the `@ref` on the `uses:` line to
+# run against a different tooling branch.
+
+on:
+  issues:
+    types: [opened]
+  issue_comment:
+    types: [created]
+
+permissions:
+  issues: write
+  actions: write
+  contents: write
+
+jobs:
+  submit-package-request:
+    uses: mip-org/mip_channel_tools/.github/workflows/submit-package-request.yml@main
+    secrets: inherit
