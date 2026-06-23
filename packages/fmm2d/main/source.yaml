@@ -1,3 +1,8 @@
+# Build from the upstream Fortran fmm2d. The numbl_wasm build transpiles the
+# Fortran to C with fort2c at build time (see matlab/numbl/build_wasm.sh), so
+# this points at the real library rather than the magland/fmm2d_c_translation
+# fork. Do NOT add a `version:` field — the release-dir name (main) is the
+# version, and it must equal source.branch.
 source:
   git: "https://github.com/flatironinstitute/fmm2d"
   branch: "main"
