@@ -1,0 +1,26 @@
+name: PR build command
+
+# Thin caller. When an admin comments `/build` on a pull request, build the PR's
+# affected packages with publish=false (no Releases or index changes) so they can
+# be tried before merging. All logic — admin gate, command parse, affected-package
+# resolution, dispatch on the PR head branch, and the result comment — lives in the
+# reusable workflow in mip-org/mip_channel_tools. Edit the `@ref` on the `uses:`
+# line to run against a different tooling branch.
+
+on:
+  issue_comment:
+    types: [created]
+
+permissions:
+  issues: write
+  pull-requests: write
+  actions: write
+  contents: read
+
+jobs:
+  pr-build:
+    # Coarse gate so ordinary comments don't spin up the reusable; the reusable
+    # re-checks (PR + admin + an exact `/build` command line) before dispatching.
+    if: github.event.issue.pull_request != null && contains(github.event.comment.body, '/build')
+    uses: mip-org/mip_channel_tools/.github/workflows/pr-build.yml@main
+    secrets: inherit
