@@ -22,8 +22,8 @@ This repo holds only channel-specific content:
 
 The build engine lives in its own repo, `mip-org/mip_channel_tools`: the
 reusable workflows (build-package, assemble-index, push-build, scheduled-build,
-build-request), the `mip-channel` CLI (`mip-channel-tools` package; subcommands
-prepare, package-setup, upload, assemble-index, build-request, affected,
+build-request, submit-package-request), the `mip-channel` CLI (`mip-channel-tools` package; subcommands
+prepare, package-setup, upload, assemble-index, build-request, submit-package-request, affected,
 scheduled-check), the MATLAB build scripts (`bundle_one.m`, `test_one.m`, ...),
 the MEX compiler configs (`mexopts/`), the shared vcpkg overlay triplets
 (`vcpkg-triplets/`), the generic GitHub Pages site template (`site/`), and the
@@ -41,3 +41,7 @@ tooling branch, edit the `@<ref>` on the caller's `uses:` line.
   `windows_x86_64`, `numbl_wasm`.
 - Build requests are submitted via issues (title starts with `build`); each
   body line is `<name>@<release> <architecture>`. See `README.md` for details.
+- Cross-channel submissions use issues titled
+  `submit <owner>/<channel>/<name>@<release>`: an admin comments `build` for
+  no-publish test builds and `accept` to promote the package onto `main`. See
+  `README.md`.

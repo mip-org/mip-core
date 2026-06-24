@@ -27,6 +27,14 @@ on:
         description: 'Rebuild even if already published'
         type: boolean
         default: false
+      source_repo:
+        description: 'Foreign repo to take packages/ from (submission test builds), e.g. owner/mip-staging'
+        type: string
+        default: ''
+      upload:
+        description: 'Publish the built .mhl as a release + reindex'
+        type: boolean
+        default: true
 
 permissions:
   contents: write
@@ -40,4 +48,6 @@ jobs:
       package_path: ${{ inputs.package_path }}
       architecture: ${{ inputs.architecture }}
       force: ${{ inputs.force }}
+      source_repo: ${{ inputs.source_repo }}
+      upload: ${{ inputs.upload }}
     secrets: inherit
