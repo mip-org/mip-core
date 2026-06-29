@@ -3,8 +3,10 @@ function compile()
 % Compile MEX files for fmm2d
 % compile.m runs with cwd set to the package source root
 
-% Add Homebrew path so that gfortran can be found on macOS
-setenv('PATH', ['/opt/homebrew/bin:' getenv('PATH')]);
+% Add Homebrew paths so gfortran is found on macOS. Homebrew's prefix differs
+% by arch: /opt/homebrew on Apple Silicon (macos_arm64), /usr/local on Intel
+% (macos_x86_64). Prepend both so the build works on either Mac.
+setenv('PATH', ['/opt/homebrew/bin:/usr/local/bin:' getenv('PATH')]);
 
 fprintf('Compiling fmm2d MEX files...\n');
 
