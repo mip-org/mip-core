@@ -1,0 +1,10 @@
+# Keep blank issues enabled — the Build and cross-channel "submit" flows are
+# driven by free-form issue titles parsed by the workflows, not by templates.
+blank_issues_enabled: true
+contact_links:
+  - name: Build an existing package
+    url: https://github.com/mip-org/mip-core/blob/main/README.md#submitting-a-build
+    about: Trigger a build for a package that already has a recipe in this channel.
+  - name: Submit a package from another channel
+    url: https://github.com/mip-org/mip-core/blob/main/README.md#submitting-a-package-from-another-channel
+    about: Propose a package that already exists in another mip channel.

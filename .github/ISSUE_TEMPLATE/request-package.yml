@@ -1,0 +1,29 @@
+name: Request a package
+description: Ask for a MATLAB package to be added to the mip catalog
+title: "[package request] "
+labels: ["package-request"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Want a package in `mip install`? Tell us where it lives.
+        First, check it isn't already at [mip.sh/packages](https://mip.sh/packages).
+  - type: input
+    id: name
+    attributes:
+      label: Package name
+      description: What you'd type after `mip install` (e.g. chebfun).
+    validations:
+      required: true
+  - type: input
+    id: repo
+    attributes:
+      label: Repository URL
+      placeholder: https://github.com/owner/repo
+    validations:
+      required: true
+  - type: textarea
+    id: notes
+    attributes:
+      label: Anything else? (optional)
+      description: A specific version or tag to use, who uses it, or why it'd help.
