@@ -16,14 +16,17 @@ builds:
     compile_script: compile.m
     test_script: test_finufft.m
     setup:
-      # cmake is not present on the Linux (ubi8) builder; macOS already ships it.
+      # cmake is not present on the Linux (ubi8) builder.
       linux:
         - "dnf install -y cmake"
       # compile.m uses FFTW (not DUCC0) on macOS (arm64 and x86_64) to avoid the
       # Apple Clang ducc0 template crash. macos_x86_64 is built locally on an
-      # Intel Mac (CI can't); see mip_channel_tools/notes/LOCAL-BUILD.md.
+      # Intel Mac (CI can't); see mip_channel_tools/notes/LOCAL-BUILD.md. cmake
+      # builds FINUFFT: the GitHub macOS runner image ships it, but a developer's
+      # Mac (local macos_x86_64 build) may not — install it if missing.
       macos:
         - "brew install fftw"
+        - "command -v cmake >/dev/null 2>&1 || brew install cmake"
   # FINUFFT miscompiles under the channel-default MinGW-w64 (type-2 transforms
   # hit a runtime access violation), so Windows uses MSVC. The framework selects
   # it (per the `compiler` field below) before running compile_windows.m, which
