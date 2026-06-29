@@ -19,6 +19,10 @@ This repo holds only channel-specific content:
   `uses: mip-org/mip_channel_tools/.github/workflows/<name>.yml@<ref>` with
   `secrets: inherit`. (`claude.yml` is the exception — a self-contained PR
   assistant.)
+- `scripts/local_build.sh` — thin bootstrap (same spirit as the caller
+  workflows) for building an architecture CI can't build (Intel Mac,
+  `macos_x86_64`) on a machine with MATLAB: clones the engine and delegates to
+  `mip-channel local-build`. See `mip_channel_tools/notes/LOCAL-BUILD.md`.
 
 The build engine lives in its own repo, `mip-org/mip_channel_tools`: the
 reusable workflows (build-package, assemble-index, push-build, scheduled-build,
