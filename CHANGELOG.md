@@ -8,6 +8,16 @@
   MEX builds. CI can't build it; produce it locally on an Intel Mac with
   `scripts/local_build.sh` (see `mip_channel_tools/notes/LOCAL-BUILD.md`).
 
+- `scripts/local_build.sh`: build and publish a release for an architecture CI
+  can't build (Intel Mac, `macos_x86_64`) from a machine with MATLAB. A thin
+  bootstrap that clones `mip_channel_tools` and delegates to its new
+  `mip-channel local-build` engine — same prepare → bundle → test → upload steps
+  as CI, then triggers Assemble Index. See `mip_channel_tools/notes/LOCAL-BUILD.md`.
+
+- `fmm2d` (`main`): the macOS compile now also finds gfortran via Homebrew's
+  Intel prefix (`/usr/local`), so the already-declared `macos_x86_64` build
+  works locally via `scripts/local_build.sh` (CI still can't build it).
+
 - Cross-channel submissions: open an issue titled
   `submit <owner>/<channel>/<name>@<release>` to propose a package from another
   channel. An admin comments `build` to run test builds (full build+test, no
