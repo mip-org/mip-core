@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- `finufft` (`2.5.1`): add a `macos_x86_64` build. `compile.m` now uses FFTW on
+  all macOS (not just arm64) and resolves the Homebrew prefix per arch
+  (`/opt/homebrew` on Apple Silicon, `/usr/local` on Intel), so the Intel-Mac
+  MEX builds. CI can't build it; produce it locally on an Intel Mac with
+  `scripts/local_build.sh` (see `mip_channel_tools/notes/LOCAL-BUILD.md`).
+
 - Cross-channel submissions: open an issue titled
   `submit <owner>/<channel>/<name>@<release>` to propose a package from another
   channel. An admin comments `build` to run test builds (full build+test, no
