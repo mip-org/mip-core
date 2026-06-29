@@ -6,15 +6,23 @@ homepage: "https://finufft.readthedocs.io"
 repository: "https://github.com/flatironinstitute/finufft"
 dependencies: []
 
-# matlab/ holds the upstream m-file wrappers (finufft1d1.m, finufft_plan.m, ...)
-# and the compiled finufft MEX produced by compile.m.
+# matlab/       — upstream finufft1d1.m, finufft_plan.m, ... and the compiled
+#                 finufft MEX produced by compile.m.
+# matlab/numbl  — single finufft.numbl.js builtin + the finufft.wasm it
+#                 dispatches through. No m-file overrides here.
 paths:
   - path: "matlab"
+  - path: "matlab/numbl"
 
 builds:
+  # MATLAB MEX: compiled from the upstream C++ via CMake (DUCC0 backend, OpenMP
+  # off, statically linked for portability). The numbl/ js+wasm is excluded
+  # from the native bundle.
   - architectures: [linux_x86_64, macos_arm64, macos_x86_64]
     compile_script: compile.m
     test_script: test_finufft.m
+    paths:
+      - path: "matlab"
     setup:
       # cmake is not present on the Linux (ubi8) builder; macOS already ships it.
       linux:
@@ -32,5 +40,17 @@ builds:
   - architectures: [windows_x86_64]
     compile_script: compile_windows.m
     test_script: test_finufft.m
+    paths:
+      - path: "matlab"
     compiler:
       windows_x86_64: msvc
+
+  # numbl WASM: the upstream C++ is already portable, so (unlike fmm2d) there is
+  # no Fortran transpile step — build_wasm.sh builds libfinufft with emscripten
+  # CMake and compiles the upstream matlab/finufft.cpp against it through a small
+  # mex shim, producing a standalone finufft.wasm. Replaces the native MEX with
+  # the finufft.numbl.js builtin. No setup block: the numbl_wasm runner already
+  # ships cmake/make/python, and the workflow puts emcc/emcmake on PATH.
+  - architectures: [numbl_wasm]
+    compile_script: compile_numbl_wasm.m
+    test_script: test_finufft.m
