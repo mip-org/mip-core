@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- `finufft` (`2.5.1`): add a `macos_x86_64` build. `compile.m` now uses FFTW on
+  all macOS (not just arm64) and resolves the Homebrew prefix per arch
+  (`/opt/homebrew` on Apple Silicon, `/usr/local` on Intel), so the Intel-Mac
+  MEX builds. CI can't build it; produce it locally on an Intel Mac with
+  `scripts/local_build.sh` (see `mip_channel_tools/notes/LOCAL-BUILD.md`).
+
 - `scripts/local_build.sh`: build and publish a release for an architecture CI
   can't build (Intel Mac, `macos_x86_64`) from a machine with MATLAB. A thin
   bootstrap that clones `mip_channel_tools` and delegates to its new

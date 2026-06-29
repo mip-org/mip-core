@@ -12,15 +12,16 @@ paths:
   - path: "matlab"
 
 builds:
-  - architectures: [linux_x86_64, macos_arm64]
+  - architectures: [linux_x86_64, macos_arm64, macos_x86_64]
     compile_script: compile.m
     test_script: test_finufft.m
     setup:
       # cmake is not present on the Linux (ubi8) builder; macOS already ships it.
       linux:
         - "dnf install -y cmake"
-      # compile.m uses FFTW (not DUCC0) on macOS arm64 to avoid the Apple
-      # Clang ducc0 template crash.
+      # compile.m uses FFTW (not DUCC0) on macOS (arm64 and x86_64) to avoid the
+      # Apple Clang ducc0 template crash. macos_x86_64 is built locally on an
+      # Intel Mac (CI can't); see mip_channel_tools/notes/LOCAL-BUILD.md.
       macos:
         - "brew install fftw"
   # FINUFFT miscompiles under the channel-default MinGW-w64 (type-2 transforms

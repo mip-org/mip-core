@@ -21,10 +21,17 @@ if ~exist(buildDir, 'dir')
     mkdir(buildDir);
 end
 
-% Use FFTW instead of DUCC0 on macOS ARM64 (Apple Clang crashes compiling ducc0 templates)
-use_fftw = ismac && strcmp(computer('arch'), 'maca64');
+% Use FFTW instead of DUCC0 on macOS (Apple Clang crashes compiling ducc0
+% templates). Homebrew's prefix differs by arch: /opt/homebrew on Apple Silicon
+% (maca64), /usr/local on Intel (maci64).
+use_fftw = ismac;
 if use_fftw
     ducc0_flag = 'OFF';
+    if strcmp(computer('arch'), 'maca64')
+        brewPrefix = '/opt/homebrew';
+    else
+        brewPrefix = '/usr/local';
+    end
 else
     ducc0_flag = 'ON';
 end
@@ -40,7 +47,7 @@ cmakeArgs = { ...
     ' -DFINUFFT_ENABLE_INSTALL=OFF'};
 
 if use_fftw
-    cmakeArgs{end+1} = ' -DCMAKE_PREFIX_PATH=/opt/homebrew';
+    cmakeArgs{end+1} = [' -DCMAKE_PREFIX_PATH=' brewPrefix];
 end
 
 if ispc
@@ -134,7 +141,8 @@ end
 % MEX does not depend on the Homebrew libfftw3.dylib at runtime (the test
 % machine strips the build environment, removing the Homebrew install).
 if use_fftw
-    fftwStatic = {'/opt/homebrew/lib/libfftw3.a', '/opt/homebrew/lib/libfftw3f.a'};
+    fftwStatic = {fullfile(brewPrefix, 'lib', 'libfftw3.a'), ...
+                  fullfile(brewPrefix, 'lib', 'libfftw3f.a')};
     for ii = 1:numel(fftwStatic)
         if ~exist(fftwStatic{ii}, 'file')
             error('Static FFTW library not found at %s', fftwStatic{ii});
