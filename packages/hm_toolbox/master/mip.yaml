@@ -11,6 +11,12 @@ dependencies: []
 paths:
   - path: "."
 
+# Upstream tests/ ships in the bundle but is off-path by default; opt in with
+# `mip load hm_toolbox --with tests`.
+extra_paths:
+  tests:
+    - path: "tests"
+
 builds:
   - architectures: [any]
     test_script: test_hm_toolbox_channel.m

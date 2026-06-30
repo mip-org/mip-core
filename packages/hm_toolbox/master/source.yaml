@@ -2,4 +2,3 @@ source:
   # Track the default branch (master). The only release tag (v1.0, 2023) is
   # well behind two years of upstream fixes, and the toolbox is pure MATLAB.
   git: "https://github.com/numpi/hm-toolbox"
-  remove_dirs: [tests]

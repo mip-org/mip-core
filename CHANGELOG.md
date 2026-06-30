@@ -2,6 +2,16 @@
 
 ## Unreleased
 
+- `jsonlab` (`2.9.8`): stop deleting upstream `test/` via `remove_dirs`; ship
+  it in the bundle and expose it as an opt-in `extra_paths` group instead, so
+  users can run `mip load jsonlab --with tests`.
+
+- `chebfun`, `hm_toolbox`, `manopt`, `sc_toolbox`, `spm`, `tensor_toolbox`:
+  stop deleting the upstream `tests/` directory via `remove_dirs`; ship it and
+  expose it as an opt-in `extra_paths` `tests` group instead, so users can run
+  `mip load <pkg> --with tests`. (`chebfun`/`manopt`/`tensor_toolbox` use
+  `recursive: true` since their suites have subdirectories.)
+
 - `fmm2d` (numbl_wasm): define `flong` (`int64_t`) in `fmm2d_c.h`. fort2c emits
   `flong`-typed temps for allocatable-array capacities (the `*_acap` vars), but
   the runtime header only defined `fint`/`fcomplex`, so the generated C failed

@@ -12,6 +12,12 @@ dependencies: []
 paths:
   - path: "."
 
+# Upstream tests/ ships in the bundle but is off-path by default; opt in with
+# `mip load sc_toolbox --with tests`.
+extra_paths:
+  tests:
+    - path: "tests"
+
 builds:
   - architectures: [any]
     test_script: test_sc_toolbox_channel.m

@@ -17,6 +17,11 @@ paths:
 extra_paths:
   examples:
     - path: "examples"
+  # Upstream tests/ ships in the bundle but is off-path by default; opt in with
+  # `mip load manopt --with tests`. Recursive: the suite has subdirectories.
+  tests:
+    - path: "tests"
+      recursive: true
 
 builds:
   - architectures: [linux_x86_64, macos_arm64, windows_x86_64]

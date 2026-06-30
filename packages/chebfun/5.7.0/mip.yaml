@@ -9,6 +9,14 @@ dependencies: []
 paths:
   - path: "."
 
+# Upstream tests/ ships in the bundle but is off-path by default; opt in with
+# `mip load chebfun --with tests`. Recursive: the suite is organised into
+# per-class subdirectories (tests/adchebfun, ...).
+extra_paths:
+  tests:
+    - path: "tests"
+      recursive: true
+
 builds:
   - architectures: [any]
     test_script: test_chebfun.m

@@ -14,6 +14,13 @@ paths:
   - path: "libraries/lbfgsb/Matlab"
   - path: "libraries/compact/src"
 
+# Upstream tests/ ships in the bundle but is off-path by default; opt in with
+# `mip load tensor_toolbox --with tests`. Recursive to include tests/special_tests.
+extra_paths:
+  tests:
+    - path: "tests"
+      recursive: true
+
 builds:
   - architectures: [linux_x86_64, macos_arm64, windows_x86_64]
     compile_script: compile.m

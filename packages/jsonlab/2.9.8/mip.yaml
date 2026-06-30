@@ -10,6 +10,12 @@ dependencies: []
 paths:
   - path: "."
 
+# Upstream test/ ships in the bundle but is off-path by default; opt in with
+# `mip load jsonlab --with tests`.
+extra_paths:
+  tests:
+    - path: "test"
+
 builds:
   - architectures: [any]
     test_script: test_jsonlab_channel.m
