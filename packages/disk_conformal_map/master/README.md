@@ -31,4 +31,4 @@ Pure MATLAB — a single `[any]` build, no compiled code. The core solver lives 
 
 ## Tests
 
-`test_disk_conformal_map_channel.m` builds a curved disk-topology mesh (a lifted polar grid), conformally maps it to the unit disk, verifies nothing leaves the disk and the boundary lands on the unit circle, and checks the angle distortion is small. The test is display-free. The Mobius area-correction extension is shipped but not exercised in the test, as it requires the MATLAB Optimization Toolbox.
+`test_disk_conformal_map.m` builds a curved disk-topology mesh (a lifted polar grid), conformally maps it to the unit disk, verifies nothing leaves the disk and the boundary lands on the unit circle, and checks the angle distortion is small. The test is display-free. The Mobius area-correction extension is shipped but not exercised in the test, as it requires the MATLAB Optimization Toolbox.

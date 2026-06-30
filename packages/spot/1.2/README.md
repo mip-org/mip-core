@@ -27,14 +27,14 @@ y = A * x;                 % apply without forming a matrix
 
 | Architecture | MEX compiled? | Test script |
 | --- | --- | --- |
-| `linux_x86_64`   | yes | `test_spot_channel.m` |
-| `macos_arm64`    | yes | `test_spot_channel.m` |
-| `windows_x86_64` | yes | `test_spot_channel.m` |
+| `linux_x86_64`   | yes | `test_spot.m` |
+| `macos_arm64`    | yes | `test_spot.m` |
+| `windows_x86_64` | yes | `test_spot.m` |
 | any other        | **no** (pure-MATLAB fallback) | `test_spot_any.m` |
 
 The only compiled component is the bundled Rice Wavelet Toolbox under `+spot/+rwt/` — four C MEX (`mdwt`/`midwt`/`mrdwt`/`mirdwt`) that back the wavelet operators (`opWavelet`, `opWavelet2`, `opHaar`). They are built from source by `compile.m`. On the `[any]` fallback no MEX is shipped; the entire operator framework is pure MATLAB and works normally, but the wavelet operators are unavailable.
 
 ## Tests
 
-- `test_spot_channel.m` — checks the core operator algebra (`opMatrix`, `opDFT`) and the wavelet operators (orthogonal reconstruction and a redundant transform), exercising all four RWT MEX.
+- `test_spot.m` — checks the core operator algebra (`opMatrix`, `opDFT`) and the wavelet operators (orthogonal reconstruction and a redundant transform), exercising all four RWT MEX.
 - `test_spot_any.m` — the core operator-algebra checks only.

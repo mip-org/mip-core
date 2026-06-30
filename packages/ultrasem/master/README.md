@@ -28,4 +28,4 @@ Pure MATLAB — a single `[any]` build, no compiled code. The toolbox is self-co
 
 ## Tests
 
-`test_ultrasem_channel.m` solves a Helmholtz-type PDE on the unit square and checks the centre value against a reference solution (from CHEBOP2).
+`test_ultrasem.m` solves a Helmholtz-type PDE on the unit square and checks the centre value against a reference solution (from CHEBOP2).

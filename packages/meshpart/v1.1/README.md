@@ -31,4 +31,4 @@ Pure MATLAB — a single `[any]` build, no compiled code. Two notes on optional/
 
 ## Tests
 
-`test_meshpart_channel.m` builds a 20×20 grid graph and exercises spectral bisection (`specpart`) and spectral multiway dicing (`specdice`), verifying valid, balanced partitions. The geometric partitioners ship but are not exercised in the test (they need the Statistics Toolbox). The test is display-free (no `gplotmap`).
+`test_meshpart.m` builds a 20×20 grid graph and exercises spectral bisection (`specpart`) and spectral multiway dicing (`specdice`), verifying valid, balanced partitions. The geometric partitioners ship but are not exercised in the test (they need the Statistics Toolbox). The test is display-free (no `gplotmap`).

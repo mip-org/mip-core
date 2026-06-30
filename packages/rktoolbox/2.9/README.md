@@ -31,4 +31,4 @@ Pure MATLAB — a single `[any]` build, no compiled code.
 
 ## Tests
 
-`test_rktoolbox_channel.m` builds a rational Arnoldi decomposition with `rat_krylov` and verifies both the defining relation `A*V*K = V*H` and the orthonormality of the basis to machine precision.
+`test_rktoolbox.m` builds a rational Arnoldi decomposition with `rat_krylov` and verifies both the defining relation `A*V*K = V*H` and the orthonormality of the basis to machine precision.

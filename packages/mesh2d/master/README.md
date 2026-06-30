@@ -28,8 +28,8 @@ edge = [1 2; 2 3; 3 4; 4 1];
 
 Pure MATLAB — a single `[any]` build, no compiled code.
 
-The upstream `poly-test/` folder is a copy of INPOLY and is replaced here by the [`inpoly`](../../inpoly) dependency. The bundled `aabb-tree/` folder is **kept**: unlike the standalone [`aabb_tree`](../../aabb_tree) package, MESH2D's copy is a richer variant (it adds `findball`/`findline`/`lineline`/`linenear` and `findtria`, which MESH2D uses), so it cannot be replaced by that dependency and ships with the package.
+The upstream `poly-test/` folder is a copy of INPOLY and is replaced here by the [`inpoly`](../../inpoly) dependency. The bundled `aabb-tree/` folder is **kept**: unlike the standalone [`aabb-tree`](../../aabb-tree) package, MESH2D's copy is a richer variant (it adds `findball`/`findline`/`lineline`/`linenear` and `findtria`, which MESH2D uses), so it cannot be replaced by that dependency and ships with the package.
 
 ## Tests
 
-`test_mesh2d_channel.m` meshes the unit square with `refine2`, verifies the resulting triangulation (valid indices, vertices inside the domain, non-degenerate triangles), and runs `smooth2`.
+`test_mesh2d.m` meshes the unit square with `refine2`, verifies the resulting triangulation (valid indices, vertices inside the domain, non-degenerate triangles), and runs `smooth2`.

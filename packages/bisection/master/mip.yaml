@@ -12,4 +12,4 @@ paths:
 
 builds:
   - architectures: [any]
-    test_script: test_bisection_channel.m
+    test_script: test_bisection.m

@@ -1,0 +1,16 @@
+name: findpoly
+description: "FINDPOLY: fast point-in-polygon queries for collections of (possibly overlapping) polygons."
+version:
+license: "Custom (see LICENSE.md)"
+homepage: "https://github.com/dengwirda/find-poly"
+repository: "https://github.com/dengwirda/find-poly"
+dependencies: [aabb-tree, inpoly]
+
+# findpoly.m lives at the root; the spatial-query backend (maketree/queryset)
+# comes from aabb-tree and the point-in-polygon kernel (inpoly2) from inpoly.
+paths:
+  - path: "."
+
+builds:
+  - architectures: [any]
+    test_script: test_findpoly.m

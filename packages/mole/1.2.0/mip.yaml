@@ -13,4 +13,4 @@ paths:
 
 builds:
   - architectures: [any]
-    test_script: test_mole_channel.m
+    test_script: test_mole.m

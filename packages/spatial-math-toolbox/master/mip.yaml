@@ -1,0 +1,15 @@
+name: spatial-math-toolbox
+description: "Spatial Math Toolbox: rotations, rigid-body transforms, quaternions, twists and spatial vectors in 2D/3D (Peter Corke)."
+version:
+license: "MIT"
+homepage: "https://github.com/petercorke/spatialmath-matlab"
+repository: "https://github.com/petercorke/spatialmath-matlab"
+dependencies: []
+
+# Flat toolbox: all functions and classes live at the root.
+paths:
+  - path: "."
+
+builds:
+  - architectures: [any]
+    test_script: test_spatial_math_toolbox.m

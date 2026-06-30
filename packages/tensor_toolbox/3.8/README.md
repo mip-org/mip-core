@@ -26,9 +26,9 @@ M = cp_als(X, 3);          % rank-3 CP decomposition
 
 | Architecture | MEX compiled? | Test script |
 | --- | --- | --- |
-| `linux_x86_64`   | yes | `test_tensor_toolbox_channel.m` |
-| `macos_arm64`    | yes | `test_tensor_toolbox_channel.m` |
-| `windows_x86_64` | yes | `test_tensor_toolbox_channel.m` |
+| `linux_x86_64`   | yes | `test_tensor_toolbox.m` |
+| `macos_arm64`    | yes | `test_tensor_toolbox.m` |
+| `windows_x86_64` | yes | `test_tensor_toolbox.m` |
 | any other        | **no** (pure-MATLAB fallback) | `test_tensor_toolbox_any.m` |
 
 The only compiled component is `lbfgsb_wrapper` — Stephen Becker's [L-BFGS-B-C](https://github.com/stephenbeckr/L-BFGS-B-C), bundled under `libraries/lbfgsb/`. It is self-contained (it ships its own `miniCBLAS`, so it needs no external BLAS) and is built from source by `compile.m`. It backs the L-BFGS-B option of the optimization-based methods (`tt_opt_lbfgsb`, and `cp_opt` / `gcp_opt` when run with the `lbfgsb` solver).
@@ -37,5 +37,5 @@ On the `[any]` fallback no MEX is shipped (the bundling pipeline strips the preb
 
 ## Tests
 
-- `test_tensor_toolbox_channel.m` — checks core tensor algebra (Frobenius norm, tensor-times-vector, a CP-ALS recovery) and exercises the L-BFGS-B MEX on a smooth convex problem.
+- `test_tensor_toolbox.m` — checks core tensor algebra (Frobenius norm, tensor-times-vector, a CP-ALS recovery) and exercises the L-BFGS-B MEX on a smooth convex problem.
 - `test_tensor_toolbox_any.m` — the core tensor-algebra checks only.

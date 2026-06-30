@@ -22,4 +22,4 @@ paths:
 
 builds:
   - architectures: [any]
-    test_script: test_mesh2d_channel.m
+    test_script: test_mesh2d.m
