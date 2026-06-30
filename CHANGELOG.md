@@ -25,6 +25,16 @@
   package onto `main` and publish it. New `submit-package-request.yml` caller;
   `build-package.yml` caller gains `source_repo`/`upload` inputs.
 
+- `jigsaw_matlab` (`master`): add a `numbl_wasm` build. JIGSAW's native
+  interface shells out to standalone executables over files, which numbl can't
+  do, so the port compiles JIGSAW's in-memory C library (`lib_jigsaw`) to a
+  standalone `jigsaw.wasm` and drives it through a `jigsaw_kernel.numbl.js`
+  builtin. The `numbl/` overlay carries numbl-specific `jigsaw.m` / `tripod.m`
+  / `marche.m` / `initjig.m` / `loadmsh.m` overrides (the upstream `loadmsh`
+  uses `fscanf` + `regexp('split')`, neither supported by numbl) and keeps the
+  file-based OPTS contract via `loadmsh`/`savemsh`. Native builds add an
+  explicit `paths:` that excludes `numbl/`.
+
 - `numbl_wasm` added to the `build-package.yml` architecture choices so push
   builds can dispatch it (the reusable workflow already supports it).
 
