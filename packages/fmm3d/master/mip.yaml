@@ -1,6 +1,6 @@
 name: fmm3d
 description: "Flatiron Institute Fast Multipole Methods in 3D"
-version: "master"
+version:
 license: "Apache-2.0"
 homepage: "https://github.com/flatironinstitute/fmm3d"
 repository: "https://github.com/flatironinstitute/fmm3d"
