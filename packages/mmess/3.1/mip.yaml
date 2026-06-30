@@ -17,4 +17,4 @@ paths:
 
 builds:
   - architectures: [any]
-    test_script: test_mmess_channel.m
+    test_script: test_mmess.m

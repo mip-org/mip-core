@@ -1,0 +1,14 @@
+name: matlab-progress-bar
+description: "TQDM-inspired progress bar for MATLAB for-loops and iterators."
+version: "3.4.1"
+license: "BSD-3-Clause"
+homepage: "https://github.com/JAAdrian/MatlabProgressBar"
+repository: "https://github.com/JAAdrian/MatlabProgressBar"
+dependencies: []
+
+paths:
+  - path: "."
+
+builds:
+  - architectures: [any]
+    test_script: test_matlab_progress_bar.m

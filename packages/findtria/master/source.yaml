@@ -1,0 +1,6 @@
+source:
+  # No release tags upstream; track the default branch (master).
+  git: "https://github.com/dengwirda/find-tria"
+  # The repo vendors a trimmed copy of aabb-tree; drop it and use the
+  # aabb-tree package instead (declared as a dependency in mip.yaml).
+  remove_dirs: [aabb-tree]

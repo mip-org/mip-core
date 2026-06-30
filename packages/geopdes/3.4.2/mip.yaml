@@ -14,4 +14,4 @@ paths:
 
 builds:
   - architectures: [any]
-    test_script: test_geopdes_channel.m
+    test_script: test_geopdes.m

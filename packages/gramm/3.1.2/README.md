@@ -31,4 +31,4 @@ Pure MATLAB — a single `[any]` build, no compiled code. Only the toolbox `gram
 
 ## Tests
 
-`test_gramm_channel.m` builds a grouped scatter+line gramm figure and draws it (with figures kept invisible), checking that the object renders axes and draw results.
+`test_gramm.m` builds a grouped scatter+line gramm figure and draws it (with figures kept invisible), checking that the object renders axes and draw results.

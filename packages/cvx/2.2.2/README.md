@@ -59,4 +59,4 @@ The two MEX helpers link only the MATLAB runtime plus the OS C/math libraries; a
 
 ## Tests
 
-`test_cvx_channel.m` loads the sedumi dependency, runs `cvx_setup`, solves a small linear program and checks the optimum, and force-loads both MEX helpers so the channel's all-MEX-exercised gate confirms each binary loads on the target machine.
+`test_cvx.m` loads the sedumi dependency, runs `cvx_setup`, solves a small linear program and checks the optimum, and force-loads both MEX helpers so the channel's all-MEX-exercised gate confirms each binary loads on the target machine.

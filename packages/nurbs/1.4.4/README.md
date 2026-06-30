@@ -30,4 +30,4 @@ Pure MATLAB — a single `[any]` build, no compiled code. (The upstream `src/` `
 
 ## Tests
 
-`test_nurbs_channel.m` builds a NURBS unit circle and a bilinear surface patch and checks that evaluated points are geometrically correct.
+`test_nurbs.m` builds a NURBS unit circle and a bilinear surface patch and checks that evaluated points are geometrically correct.

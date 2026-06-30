@@ -29,4 +29,4 @@ Pure MATLAB — a single `[any]` build, no compiled code.
 
 ## Tests
 
-`test_bisection_channel.m` finds a scalar root and a vector of independent roots, checking both against the analytic answers.
+`test_bisection.m` finds a scalar root and a vector of independent roots, checking both against the analytic answers.

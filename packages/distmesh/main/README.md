@@ -27,4 +27,4 @@ Pure MATLAB — a single `[any]` build, no compiled code (v1.2 removed the legac
 
 ## Tests
 
-`test_distmesh_channel.m` meshes the unit disc with `distmesh2d` and verifies the resulting triangulation (valid connectivity, vertices inside the domain, non-degenerate triangles).
+`test_distmesh.m` meshes the unit disc with `distmesh2d` and verifies the resulting triangulation (valid connectivity, vertices inside the domain, non-degenerate triangles).

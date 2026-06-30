@@ -29,4 +29,4 @@ Pure MATLAB — a single `[any]` build, no compiled code. MOLE also ships a C++ 
 
 ## Tests
 
-`test_mole_channel.m` checks that the mimetic Laplacian is exact on a quadratic (`Lap(x^2) = 2`) and solves the 1-D elliptic getting-started problem (Robin BCs), verifying the solution against `exp(x)`.
+`test_mole.m` checks that the mimetic Laplacian is exact on a quadratic (`Lap(x^2) = 2`) and solves the 1-D elliptic getting-started problem (Robin BCs), verifying the solution against `exp(x)`.

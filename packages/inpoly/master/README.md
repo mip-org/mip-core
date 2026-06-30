@@ -28,4 +28,4 @@ Pure MATLAB — a single `[any]` build, no compiled code. On MATLAB, `inpoly2` r
 
 ## Tests
 
-`test_inpoly_channel.m` checks point-in-polygon classification against a known polygon and cross-checks `inpoly2` against MATLAB's built-in `inpolygon` over a random query set.
+`test_inpoly.m` checks point-in-polygon classification against a known polygon and cross-checks `inpoly2` against MATLAB's built-in `inpolygon` over a random query set.

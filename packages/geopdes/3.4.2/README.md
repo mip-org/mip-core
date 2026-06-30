@@ -28,4 +28,4 @@ Pure MATLAB — a single `[any]` build, no compiled code. (Upstream `src/` `.cc`
 
 ## Tests
 
-`test_geopdes_channel.m` runs a minimal IGA pipeline on the unit square (geometry → mesh → NURBS space → mass-matrix assembly) and checks that the total assembled mass equals the domain area and that the matrix is symmetric.
+`test_geopdes.m` runs a minimal IGA pipeline on the unit square (geometry → mesh → NURBS space → mass-matrix assembly) and checks that the total assembled mass equals the domain area and that the matrix is symmetric.

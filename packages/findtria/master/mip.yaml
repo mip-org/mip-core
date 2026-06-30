@@ -1,0 +1,16 @@
+name: findtria
+description: "FINDTRIA: fast spatial queries (point-in-simplex / intersection) for collections of d-simplexes."
+version:
+license: "Custom (see LICENSE.md)"
+homepage: "https://github.com/dengwirda/find-tria"
+repository: "https://github.com/dengwirda/find-tria"
+dependencies: [aabb-tree]
+
+# findtria.m lives at the root; the spatial-query backend (maketree, queryset)
+# comes from the aabb-tree dependency.
+paths:
+  - path: "."
+
+builds:
+  - architectures: [any]
+    test_script: test_findtria.m

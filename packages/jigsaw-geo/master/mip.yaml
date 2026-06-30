@@ -1,0 +1,16 @@
+name: jigsaw-geo
+description: "JIGSAW(GEO): worked examples and datasets for geographic/global unstructured mesh generation with JIGSAW."
+version:
+license: "Custom (see LICENSE.md)"
+homepage: "https://github.com/dengwirda/jigsaw-geo-matlab"
+repository: "https://github.com/dengwirda/jigsaw-geo-matlab"
+dependencies: [jigsaw]
+
+# This is an examples + datasets companion to jigsaw (no library of its
+# own): example.m lives at the root and the geographic input meshes under files/.
+paths:
+  - path: "."
+
+builds:
+  - architectures: [any]
+    test_script: test_jigsaw_geo.m

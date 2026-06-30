@@ -29,4 +29,4 @@ Pure MATLAB — a single `[any]` build, no compiled code. The core solver lives 
 
 ## Tests
 
-`test_spherical_conformal_map_channel.m` builds a genus-0 ellipsoid mesh (convex hull of points on a sphere), conformally maps it to the unit sphere, verifies every mapped vertex lands on the sphere, and checks the angle distortion is small. The test is display-free (it does not call the plotting/histogram helpers). The Mobius area-correction extension is shipped but not exercised in the test, as it requires the MATLAB Optimization Toolbox.
+`test_spherical_conformal_map.m` builds a genus-0 ellipsoid mesh (convex hull of points on a sphere), conformally maps it to the unit sphere, verifies every mapped vertex lands on the sphere, and checks the angle distortion is small. The test is display-free (it does not call the plotting/histogram helpers). The Mobius area-correction extension is shipped but not exercised in the test, as it requires the MATLAB Optimization Toolbox.

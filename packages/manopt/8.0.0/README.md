@@ -29,9 +29,9 @@ x = trustregions(problem);   % maximizes the Rayleigh quotient on the sphere
 
 | Architecture | MEX compiled? | Test script |
 | --- | --- | --- |
-| `linux_x86_64`   | yes | `test_manopt_channel.m` |
-| `macos_arm64`    | yes | `test_manopt_channel.m` |
-| `windows_x86_64` | yes | `test_manopt_channel.m` |
+| `linux_x86_64`   | yes | `test_manopt.m` |
+| `macos_arm64`    | yes | `test_manopt.m` |
+| `windows_x86_64` | yes | `test_manopt.m` |
 | any other        | **no** (pure-MATLAB fallback) | `test_manopt_any.m` |
 
 Manopt ships two small C MEX helpers in `manopt/tools/` — `spmaskmult` (masked sparse product) and `setsparseentries` (overwrite the nonzeros of a sparse matrix) — used by `sparseentries.m` / `replacesparseentries.m` (e.g. for fixed-rank manifolds). On the three compiled architectures these are built from source by `compile.m`. On the `[any]` fallback no MEX is shipped (the bundling pipeline strips the prebuilt `.mex*` files); the rest of the toolbox is pure MATLAB and works normally, but the few functions that call those helpers will error.
@@ -42,5 +42,5 @@ The bundled **TTeMPS** tensor-train sub-toolbox under `manopt/manifolds/ttfixedr
 
 ## Tests
 
-- `test_manopt_channel.m` — solves a sphere optimization (recovering the dominant eigenvalue of a symmetric matrix) and exercises both MEX helpers through their wrappers with correctness checks.
+- `test_manopt.m` — solves a sphere optimization (recovering the dominant eigenvalue of a symmetric matrix) and exercises both MEX helpers through their wrappers with correctness checks.
 - `test_manopt_any.m` — the pure-MATLAB sphere optimization only.

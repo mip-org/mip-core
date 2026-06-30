@@ -32,4 +32,4 @@ The full toolbox, including the `DEMOS/` examples and their bundled benchmark mo
 
 ## Tests
 
-`test_mmess_channel.m` solves a continuous-time Lyapunov equation with the high-level `mess_lyap` solver and checks that the low-rank solution's residual is at machine-precision level.
+`test_mmess.m` solves a continuous-time Lyapunov equation with the high-level `mess_lyap` solver and checks that the low-rank solution's residual is at machine-precision level.

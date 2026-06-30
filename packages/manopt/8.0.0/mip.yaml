@@ -21,6 +21,6 @@ extra_paths:
 builds:
   - architectures: [linux_x86_64, macos_arm64, windows_x86_64]
     compile_script: compile.m
-    test_script: test_manopt_channel.m
+    test_script: test_manopt.m
   - architectures: [any]
     test_script: test_manopt_any.m

@@ -13,4 +13,4 @@ paths:
 
 builds:
   - architectures: [any]
-    test_script: test_disk_conformal_map_channel.m
+    test_script: test_disk_conformal_map.m
