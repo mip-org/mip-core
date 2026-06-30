@@ -9,6 +9,11 @@ dependencies: []
 paths:
   - path: "."
 
+# Opt in with `mip load spm --with tests`.
+extra_paths:
+  tests:
+    - path: "tests"
+
 builds:
   - architectures: [linux_x86_64, macos_arm64]
     compile_script: compile.m

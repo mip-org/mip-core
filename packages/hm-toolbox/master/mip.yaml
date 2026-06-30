@@ -11,6 +11,11 @@ dependencies: []
 paths:
   - path: "."
 
+# Opt in with `mip load hm-toolbox --with tests`.
+extra_paths:
+  tests:
+    - path: "tests"
+
 builds:
   - architectures: [any]
     test_script: test_hm_toolbox.m

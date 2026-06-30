@@ -1,4 +1,3 @@
 source:
   git: "https://gitlab.com/tensors/tensor_toolbox"
   branch: "v3.8"
-  remove_dirs: [tests]
