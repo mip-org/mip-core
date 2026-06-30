@@ -9,7 +9,7 @@
 ## Install
 
 ```matlab
-mip install --channel mip-org/dev geometry_processing_package
+mip install geometry_processing_package
 mip load geometry_processing_package
 ```
 

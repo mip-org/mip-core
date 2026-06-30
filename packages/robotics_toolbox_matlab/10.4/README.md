@@ -10,7 +10,7 @@
 ## Install
 
 ```matlab
-mip install --channel mip-org/dev robotics_toolbox_matlab
+mip install robotics_toolbox_matlab
 mip load robotics_toolbox_matlab
 ```
 

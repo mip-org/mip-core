@@ -10,7 +10,7 @@
 ## Install
 
 ```matlab
-mip install --channel mip-org/dev spm
+mip install spm
 mip load spm
 ```
 

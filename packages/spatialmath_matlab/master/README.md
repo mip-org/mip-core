@@ -9,7 +9,7 @@
 ## Install
 
 ```matlab
-mip install --channel mip-org/dev spatialmath_matlab
+mip install spatialmath_matlab
 mip load spatialmath_matlab
 ```
 

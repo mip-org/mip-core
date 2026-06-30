@@ -10,7 +10,7 @@
 ## Install
 
 ```matlab
-mip install --channel mip-org/dev cvx
+mip install cvx
 mip load cvx
 mip load sedumi
 ```

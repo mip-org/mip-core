@@ -10,7 +10,7 @@
 ## Install
 
 ```matlab
-mip install --channel mip-org/dev matlab2tikz
+mip install matlab2tikz
 mip load matlab2tikz
 ```
 

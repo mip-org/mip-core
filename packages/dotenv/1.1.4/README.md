@@ -19,7 +19,7 @@ for the full text.
 ## Install
 
 ```matlab
-mip install --channel mip-org/dev dotenv
+mip install dotenv
 mip load dotenv
 ```
 

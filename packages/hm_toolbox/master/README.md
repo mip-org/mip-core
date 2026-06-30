@@ -11,7 +11,7 @@
 ## Install
 
 ```matlab
-mip install --channel mip-org/dev hm_toolbox
+mip install hm_toolbox
 mip load hm_toolbox
 ```
 

@@ -13,7 +13,7 @@ from MATLAB through a pre-generated mwrap gateway (`matlab/fmm2d.c`).
 ## Install
 
 ```matlab
-mip install --channel mip-org/dev fmmlib2d
+mip install fmmlib2d
 mip load fmmlib2d
 ```
 
