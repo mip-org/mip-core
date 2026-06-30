@@ -10,7 +10,7 @@
 ## Install
 
 ```matlab
-mip install --channel mip-org/dev meshpart
+mip install meshpart
 mip load meshpart
 ```
 

@@ -10,7 +10,7 @@
 ## Install
 
 ```matlab
-mip install --channel mip-org/dev geopdes
+mip install geopdes
 mip load geopdes
 mip load nurbs
 ```

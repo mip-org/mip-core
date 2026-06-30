@@ -10,7 +10,7 @@
 ## Install
 
 ```matlab
-mip install --channel mip-org/dev mmess
+mip install mmess
 mip load mmess
 ```
 

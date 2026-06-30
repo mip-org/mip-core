@@ -10,7 +10,7 @@
 ## Install
 
 ```matlab
-mip install --channel mip-org/dev jigsaw
+mip install jigsaw
 mip load jigsaw
 ```
 
@@ -29,15 +29,22 @@ mesh = jigsaw(opts);
 
 ## Architecture
 
-| Architecture | Backend compiled? |
+| Architecture | Backend |
 | --- | --- |
-| `linux_x86_64`   | yes |
-| `macos_arm64`    | yes |
-| `windows_x86_64` | yes |
+| `linux_x86_64`   | standalone C++ executables |
+| `macos_arm64`    | standalone C++ executables |
+| `windows_x86_64` | standalone C++ executables |
+| `numbl_wasm`     | `jigsaw.wasm` (lib_jigsaw via a JS builtin) |
 
-Unlike a MEX toolbox, JIGSAW's numerical backend is a set of standalone C++ executables (`jigsaw`, `tripod`, `marche`) plus a shared library, built from the bundled source under `external/jigsaw` by `compile.m` (CMake, C++17). The MATLAB interface launches `external/jigsaw/bin/jigsaw` via `system()`.
+On the three native architectures, JIGSAW's numerical backend is a set of standalone C++ executables (`jigsaw`, `tripod`, `marche`) plus a shared library, built from the bundled source under `external/jigsaw` by `compile.m` (CMake, C++17). The MATLAB interface launches `external/jigsaw/bin/jigsaw` via `system()`.
 
-There is no pure-MATLAB fallback: the backend is required, so the package is built only for the three native architectures.
+## numbl WASM
+
+numbl supports neither `system()` nor filesystem access from a builtin, so the executable/file protocol can't be reused. Instead the `numbl_wasm` build (`compile_numbl_wasm.m` → `numbl/build_wasm.sh`) compiles JIGSAW's **in-memory C library** — the same `external/jigsaw/src/jigsaw.cpp` the native shared library is built from, with `-D__lib_jigsaw` — to a standalone `jigsaw.wasm` (emcc, `-fwasm-exceptions`, no netcdf). The `jigsaw_kernel.numbl.js` builtin marshals mesh/option structs to and from JIGSAW's `jigsaw_msh_t` / `jigsaw_jig_t` via a small shim (`numbl/jigsaw_shim.cpp`) and calls `jigsaw` / `tripod` / `marche` directly.
+
+The numbl-specific `jigsaw.m` / `tripod.m` / `marche.m` overrides (in `numbl/`, which the channel lists last on the path so it shadows the upstream copies) preserve the file-based `OPTS` contract: they read the input `*.MSH` files with `loadmsh`, run the WASM kernel, and write the result with `savemsh`. The upstream `loadmsh` relies on `fscanf` and `regexp(...,'split')` — neither available in numbl — so `numbl/loadmsh.m` reimplements the reader with `fgetl` + `sscanf` + `strsplit`. `initjig` is likewise overridden to drop the unsupported `genpath` call (the channel already places `tools/` and `parse/` on the path).
+
+All three entry points are exercised by `test_jigsaw_numbl_wasm.m`.
 
 ## Static linking
 

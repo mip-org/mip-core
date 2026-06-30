@@ -10,7 +10,7 @@
 ## Install
 
 ```matlab
-mip install --channel mip-org/dev aabb-tree
+mip install aabb-tree
 mip load aabb-tree
 ```
 

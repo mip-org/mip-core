@@ -10,7 +10,7 @@
 ## Install
 
 ```matlab
-mip install --channel mip-org/dev finufft
+mip install finufft
 mip load finufft
 ```
 

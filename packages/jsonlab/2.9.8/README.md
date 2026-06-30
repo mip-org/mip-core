@@ -10,7 +10,7 @@
 ## Install
 
 ```matlab
-mip install --channel mip-org/dev jsonlab
+mip install jsonlab
 mip load jsonlab
 ```
 

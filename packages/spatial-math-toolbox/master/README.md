@@ -9,7 +9,7 @@
 ## Install
 
 ```matlab
-mip install --channel mip-org/dev spatial-math-toolbox
+mip install spatial-math-toolbox
 mip load spatial-math-toolbox
 ```
 

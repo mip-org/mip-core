@@ -10,7 +10,7 @@
 ## Install
 
 ```matlab
-mip install --channel mip-org/dev bisection
+mip install bisection
 mip load bisection
 ```
 

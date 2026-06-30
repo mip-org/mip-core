@@ -11,7 +11,7 @@ The [Tensor Toolbox for MATLAB](https://www.tensortoolbox.org) provides classes 
 ## Install
 
 ```matlab
-mip install --channel mip-org/dev tensor_toolbox
+mip install tensor_toolbox
 mip load tensor_toolbox
 ```
 

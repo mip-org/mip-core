@@ -10,7 +10,7 @@
 ## Install
 
 ```matlab
-mip install --channel mip-org/dev inpoly
+mip install inpoly
 mip load inpoly
 ```
 

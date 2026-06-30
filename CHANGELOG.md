@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- `fmm2d` (numbl_wasm): define `flong` (`int64_t`) in `fmm2d_c.h`. fort2c emits
+  `flong`-typed temps for allocatable-array capacities (the `*_acap` vars), but
+  the runtime header only defined `fint`/`fcomplex`, so the generated C failed
+  to compile ("undeclared identifier 'flong'").
+
 - `gptoolbox` (Windows): fetch CGAL as `CGAL-6.0.1.zip` rather than `.tar.xz`,
   and extract with System32 bsdtar by absolute path. The windows-2022 System32
   bsdtar (libarchive 3.8.4) has no built-in xz, so extracting `.tar.xz` shells

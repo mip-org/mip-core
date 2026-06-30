@@ -10,7 +10,7 @@
 ## Install
 
 ```matlab
-mip install --channel mip-org/dev ultrasem
+mip install ultrasem
 mip load ultrasem
 ```
 

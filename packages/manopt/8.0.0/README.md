@@ -10,7 +10,7 @@
 ## Install
 
 ```matlab
-mip install --channel mip-org/dev manopt
+mip install manopt
 mip load manopt
 ```
 

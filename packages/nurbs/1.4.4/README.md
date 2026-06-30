@@ -10,7 +10,7 @@ The [NURBS toolbox](https://octave.sourceforge.io/nurbs/) provides functions for
 ## Install
 
 ```matlab
-mip install --channel mip-org/dev nurbs
+mip install nurbs
 mip load nurbs
 ```
 

@@ -10,7 +10,7 @@
 ## Install
 
 ```matlab
-mip install --channel mip-org/dev spot
+mip install spot
 mip load spot
 ```
 

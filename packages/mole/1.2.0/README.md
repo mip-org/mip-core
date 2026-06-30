@@ -10,7 +10,7 @@
 ## Install
 
 ```matlab
-mip install --channel mip-org/dev mole
+mip install mole
 mip load mole
 ```
 

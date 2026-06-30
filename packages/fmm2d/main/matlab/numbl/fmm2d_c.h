@@ -40,6 +40,9 @@
 /* Fortran integer is the default 4-byte integer for gfortran. */
 typedef int32_t fint;
 
+/* fort2c emits flong (64-bit) for allocatable-array capacity temps. */
+typedef int64_t flong;
+
 /* Fortran complex*16 maps to C99 double _Complex. */
 typedef double _Complex fcomplex;
 

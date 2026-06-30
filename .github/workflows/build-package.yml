@@ -14,15 +14,9 @@ on:
         required: true
         type: string
       architecture:
-        description: 'Target architecture'
+        description: 'Target architecture, e.g. any, linux_x86_64, macos_arm64, windows_x86_64, numbl_wasm'
         required: true
-        type: choice
-        options:
-          - any
-          - linux_x86_64
-          - macos_arm64
-          - windows_x86_64
-          - numbl_wasm
+        type: string
       force:
         description: 'Rebuild even if already published'
         type: boolean

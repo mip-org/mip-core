@@ -10,7 +10,7 @@
 ## Install
 
 ```matlab
-mip install --channel mip-org/dev jigsaw-geo
+mip install jigsaw-geo
 mip load jigsaw-geo
 mip load jigsaw
 ```
