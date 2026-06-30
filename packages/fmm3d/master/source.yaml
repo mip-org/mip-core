@@ -1,0 +1,15 @@
+# Build from the upstream Fortran FMM3D, pinned to the v2.1.0 release tag.
+# The release-dir name (2.1.0) is the version and must equal mip.yaml's
+# `version:`; source.branch carries the full tag (v2.1.0). Do NOT add a
+# `version:` field here.
+#
+# remove_dirs trims trees the MATLAB MEX build does not need: the other-
+# language bindings (c, python, julia), the Fortran/C example and test
+# drivers (examples, test), the docs sources, developer scaffolding (devel),
+# and the SIMD vec-kernels (only used by the FAST_KER build, which this
+# package leaves off). `make matlab` only compiles src/ into lib-static and
+# links matlab/*.c, so none of these are build inputs.
+source:
+  git: "https://github.com/flatironinstitute/fmm3d"
+  branch: "master"
+  remove_dirs: [c, python, julia, examples, test, docs, devel, vec-kernels]

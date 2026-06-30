@@ -1,0 +1,45 @@
+name: fmm3d
+description: "Flatiron Institute Fast Multipole Methods in 3D"
+version: "master"
+license: "Apache-2.0"
+homepage: "https://github.com/flatironinstitute/fmm3d"
+repository: "https://github.com/flatironinstitute/fmm3d"
+dependencies: []
+
+# matlab/ holds the wrappers (lfmm3d, hfmm3d, stfmm3d, emfmm3d and their
+# direct-sum references), the legacy CMCL wrappers (lfmm3dpart, hfmm3dpart,
+# ...), the example/test scripts, and the two mwrap MEX gateways built by
+# compile*.m: fmm3d (modern API) and fmm3d_legacy (legacy API).
+paths:
+  - path: "matlab"
+
+# fmm3d is MEX-only: the .m wrappers dispatch into the compiled gateways, so
+# there is no useful pure-MATLAB `any` fallback.
+builds:
+  # Native MEX: compiled straight from the upstream Fortran via the makefile
+  # (no transpile); needs no extra channel files beyond compile*.m.
+  - architectures: [linux_x86_64, macos_arm64]
+    compile_script: compile.m
+    test_script: test_fmm3d.m
+  - architectures: [windows_x86_64]
+    compile_script: compile_windows.m
+    test_script: test_fmm3d.m
+
+  # numbl WASM: there is no practical Fortran->WASM path, so the Fortran is
+  # transpiled to C with fort2c at build time (matlab/numbl/build_wasm.sh) and
+  # compiled to two standalone modules with emcc -- fmm3d.wasm and
+  # fmm3d_legacy.wasm, one per mwrap gateway. The fmm3d.numbl.js /
+  # fmm3d_legacy.numbl.js builtins (matlab/numbl/) dispatch the .m wrappers
+  # through those modules in place of the native MEX.
+  - architectures: [numbl_wasm]
+    compile_script: compile_numbl_wasm.m
+    test_script: test_fmm3d.m
+    paths:
+      - path: "matlab"
+      - path: "matlab/numbl"
+    setup:
+      # build_wasm.sh transpiles the Fortran with fort2c; emcc is provided by
+      # the channel's generic numbl_wasm toolchain, fort2c is this package's own
+      # build dependency. numbl_wasm builds on a Linux runner.
+      linux:
+        - "python -m pip install git+https://github.com/magland/fort2c"

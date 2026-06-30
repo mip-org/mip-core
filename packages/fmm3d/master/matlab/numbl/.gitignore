@@ -1,0 +1,3 @@
+build_wasm/
+fmm3d.wasm
+fmm3d_legacy.wasm
