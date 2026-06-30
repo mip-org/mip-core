@@ -8,6 +8,13 @@
   MEX builds. CI can't build it; produce it locally on an Intel Mac with
   `scripts/local_build.sh` (see `mip_channel_tools/notes/LOCAL-BUILD.md`).
 
+- `finufft` (`2.5.1`): add a `numbl_wasm` build. The upstream C++ is portable,
+  so (unlike `fmm2d`) there's no Fortran transpile step — `build_wasm.sh` builds
+  `libfinufft` with emscripten CMake and compiles the upstream
+  `matlab/finufft.cpp` against it through a small mex shim, producing a
+  standalone `finufft.wasm` driven by a `finufft.numbl.js` builtin. Native
+  builds add an explicit `paths:` that excludes `matlab/numbl/`.
+
 - `scripts/local_build.sh`: build and publish a release for an architecture CI
   can't build (Intel Mac, `macos_x86_64`) from a machine with MATLAB. A thin
   bootstrap that clones `mip_channel_tools` and delegates to its new

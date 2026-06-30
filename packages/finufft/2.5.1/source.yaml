@@ -1,3 +1,9 @@
+# Build from the real upstream FINUFFT. The numbl_wasm build compiles the
+# upstream matlab/finufft.cpp directly against an emscripten-built static
+# libfinufft (see matlab/numbl/build_wasm.sh), so this points at the real
+# library rather than the magland/finufft fork that carried the numbl shim
+# in-tree. The numbl shim now lives in this package's matlab/numbl/ instead.
+# Do NOT add a `version:` field — the release-dir name (2.5.1) is the version.
 source:
   git: "https://github.com/flatironinstitute/finufft"
   branch: "v2.5.1"
