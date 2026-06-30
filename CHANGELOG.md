@@ -2,6 +2,16 @@
 
 ## Unreleased
 
+- Stop deleting `tests/`/`examples/`/demo dirs that users may want; ship them
+  and expose via `extra_paths` instead (`mip load <pkg> --with <group>`).
+  `tensor_toolbox`, `hm-toolbox`, `sc-toolbox`, `spm`, `jsonlab` gain a `tests`
+  group; `manopt` gains a `tests` group (excluding the vendored
+  `test_multi/mmx-master`); `chebfun` gains `tests` (recursive) and `demos`
+  (the `chebguiDemos` .guifile collection). Genuinely-removable trees were left
+  as-is: vendored deps (`findpoly`/`findtria`/`mesh2d` aabb-tree/poly-test,
+  `manopt` ttfixedrank) and the pure-Fortran `examples`/`test` drivers in
+  `fmm3d`/`fmm3dbie`/`fmmlib2d` (no `.m` files).
+
 - `fmm2d` (numbl_wasm): define `flong` (`int64_t`) in `fmm2d_c.h`. fort2c emits
   `flong`-typed temps for allocatable-array capacities (the `*_acap` vars), but
   the runtime header only defined `fint`/`fcomplex`, so the generated C failed

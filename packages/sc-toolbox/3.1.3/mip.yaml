@@ -12,6 +12,11 @@ dependencies: []
 paths:
   - path: "."
 
+# Opt in with `mip load sc-toolbox --with tests`.
+extra_paths:
+  tests:
+    - path: "tests"
+
 builds:
   - architectures: [any]
     test_script: test_sc_toolbox.m

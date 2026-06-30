@@ -9,6 +9,18 @@ dependencies: []
 paths:
   - path: "."
 
+# Optional dirs, opt in with `mip load chebfun --with <group>`:
+#   tests  - the regression suite (one subdir per class, so add recursively).
+#   demos  - the chebgui demo .guifile collection. chebgui.demo() already finds
+#            these relative to chebfunroot() once shipped; --with demos also puts
+#            the folder on the path.
+extra_paths:
+  tests:
+    - path: "tests"
+      recursive: true
+  demos:
+    - path: "chebguiDemos"
+
 builds:
   - architectures: [any]
     test_script: test_chebfun.m

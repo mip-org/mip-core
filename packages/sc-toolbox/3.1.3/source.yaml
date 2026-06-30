@@ -1,4 +1,3 @@
 source:
   git: "https://github.com/tobydriscoll/sc-toolbox"
   branch: "v3.1.3"
-  remove_dirs: [tests]
