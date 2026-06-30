@@ -10,7 +10,7 @@
 ## Install
 
 ```matlab
-mip install --channel mip-org/dev distmesh
+mip install distmesh
 mip load distmesh
 ```
 

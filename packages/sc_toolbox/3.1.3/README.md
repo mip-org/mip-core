@@ -11,7 +11,7 @@ The [Schwarz-Christoffel Toolbox](https://tobydriscoll.net/project/sc-toolbox/) 
 ## Install
 
 ```matlab
-mip install --channel mip-org/dev sc_toolbox
+mip install sc_toolbox
 mip load sc_toolbox
 ```
 

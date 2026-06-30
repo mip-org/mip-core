@@ -10,7 +10,7 @@ The [Rational Krylov Toolbox](http://guettel.com/rktoolbox/) (RKToolbox) provide
 ## Install
 
 ```matlab
-mip install --channel mip-org/dev rktoolbox
+mip install rktoolbox
 mip load rktoolbox
 ```
 

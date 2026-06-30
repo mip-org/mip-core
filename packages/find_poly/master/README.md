@@ -10,7 +10,7 @@
 ## Install
 
 ```matlab
-mip install --channel mip-org/dev find_poly
+mip install find_poly
 mip load find_poly
 mip load aabb_tree
 mip load inpoly

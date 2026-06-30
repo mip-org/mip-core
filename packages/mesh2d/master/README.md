@@ -10,7 +10,7 @@
 ## Install
 
 ```matlab
-mip install --channel mip-org/dev mesh2d
+mip install mesh2d
 mip load mesh2d
 mip load inpoly
 ```

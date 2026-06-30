@@ -10,7 +10,7 @@
 ## Install
 
 ```matlab
-mip install --channel mip-org/dev gramm
+mip install gramm
 mip load gramm
 ```
 

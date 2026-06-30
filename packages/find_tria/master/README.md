@@ -10,7 +10,7 @@
 ## Install
 
 ```matlab
-mip install --channel mip-org/dev find_tria
+mip install find_tria
 mip load find_tria
 mip load aabb_tree
 ```

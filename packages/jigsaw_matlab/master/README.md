@@ -10,7 +10,7 @@
 ## Install
 
 ```matlab
-mip install --channel mip-org/dev jigsaw_matlab
+mip install jigsaw_matlab
 mip load jigsaw_matlab
 ```
 

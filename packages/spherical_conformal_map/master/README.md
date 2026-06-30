@@ -9,7 +9,7 @@
 ## Install
 
 ```matlab
-mip install --channel mip-org/dev spherical_conformal_map
+mip install spherical_conformal_map
 mip load spherical_conformal_map
 ```
 

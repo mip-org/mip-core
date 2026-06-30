@@ -9,7 +9,7 @@
 ## Install
 
 ```matlab
-mip install --channel mip-org/dev disk_conformal_map
+mip install disk_conformal_map
 mip load disk_conformal_map
 ```
 

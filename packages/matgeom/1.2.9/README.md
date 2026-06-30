@@ -10,7 +10,7 @@
 ## Install
 
 ```matlab
-mip install --channel mip-org/dev matgeom
+mip install matgeom
 mip load matgeom
 ```
 
