@@ -14,10 +14,6 @@ on:
         required: true
         type: string
       architecture:
-        # Free-form string, not a choice: the canonical list of supported
-        # architectures (and rejection of unknown ones) lives in the reusable
-        # workflow's setup job in mip-org/mip_channel_tools — the single source
-        # of truth. The values below are just a hint for the manual form.
         description: 'Target architecture, e.g. any, linux_x86_64, macos_arm64, windows_x86_64, numbl_wasm'
         required: true
         type: string
