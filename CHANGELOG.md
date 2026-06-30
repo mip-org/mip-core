@@ -2,6 +2,15 @@
 
 ## Unreleased
 
+- `gptoolbox` (Windows): fetch CGAL as `CGAL-6.0.1.zip` rather than `.tar.xz`,
+  and extract with System32 bsdtar by absolute path. The windows-2022 System32
+  bsdtar (libarchive 3.8.4) has no built-in xz, so extracting `.tar.xz` shells
+  out to an external `xz` over a Windows pipe that deadlocks (a 6h hang at
+  `[extract CGAL-6.0.1]`). zip/gzip decode in-process; the absolute path also
+  stops a bare `tar` from resolving to MSYS2 GNU tar, which can't read `.zip`.
+  The zip expands to the same `CGAL-6.0.1/` tree. See
+  `mip_channel_tools/notes/WINDOWS-TAR-XZ.md`.
+
 - `finufft` (`2.5.1`): add a `macos_x86_64` build. `compile.m` now uses FFTW on
   all macOS (not just arm64) and resolves the Homebrew prefix per arch
   (`/opt/homebrew` on Apple Silicon, `/usr/local` on Intel), so the Intel-Mac
