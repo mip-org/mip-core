@@ -1,0 +1,40 @@
+name: fmm3dbie
+description: "Fast multipole accelerated boundary integral equation solvers in 3D"
+version:
+license: "Apache-2.0"
+homepage: "https://github.com/fastalgorithms/fmm3dbie"
+repository: "https://github.com/fastalgorithms/fmm3dbie"
+
+# fmm3dbie's MATLAB layer statically links its own vendored FMM3D into the MEX,
+# so it is self-contained for the integral-equation solvers. It additionally
+# depends on the sibling `fmm3d` package so that, once loaded, the volume-FMM
+# wrappers (lfmm3d/hfmm3d/...) used by some examples are also on the path. The
+# bare name resolves to mip-org/staging/fmm3d (this channel).
+dependencies:
+  - fmm3d
+
+# matlab/      - the +lap3d/+helm3d/+stok3d/+em3d solver namespaces, the @surfer
+#                geometry class, +geometries builders, and the single mwrap MEX
+#                gateway built by compile*.m: fmm3dbie_routs.
+# matlab/src   - helper m-files the solver namespaces call (mirrors startup.m,
+#                which adds both matlab/ and matlab/src to the path).
+paths:
+  - path: "matlab"
+  - path: "matlab/src"
+
+# fmm3dbie is MEX-only: the namespaced .m wrappers dispatch into the compiled
+# fmm3dbie_routs gateway, so there is no useful pure-MATLAB `any` fallback.
+#
+# numbl_wasm is intentionally not built here: unlike fmm3d, fmm3dbie links
+# BLAS/LAPACK (dgesvd/dgelsy/dgetrf/zgemm/...), which has no MATLAB-provided
+# equivalent under wasm, so a numbl_wasm build additionally requires LAPACK in
+# wasm. That is deferred to a follow-up.
+builds:
+  # Native MEX: the upstream makefile compiles src/ (and the vendored FMM3D) and
+  # links matlab/fmm3dbie_routs.c. Needs no extra channel files beyond compile*.m.
+  - architectures: [linux_x86_64, macos_arm64]
+    compile_script: compile.m
+    test_script: test_fmm3dbie.m
+  - architectures: [windows_x86_64]
+    compile_script: compile_windows.m
+    test_script: test_fmm3dbie.m

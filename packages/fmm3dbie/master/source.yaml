@@ -1,0 +1,34 @@
+# Build from the upstream fmm3dbie. The repo has no release tags, so we track
+# the default branch (master); the release-dir name (master) equals
+# source.branch, and mip.yaml carries a blank `version:` (see fmm2d for the
+# same branch-tracking pattern). Do NOT add a `version:` field here.
+#
+# fmm3dbie vendors FMM3D as a git submodule and its MATLAB build descends into
+# it (`cd FMM3D && make libfmm3d.a`), statically merging FMM3D into the single
+# fmm3dbie_routs MEX. `submodules: true` makes prepare clone --recurse-submodules
+# so FMM3D/ is populated.
+#
+# remove_dirs trims trees the MATLAB MEX build does not need: the other-language
+# bindings and the Fortran/C example, test, perf, doc and data trees -- in both
+# the top-level repo and the vendored FMM3D submodule. `make matlab` only
+# compiles src/ (and FMM3D/src/) into the static libs and links matlab/*.c, so
+# none of these are build inputs.
+source:
+  git: "https://github.com/fastalgorithms/fmm3dbie"
+  branch: "master"
+  submodules: true
+  remove_dirs:
+    - python
+    - docs
+    - examples
+    - test
+    - perf-test
+    - geometries
+    - FMM3D/c
+    - FMM3D/python
+    - FMM3D/julia
+    - FMM3D/examples
+    - FMM3D/test
+    - FMM3D/docs
+    - FMM3D/devel
+    - FMM3D/vec-kernels
