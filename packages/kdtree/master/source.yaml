@@ -1,0 +1,3 @@
+source:
+  git: "https://github.com/taiya/kdtree"
+  branch: "master"

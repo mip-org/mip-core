@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Add `kdtree@master` (MEX; linux/macos_arm64/windows), ported from an older
+  packaging system. Renamed `recipe.yaml` to `source.yaml`.
+
 - Stop deleting `tests/`/`examples/`/demo dirs that users may want; ship them
   and expose via `extra_paths` instead (`mip load <pkg> --with <group>`).
   `tensor_toolbox`, `hm-toolbox`, `sc-toolbox`, `spm`, `jsonlab` gain a `tests`
