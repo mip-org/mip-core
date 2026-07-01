@@ -14,6 +14,13 @@ paths:
   - path: "libraries/lbfgsb/Matlab"
   - path: "libraries/compact/src"
 
+# Opt in with `mip load tensor_toolbox --with tests`. The tests/ folder holds
+# the regression suite plus a special_tests/ subdir, so add it recursively.
+extra_paths:
+  tests:
+    - path: "tests"
+      recursive: true
+
 builds:
   - architectures: [linux_x86_64, macos_arm64, windows_x86_64]
     compile_script: compile.m

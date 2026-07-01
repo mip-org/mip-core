@@ -17,6 +17,13 @@ paths:
 extra_paths:
   examples:
     - path: "examples"
+  # `mip load manopt --with tests`. The suite spreads helpers across subdirs,
+  # so add recursively; skip the vendored mmx-master build tree under
+  # test_multi/ (a third-party library, not part of manopt's tests).
+  tests:
+    - path: "tests"
+      recursive: true
+      exclude: ["mmx-master"]
 
 builds:
   - architectures: [linux_x86_64, macos_arm64, windows_x86_64]

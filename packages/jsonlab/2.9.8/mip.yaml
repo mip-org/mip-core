@@ -10,6 +10,11 @@ dependencies: []
 paths:
   - path: "."
 
+# Opt in with `mip load jsonlab --with tests` (upstream names the folder test/).
+extra_paths:
+  tests:
+    - path: "test"
+
 builds:
   - architectures: [any]
     test_script: test_jsonlab_channel.m
