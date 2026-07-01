@@ -47,4 +47,20 @@ assert(ismember(5, idxs), 'Point [0.5,0.5] should be within radius 0.1 of query'
 assert(all(distances <= 0.1), 'All returned distances should be <= radius');
 kdtree_delete(tree);
 
+%% Test kdtree_io_to_mat / kdtree_io_from_mat (serialize round-trip)
+fprintf('Testing kdtree_io_to_mat / kdtree_io_from_mat...\n');
+points = [0 0; 1 0; 0 1; 1 1; 0.5 0.5];
+tree = kdtree_build(points);
+s = kdtree_io_to_mat(tree);
+assert(isstruct(s) && isfield(s, 'points') && isfield(s, 'nodes'), ...
+    'kdtree_io_to_mat should return a struct with points and nodes');
+assert(isequal(s.points, points), 'Serialized points should match the input');
+tree2 = kdtree_io_from_mat(s);
+assert(~isempty(tree2), 'kdtree_io_from_mat returned empty');
+% The rebuilt tree must answer queries identically to the original.
+idx = kdtree_nearest_neighbor(tree2, [0.5 0.5]);
+assert(idx == 5, 'Round-tripped tree gave wrong nearest neighbor');
+kdtree_delete(tree2);
+kdtree_delete(tree);
+
 fprintf('SUCCESS\n');
