@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Add `kdtree@master` (MEX; linux/macos_arm64/windows), ported from an older
+  packaging system. Renamed `recipe.yaml` to `source.yaml`.
+
 - `fmm2d` (numbl_wasm): define `flong` (`int64_t`) in `fmm2d_c.h`. fort2c emits
   `flong`-typed temps for allocatable-array capacities (the `*_acap` vars), but
   the runtime header only defined `fint`/`fcomplex`, so the generated C failed
