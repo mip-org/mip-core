@@ -1,0 +1,20 @@
+name: surfacefun
+description: "Computing with functions on surfaces with high-order accuracy, including a fast direct solver for surface PDEs."
+version:
+license: "unspecified"
+homepage: "https://surfacefun.readthedocs.io"
+repository: "https://github.com/danfortunato/surfacefun"
+dependencies: ["chebfun"]
+
+paths:
+  - path: "."
+  - path: "tools"
+
+extra_paths:
+  examples:
+    - path: "demo"
+    - path: "apps"
+
+builds:
+  - architectures: [any]
+    test_script: test_surfacefun.m
