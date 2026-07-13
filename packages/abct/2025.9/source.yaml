@@ -1,0 +1,17 @@
+# Build the MATLAB toolbox from Mika Rubinov's abct repo. abct is a combined
+# MATLAB + Python project; only the MATLAB toolbox is packaged, and it lives in
+# the repo under abct-matlab/abct/ (the folder that holds the .m files and the
+# +muma / +loyv namespaces). subdirectory: extracts just that folder as the
+# package root; the channel files below (mip.yaml, test_abct.m, this README,
+# example.m) are overlaid on top of it.
+#
+# Pinned to the upstream release tag 2025.9. The release-dir name (2025.9) is
+# the version and must equal both mip.yaml's `version:` and source.branch (the
+# checked-in mpackage.json still reads 1.0.0, but the numeric release-dir name
+# and mip.yaml version take precedence). Do NOT add a `version:` field here. To
+# take a future release, add a new packages/abct/<newtag>/ directory alongside
+# this one.
+source:
+  git: "https://github.com/mikarubi/abct"
+  branch: "2025.9"
+  subdirectory: "abct-matlab/abct"

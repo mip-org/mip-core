@@ -1,0 +1,21 @@
+name: abct
+description: "Toolbox for unsupervised learning, network science, and imaging/network neuroscience: global residualization, Loyvain / co-Loyvain clustering, canonical & co-neighbor components, m-UMAP embeddings, degree/dispersion centralities, and network shrinkage. By Mika Rubinov."
+version: "2025.9"
+license: "MIT"
+homepage: "https://abct.rubinovlab.net"
+repository: "https://github.com/mikarubi/abct"
+dependencies: []
+
+# Pure MATLAB. The public functions (degree, dispersion, residualn, shrinkage,
+# louvains, loyvain, coloyvain, canoncov, kneighbor, kneicomp, mumap) sit
+# directly in the package root; the +muma and +loyv namespaces beneath it are
+# discovered by MATLAB automatically, so only the root needs to be on the path.
+paths:
+  - path: "."
+
+builds:
+  # Pure MATLAB, runs everywhere. The test exercises the toolbox-free core so it
+  # passes on the channel's base-only CI. Some optional code paths need add-on
+  # toolboxes (see README) but are not on the default path-check surface.
+  - architectures: [any]
+    test_script: test_abct.m
