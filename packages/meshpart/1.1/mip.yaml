@@ -11,6 +11,11 @@ paths:
   - path: "src"
     recursive: true
 
+# Opt in with `mip load meshpart --with tests`.
+extra_paths:
+  tests:
+    - path: "test"
+
 builds:
   - architectures: [any]
     test_script: test_meshpart.m

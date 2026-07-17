@@ -10,6 +10,12 @@ dependencies: []
 paths:
   - path: "."
     recursive: true
+    exclude: [tutorial]
+
+# Opt in with `mip load geometry-processing-package --with examples`.
+extra_paths:
+  examples:
+    - path: "tutorial"
 
 builds:
   - architectures: [any]

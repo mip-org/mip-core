@@ -11,6 +11,14 @@ dependencies: []
 paths:
   - path: "."
 
+# Opt in with `mip load spot --with <group>`.
+extra_paths:
+  examples:
+    - path: "demos"
+  tests:
+    - path: "tests"
+      recursive: true
+
 builds:
   - architectures: [linux_x86_64, macos_arm64, windows_x86_64]
     compile_script: compile.m

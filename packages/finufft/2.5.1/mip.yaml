@@ -14,6 +14,12 @@ paths:
   - path: "matlab"
   - path: "matlab/numbl"
 
+# Opt in with `mip load finufft --with examples` (upstream MATLAB tutorial
+# scripts).
+extra_paths:
+  examples:
+    - path: "tutorial"
+
 builds:
   # MATLAB MEX: compiled from the upstream C++ via CMake (DUCC0 backend, OpenMP
   # off, statically linked for portability). The numbl/ js+wasm is excluded

@@ -2,6 +2,18 @@
 
 ## Unreleased
 
+- Standardize `extra_paths` across the channel: every package with a real
+  top-level test/example dir now exposes it as a group (`mip load <pkg>
+  --with <group>`). `tests` added to `dotenv`, `distmesh`, `matlab-progress-bar`,
+  `meshpart`, `robotics-toolbox`, `spatial-math-toolbox` (`unit_test`,
+  recursive), `spot` (recursive), `ultrasem`; `examples` added to `finufft`
+  (`tutorial`), `gramm`, `hm-toolbox`, `jsonlab`, `matlab-progress-bar`
+  (`demos`), `robotics-toolbox` (`demos`/`examples`/`Apps`),
+  `spatial-math-toolbox` (`Apps`), `spot` (`demos`), `ultrasem`. Demo dirs
+  moved off the default path into the `examples` group for `distmesh`,
+  `geometry-processing-package` (`tutorial`), and `geopdes`. `chebfun`'s
+  `demos` group renamed to `examples` (one canonical name for demo content).
+
 - Add `kdtree@master` (MEX; linux/macos_arm64/windows), ported from an older
   packaging system. Renamed `recipe.yaml` to `source.yaml`.
 

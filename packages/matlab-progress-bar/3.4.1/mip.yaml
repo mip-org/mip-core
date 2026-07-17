@@ -9,6 +9,13 @@ dependencies: []
 paths:
   - path: "."
 
+# Opt in with `mip load matlab-progress-bar --with <group>`.
+extra_paths:
+  examples:
+    - path: "demos"
+  tests:
+    - path: "tests"
+
 builds:
   - architectures: [any]
     test_script: test_matlab_progress_bar.m
