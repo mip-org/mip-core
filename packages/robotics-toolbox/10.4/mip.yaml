@@ -13,6 +13,15 @@ paths:
   - path: "models"
   - path: "data"
 
+# Opt in with `mip load robotics-toolbox --with <group>`.
+extra_paths:
+  examples:
+    - path: "demos"
+    - path: "examples"
+    - path: "Apps"
+  tests:
+    - path: "test"
+
 builds:
   - architectures: [any]
     test_script: test_robotics_toolbox.m

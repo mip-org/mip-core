@@ -11,8 +11,10 @@ dependencies: []
 paths:
   - path: "."
 
-# Opt in with `mip load hm-toolbox --with tests`.
+# Opt in with `mip load hm-toolbox --with <group>`.
 extra_paths:
+  examples:
+    - path: "examples"
   tests:
     - path: "tests"
 

@@ -9,7 +9,13 @@ dependencies: []
 # Mirrors startup.m, which adds src/ (the toolbox functions) and examples/.
 paths:
   - path: src
-  - path: examples
+
+# Opt in with `mip load distmesh --with <group>`.
+extra_paths:
+  examples:
+    - path: examples
+  tests:
+    - path: tests
 
 builds:
   - architectures: [any]

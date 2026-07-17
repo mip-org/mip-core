@@ -11,6 +11,12 @@ dependencies: [nurbs]
 paths:
   - path: "."
     recursive: true
+    exclude: [examples]
+
+# Opt in with `mip load geopdes --with examples`.
+extra_paths:
+  examples:
+    - path: "examples"
 
 builds:
   - architectures: [any]

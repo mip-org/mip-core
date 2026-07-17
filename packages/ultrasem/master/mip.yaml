@@ -11,6 +11,13 @@ dependencies: []
 paths:
   - path: "."
 
+# Opt in with `mip load ultrasem --with <group>`.
+extra_paths:
+  examples:
+    - path: "examples"
+  tests:
+    - path: "tests"
+
 builds:
   - architectures: [any]
     test_script: test_ultrasem.m

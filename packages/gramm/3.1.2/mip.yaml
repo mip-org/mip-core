@@ -11,6 +11,11 @@ dependencies: []
 paths:
   - path: "."
 
+# Opt in with `mip load gramm --with examples`.
+extra_paths:
+  examples:
+    - path: "examples"
+
 builds:
   - architectures: [any]
     test_script: test_gramm.m

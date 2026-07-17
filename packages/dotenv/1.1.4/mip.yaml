@@ -9,6 +9,11 @@ dependencies: []
 paths:
   - path: "."
 
+# Opt in with `mip load dotenv --with tests`.
+extra_paths:
+  tests:
+    - path: "tests"
+
 builds:
   - architectures: [any]
     test_script: test_dotenv.m

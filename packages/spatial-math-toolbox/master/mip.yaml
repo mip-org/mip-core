@@ -10,6 +10,14 @@ dependencies: []
 paths:
   - path: "."
 
+# Opt in with `mip load spatial-math-toolbox --with <group>`.
+extra_paths:
+  examples:
+    - path: "Apps"
+  tests:
+    - path: "unit_test"
+      recursive: true
+
 builds:
   - architectures: [any]
     test_script: test_spatial_math_toolbox.m

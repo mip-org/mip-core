@@ -10,8 +10,11 @@ dependencies: []
 paths:
   - path: "."
 
-# Opt in with `mip load jsonlab --with tests` (upstream names the folder test/).
+# Opt in with `mip load jsonlab --with <group>` (upstream names the test
+# folder test/).
 extra_paths:
+  examples:
+    - path: "examples"
   tests:
     - path: "test"
 
