@@ -1,0 +1,23 @@
+name: wec-sim
+description: "WEC-Sim (Wave Energy Converter SIMulator): open-source code for simulating wave energy converters. Running simulations requires Simulink, Simscape, and Simscape Multibody."
+version: "7.1.0"
+license: "Apache-2.0"
+homepage: "https://wec-sim.github.io/WEC-Sim/"
+repository: "https://github.com/WEC-Sim/WEC-Sim"
+dependencies: []
+
+# Mirrors upstream addWecSimSource.m, which does addpath(genpath('source')).
+# The explicit entries are directories containing no .m files (Simulink
+# libraries, block icons, MoorDyn drop-in dir) that `recursive` skips but
+# genpath would include; Simulink needs the .slx library dirs on the path.
+paths:
+  - path: "source"
+    recursive: true
+  - path: "source/lib"
+  - path: "source/blockFigures"
+  - path: "source/functions/simulink"
+  - path: "source/functions/moorDyn"
+
+builds:
+  - architectures: [any]
+    test_script: test_wec_sim.m

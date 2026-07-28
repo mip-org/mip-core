@@ -1,0 +1,6 @@
+source:
+  git: "https://github.com/WEC-Sim/WEC-Sim"
+  branch: "v7.1.0"
+  # The repo is ~650 MB checked out; nearly all of it is example/tutorial
+  # data and rendered docs. The code that goes on the path is source/ (~8 MB).
+  remove_dirs: [examples, docs, tutorials, tests]
