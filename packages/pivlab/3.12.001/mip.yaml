@@ -1,0 +1,35 @@
+name: pivlab
+description: "PIVlab: particle image velocimetry (PIV) tool with GUI - image preprocessing, FFT-based PIV analysis, wavelet-based optical flow velocimetry (wOFV), postprocessing, and visualization."
+version: "3.12.001"
+license: "MIT"
+homepage: "https://www.pivlab.de"
+repository: "https://github.com/Shrediquette/PIVlab"
+dependencies: []
+
+# The package root holds PIVlab_GUI.m plus the +piv/+preproc/+postproc/...
+# namespaces (auto-discovered). images/, help/ and PIVlab_capture_resources/
+# mirror the addpath calls PIVlab_GUI.m makes at startup. The minFunc dirs
+# replace upstream's runtime `addpath(genpath('OptimizationSolvers'))`, which
+# only works when the current folder is the PIVlab root.
+paths:
+  - path: "."
+  - path: "images"
+  - path: "help"
+  - path: "PIVlab_capture_resources"
+  - path: "OptimizationSolvers/minFunc"
+  - path: "OptimizationSolvers/minFunc/minFunc"
+  - path: "OptimizationSolvers/minFunc/minFunc/compiled"
+
+# Opt in with `mip load pivlab --with examples` / `--with tests`.
+extra_paths:
+  examples:
+    - path: "Example_scripts"
+  tests:
+    - path: "unittests"
+
+builds:
+  - architectures: [linux_x86_64, macos_arm64, windows_x86_64]
+    compile_script: compile.m
+    test_script: test_pivlab_mex.m
+  - architectures: [any]
+    test_script: test_pivlab.m

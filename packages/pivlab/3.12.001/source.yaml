@@ -1,0 +1,18 @@
+source:
+  git: "https://github.com/Shrediquette/PIVlab"
+  branch: "3.12.001"
+  # resources/ is MATLAB-project scaffolding that upstream's own
+  # toolbox.ignore already excludes from the official .mltbx; docs/ is the
+  # source of the project website; Example_data/ is ~10 MB of demo images the
+  # GUI only uses as a default browse folder. pco_resources/ and tycmd.exe
+  # are proprietary vendor binaries (PCO camera SDK DLLs, Teensy CLI loader)
+  # used only for hardware image acquisition -- not redistributed here. The
+  # PIVlab_capture_resources folder itself is kept (its .m files are part of
+  # the GUI, and PIVlab_GUI.m checks the folder exists at startup).
+  remove_dirs:
+    - resources
+    - docs
+    - Example_data
+    - PIVlab_capture_resources/pco_resources
+  remove_files:
+    - PIVlab_capture_resources/tycmd.exe
