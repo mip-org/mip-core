@@ -200,24 +200,9 @@ if ispc
     % Windows/MSVC only: GCC/Clang have no import-stub mechanism, so the macros
     % are a no-op off-Windows, and they're harmless to MEX that include neither
     % header. See BUILD_NOTES.md.
-    %
-    % _DISABLE_CONSTEXPR_MUTEX_CONSTRUCTOR: the MEX is built /MD with the
-    % runner's latest VS2022 toolset (14.4x), but at load time its MSVCP140.dll
-    % resolves to MATLAB R2023a's OLDER bundled copy (<matlabroot>\bin\win64),
-    % which the host process searches ahead of System32. VS2022 17.10 (toolset
-    % 14.40) made std::mutex's default constructor constexpr/zero-init; a
-    % 14.40+-built mutex run against a pre-14.40 MSVCP140.dll dereferences a
-    % field the old lock code expects to be initialized -> null-deref Access
-    % Violation in MSVCP140 (symbolized MSVCP140!_Thrd_yield). This is the
-    % mesh_boolean crash: its CGAL exact-construction path is the first MEX to
-    % touch std::mutex at runtime. Microsoft's opt-out macro restores the
-    % pre-14.40 (non-constexpr) constructor so the MEX stays compatible with the
-    % runtime MATLAB ships. Harmless to MEX that never construct a std::mutex.
-    % See microsoft/STL#4730.
     stdFlags = {'COMPFLAGS=$COMPFLAGS /std:c++17 /bigobj', ...
                 '-DNOMINMAX', '-D_USE_MATH_DEFINES', '-DWIN32', ...
-                '-DCCD_STATIC_DEFINE', '-DEMBREE_STATIC_LIB', ...
-                '-D_DISABLE_CONSTEXPR_MUTEX_CONSTRUCTOR'};
+                '-DCCD_STATIC_DEFINE', '-DEMBREE_STATIC_LIB'};
 else
     stdFlags = {'CXXFLAGS=$CXXFLAGS -std=c++17'};
 end

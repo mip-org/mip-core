@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- `gptoolbox@master`: dropped the per-package
+  `-D_DISABLE_CONSTEXPR_MUTEX_CONSTRUCTOR` MEX compile flag; mip_channel_tools'
+  `build-package.yml` now sets it globally for every Windows build. Behavior
+  unchanged.
+
 - Add `kdtree@master` (MEX; linux/macos_arm64/windows), ported from an older
   packaging system. Renamed `recipe.yaml` to `source.yaml`.
 
