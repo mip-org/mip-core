@@ -1,0 +1,18 @@
+# Build the k-Wave MATLAB toolbox from the upstream ucl-bug/k-wave repo at tag
+# v1.4.1. The toolbox lives in the repo's k-Wave/ subdirectory (all the .m
+# files, private/, helpfiles/, license/, info.xml); subdirectory: extracts just
+# that folder as the package root. The channel files below (mip.yaml,
+# test_kwave.m, this README, example.m) are overlaid on top of it.
+#
+# The release-dir name (1.4.1) is the version and must equal mip.yaml's
+# `version:` and, with the `v` prefix, source.branch (v1.4.1). Do NOT add a
+# `version:` field here.
+#
+# Note: k-Wave's accelerated C++/CUDA solver binaries are NOT in this repo
+# (k-Wave/binaries/ ships empty) — users download them separately from
+# k-wave.org, so there is nothing platform-specific to strip and the package is
+# pure MATLAB (`any`). See the package README.
+source:
+  git: "https://github.com/ucl-bug/k-wave"
+  branch: "v1.4.1"
+  subdirectory: "k-Wave"

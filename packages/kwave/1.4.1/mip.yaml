@@ -1,0 +1,30 @@
+name: kwave
+description: "k-Wave: time-domain simulation of acoustic and ultrasound wave fields (1D/2D/3D, axisymmetric, elastic) and photoacoustic image reconstruction, using a k-space pseudospectral method. By Bradley Treeby, Ben Cox, and contributors."
+version: "1.4.1"
+license: "LGPL-3.0-or-later"
+homepage: "http://www.k-wave.org"
+repository: "https://github.com/ucl-bug/k-wave"
+dependencies: []
+
+# Installation per k-Wave's own instructions is just adding the k-Wave/ folder
+# to the path (here that folder is the package root after subdirectory
+# extraction). All public functions live at the root; the private/ folder is
+# discovered by MATLAB automatically, and info.xml + helpfiles/ wire up the
+# in-browser documentation ("Supplemental Software > k-Wave Toolbox").
+paths:
+  - path: "."
+
+# examples/ and testing/ are useful to some users but shouldn't be on the path
+# by default. Opt in with `mip load kwave --with examples` / `--with tests`.
+extra_paths:
+  examples:
+    - path: "examples"
+  tests:
+    - path: "testing"
+
+builds:
+  # Pure MATLAB, runs everywhere. The accelerated C++/CUDA solvers are optional,
+  # user-installed binaries (see README), not part of this bundle. The test
+  # exercises core utilities and a tiny end-to-end 2D simulation in base MATLAB.
+  - architectures: [any]
+    test_script: test_kwave.m
