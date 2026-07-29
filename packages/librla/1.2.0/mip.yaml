@@ -1,0 +1,20 @@
+name: librla
+description: "Randomized linear algebra: sketching-based low-rank QR, SVD, and interpolative decompositions."
+version: "1.2.0"
+license: "MIT"
+homepage: "https://github.com/agillman20/librla"
+repository: "https://github.com/agillman20/librla"
+dependencies: []
+
+paths:
+  - path: "."
+
+extra_paths:
+  examples:
+    - path: "demo"
+  tests:
+    - path: "test"
+
+builds:
+  - architectures: [any]
+    test_script: test_librla.m

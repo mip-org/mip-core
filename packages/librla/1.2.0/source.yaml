@@ -1,0 +1,4 @@
+source:
+  git: "https://github.com/agillman20/librla"
+  branch: "v1.2.0"
+  subdirectory: "distrib/matlab"
