@@ -54,6 +54,14 @@ if status ~= 0
     error('fmm3dbie:makeMatlabFailed', 'make matlab failed with exit code %d', status);
 end
 
+% Since upstream 8c5759e1, `make matlab` also builds the vendored FMM3D's own
+% MEX (fmm3d, fmm3d_legacy) into FMM3D/matlab. Those are provided by the fmm3d
+% dependency and FMM3D/matlab is not on this package's path, so drop the
+% directory rather than ship an unused duplicate.
+if exist(fullfile('FMM3D', 'matlab'), 'dir')
+    rmdir(fullfile('FMM3D', 'matlab'), 's');
+end
+
 fprintf('fmm3dbie MEX compilation completed.\n');
 
 end
