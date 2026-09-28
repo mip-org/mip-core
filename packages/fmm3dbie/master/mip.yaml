@@ -8,8 +8,7 @@ repository: "https://github.com/fastalgorithms/fmm3dbie"
 # fmm3dbie's MATLAB layer statically links its own vendored FMM3D into the MEX,
 # so it is self-contained for the integral-equation solvers. It additionally
 # depends on the sibling `fmm3d` package so that, once loaded, the volume-FMM
-# wrappers (lfmm3d/hfmm3d/...) used by some examples are also on the path. The
-# bare name resolves to mip-org/staging/fmm3d (this channel).
+# wrappers (lfmm3d/hfmm3d/...) used by some examples are also on the path.
 dependencies:
   - fmm3d
 
