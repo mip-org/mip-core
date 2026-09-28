@@ -12,6 +12,15 @@ dependencies: []
 paths:
   - path: "rktoolbox"
 
+# Opt in with `mip load rktoolbox --with <group>`. The tests folder has one
+# subdir per class, so add it recursively.
+extra_paths:
+  examples:
+    - path: "rktoolbox/examples"
+  tests:
+    - path: "rktoolbox/tests"
+      recursive: true
+
 builds:
   - architectures: [any]
     test_script: test_rktoolbox.m
