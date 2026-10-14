@@ -1,0 +1,14 @@
+name: minboundsuite
+description: "A suite of minimal bounding objects: smallest enclosing circles, spheres, rectangles, triangles, and more for point sets in 2D and 3D."
+version: "1.2.0"
+license: "BSD-2-Clause"
+homepage: "https://www.mathworks.com/matlabcentral/fileexchange/34767-a-suite-of-minimal-bounding-objects"
+repository: "https://www.mathworks.com/matlabcentral/fileexchange/34767-a-suite-of-minimal-bounding-objects"
+dependencies: []
+
+paths:
+  - path: "MinBoundSuite"
+
+builds:
+  - architectures: [any]
+    test_script: test_minboundsuite.m

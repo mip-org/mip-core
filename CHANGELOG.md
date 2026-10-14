@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Add `minboundsuite@1.2.0` (pure MATLAB), John D'Errico's suite of minimal
+  bounding objects from File Exchange, fetched as the versioned zip from the
+  MathWorks add-on registry.
+
 - `fmm3dbie@master`: corrected the `mip.yaml` comment on the `fmm3d`
   dependency (needed by the solvers' `fmm` functions, not just examples).
 
