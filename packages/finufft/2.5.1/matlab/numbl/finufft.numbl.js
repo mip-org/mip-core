@@ -14,19 +14,9 @@
 // `mwptr` string field on the JS side so the cpp code's mxIsChar/sscanf
 // branch handles them — no R2008OO / mxGetProperty needed in the shim.
 
-register({
-  resolve: function (argTypes, nargout) {
-    if (argTypes.length < 1) return null;
-    var outs = [];
-    var n = nargout > 0 ? nargout : 0;
-    for (var i = 0; i < n; i++) outs.push({ kind: "unknown" });
-    return {
-      outputTypes: outs,
-      apply: function (args, nargout) {
-        return callFinufft(args, nargout);
-      },
-    };
-  },
+register(function (args, nargout) {
+  if (args.length < 1) throw new RuntimeError("finufft: missing stub id");
+  return callFinufft(args, nargout);
 });
 
 // ── runtime-value helpers ──────────────────────────────────────────────────
