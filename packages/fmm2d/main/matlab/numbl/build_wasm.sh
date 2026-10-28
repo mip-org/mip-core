@@ -59,7 +59,19 @@ for row in "${FILES[@]}"; do
   IFS='|' read -r name src only <<< "$row"
   onlyarg=(); [ -n "$only" ] && onlyarg=(--only "$only")
   echo "  F2C $src -> $name.c"
-  fort2c "$FMM2D_SRC/$src" --basename "$name" "${onlyarg[@]}" -o "$GEN_DIR" >/dev/null
+  input="$FMM2D_SRC/$src"
+  # Upstream r2d_directdh never sets thresh2 before comparing against it, so
+  # the self-interaction skip reads an uninitialized value. gfortran builds
+  # happen to work; this build divides by zero at coincident points and
+  # returns NaN. Transpile a copy that sets it, as the sibling routines do.
+  # Harmless once upstream adds the assignment.
+  if [ "$src" = "src/laplace/rlapkernels2d.f" ]; then
+    input="$BUILD_DIR/rlapkernels2d.f"
+    awk '/subroutine r2d_directdh\(/ { f = 1 }
+         f && /^      do j = 1,nt/ { print "      thresh2 = thresh*thresh"; f = 0 }
+         { print }' "$FMM2D_SRC/$src" > "$input"
+  fi
+  fort2c "$input" --basename "$name" "${onlyarg[@]}" -o "$GEN_DIR" >/dev/null
 done
 
 SHIM_INC="-I$SCRIPT_DIR/mex_shim"
