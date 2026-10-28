@@ -18,16 +18,10 @@
 //   so savemsh can write it back unchanged. For 'marche', the returned struct
 //   is the gradient-limited copy of hfun.
 
-register({
-  resolve: function (argTypes, nargout) {
-    if (argTypes.length < 2) return null;
-    return {
-      outputTypes: [{ kind: "unknown" }],
-      apply: function (args) {
-        return callJigsaw(args);
-      },
-    };
-  },
+register(function (args) {
+  if (args.length < 2)
+    throw new RuntimeError("usage: mesh = jigsaw_kernel(mode, opts, geom, init, hfun)");
+  return callJigsaw(args);
 });
 
 // ── runtime-value helpers ───────────────────────────────────────────────────

@@ -13,19 +13,9 @@
 // fmm3d_legacy's stubs are stateless (no plan/setpts/destroy lifecycle like
 // finufft), so input mxArrays can be freed immediately after each call.
 
-register({
-  resolve: function (argTypes, nargout) {
-    if (argTypes.length < 1) return null;
-    var outs = [];
-    var n = nargout > 0 ? nargout : 0;
-    for (var i = 0; i < n; i++) outs.push({ kind: "unknown" });
-    return {
-      outputTypes: outs,
-      apply: function (args, nargout) {
-        return callFmm3dLegacy(args, nargout);
-      },
-    };
-  },
+register(function (args, nargout) {
+  if (args.length < 1) throw new RuntimeError("fmm3d_legacy: missing stub id");
+  return callFmm3dLegacy(args, nargout);
 });
 
 // ── runtime-value helpers ──────────────────────────────────────────────────
