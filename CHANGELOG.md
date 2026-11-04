@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Add `mip@1.3.0`.
+
 - Add `minboundsuite@1.2.0` (pure MATLAB), John D'Errico's suite of minimal
   bounding objects from File Exchange, fetched as the versioned zip from the
   MathWorks add-on registry.
